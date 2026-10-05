@@ -7,8 +7,7 @@
  it runs in other site or sites than say the original forum. So the victims browser can tell the injected script from its own. 
 
  An analogy
-So we have a restaurant and the kitchen is the site. The customer slips a fake ticket to the waiter telling the kitchen to bring vodka but the kitchen cant tell if
-it's from the legitimate tickets. 
+So we have a restaurant and the kitchen is the site. The customer slips a fake ticket to the waiter telling the kitchen to bring vodka but the kitchen cant tell if it's from the legitimate tickets or not so the customer gets free vodka. 
 
  Types of XSS
 Stored XSS:** <!-- Where is it stored, who does it hit? Use your forum example. -->Stored XSS 
@@ -44,6 +43,6 @@ Cookie flags: <!-- HttpOnly, Secure, SameSite, and why HttpOnly limits damage bu
 
  What I learned
 We are more vulnerable than we think and most people have no idea how exposed they are. Most people treat the internet as Im safe behind my screen or i have done
-my software update. I see people entering their correct personal details on every website and I wonder. 
+my software update. I see people clicking on forums, entering their correct personal details on every website with out a worry in the world and it makes me wonder. 
 
-It reinforces why i spend as little time on the internet and on web pages why my dog is on the internet and social media and i am not. 
+It reinforces why i spend as little time on web pages, social media or any thing that isn't nessasary its why my dog is on social media and i am not. 
