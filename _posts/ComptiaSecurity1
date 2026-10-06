@@ -1,0 +1,36 @@
+Comptia Security -
+Before we start this is my own records for understanding it shows my learning and understanding, not perfect english. 
+There is a analogies as I find it a great way to learn and makes things interesting for teaching others. 
+I sometimes use humor and crazyness as our brains tend to tune out, but a silly analogy of wild possums invading your house, eating your data cable will stick in your mind forever({true story). 
+
+CIA Triad
+Cia triad is a frame work or a is a way we want things to be 
+C confidenciality is privacy we dont want stuff getting to the wrong people
+example my health records i dont want everyone but my doctor that i give permission to have access, 
+I integrity making sure that data hasn't been changed or damaged even during a crisis  If info gets changed or say half is deleted like my ct scan has not 
+  shown the writeup it means a gp could not understand what level of symptioms are.
+ A availablity so i want my gp to be able to get it when ever its needed like if i have to go to hospital for an emergency they would want to know my blood type
+and allergies or they could give penicilian leading to a side effect.
+  
+  Confidentiality:  Only authorised people can see the data.
+Integrity: The data is accurate and complete, and it hasn't been changed. A CT scan missing its write-up is a great example: the data still exists, 
+  but it can't be trusted.
+Availability: The data has to be there when it's needed. The penicillin example shows why that matters.
+  What it protects	Example controls
+C	Who can see it	Encryption, passwords and MFA, access permissions
+I	Whether it's been changed	Hashing, digital signatures, checksums
+A	Whether it's there when needed	Backups, redundant servers, patching, fault tolerance.
+
+ AAA  Here's an analogy for all three. You're at a nightclub:
+
+Authentication: the bouncer checks your ID.
+Authorisation: your wristband decides whether you can get into the VIP area.
+Accounting: the cameras record when you came in, where you went, and when you left.
+
+Non Repudiation - this is the claim that i didn't do it and you point to someone else just does't work.
+  
+  Here's an analogy. In the roman days a top advisor would be given a ring that acted like a stamp a wax seal/signature. It was used to sign letters so you knew it was from the emporors advisor. 
+  A private key is like a wax seal stamped with a signet ring that only you own. 
+  Anyone can look at the seal and recognise it as yours. Only your ring could have made it, though, so you can't later say "I didn't send that letter."
+This signet ring is like a private key and only you have this signet ring. 
+  
