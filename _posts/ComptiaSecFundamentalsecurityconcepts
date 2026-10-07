@@ -1,0 +1,46 @@
+CompTIA Security+ 1.2: Fundamental Security Concepts 7/10/26
+
+Gap Analysis
+
+A plan the report for where we are and what we need to do to get to where we want to be. So its not the starting point or the destination its all the stuff in the middle.
+Its like a race not the start or the finish line its (the gap beween the starters gun and the finish line). 
+
+1. The target isn't "secure," it's a standard. "Secure" is too vague to measure. In a real gap analysis, the "where we want to be" is usually a framework 
+like NIST CSF or ISO 27001. You compare what you have against that list, one item at a time. It's like a building inspection: the inspector doesn't just say
+"looks a bit unsafe." They check your house against the building code, line by line, and list every item that doesn't pass.
+
+2. It covers people and processes, not just tech. A gap analysis also asks things like: Do staff get security training? Is there a written policy for who gets access? Is there an incident response plan? Often the biggest gaps are on paper, not in the server room.
+Done by external party outside the organisation as they are independent, non bias, 
+for confidenciality they may sign a NDA to keep it private. 
+This external third party would be competent they have the skills that the internal employees many not have. 
+
+Also worth knowing: companies can and do run internal gap analyses too. They're cheaper and good for regular check-ins.
+The external one tends to be the formal, "official" version.
+
+The output is a report and a plan. You don't just list the gaps. You prioritise them (by risk and cost) and turn them into a roadmap. In your home lab example, 
+that means deciding what to do first. A password manager is free and quick, so it would probably come before buying new server hardware.
+
+Zero Trust (PEP & PDP),
+
+The Policy Enforcement Point is the bouncer and the chain.
+The Policy Decision Point is the manager inside with the guest list.
+  You walk up to the door, which is the PEP.
+The PEP sends your request to the PDP.
+The PDP checks it against the policies and decides.
+The PDP sends the answer back.
+The PEP enforces it: you get in, or you don't. 
+
+Security+ exam likes:
+The PDP has two parts. The Policy Engine makes the actual yes/no call.
+The Policy Administrator passes that decision on, for example by telling the PEP to open a connection.
+Planes. The PDP sits in the control plane, where decisions are made. The PEP sits in the data plane, 
+where the traffic actually flows. A simple way to remember it: control plane = the manager's office, data plane = the door.
+
+My Teaching  The PEP is like the bouncer at a event has the clip board gets the info of the person requesting entry a journalist and sends to the 
+PDP and its the PDP that decideds yes journalist from tmz is allowed and tells the PEP to unclip the entrance chain
+
+Physical Security. 
+
+
+
+Honeypots.
