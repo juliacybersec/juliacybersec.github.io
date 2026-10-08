@@ -39,8 +39,34 @@ where the traffic actually flows. A simple way to remember it: control plane = t
 My Teaching  The PEP is like the bouncer at a event has the clip board gets the info of the person requesting entry a journalist and sends to the 
 PDP and its the PDP that decideds yes journalist from tmz is allowed and tells the PEP to unclip the entrance chain
 
-Physical Security. 
+Physical Security. I found this too easy 
+
+Disruption and Deception  9/10/26
+
+Honeypot = decoy system/service
+Honeynet = network of many honeypots used for threat intelegence
+Honeyfile = decoy file (the file itself is the trap)
+Honeytoken = decoy data element (a credential, record, or token embedded in a system) 
+
+The file is a realiable more so than an antivirus or a multi logon attempt. The reason is if someone is going into the file and you get an alert its almost always
+an attacker or an inquisitive employee poking around. Antivirus is know for false positives thats what SOC analyst call fake fatigue and the multi password attempt is
+usually just me trying to remember yaho26tmatehos7nex11 when i forget a password not in my password managerbsoftware.
+
+differentiator between honeyfile and honeytoken: a honeyfile is a tangible file that alerts when opened; a honeytoken is a piece of data (fake credential, record, API key) 
+that alerts when used or interacted with. 
+
+0 trust
+
+Change Management
+
+Public Key 1.4
+
+Encrypted Data 1.4 
+
+Key Exchange
+Encrypt Tech
+Obfusication
+Hashine and Digital Signatures
+Block chains 
 
 
-
-Honeypots.
