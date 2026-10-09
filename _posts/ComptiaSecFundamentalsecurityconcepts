@@ -57,13 +57,41 @@ that alerts when used or interacted with.
 
 Zero trust
 
-Verify explicitly	Every access request is authenticated and authorised using all available signals (identity, 
-device health, location, behaviour, time, etc.) — regardless of where the request comes from. 
-Use least privilege	Grant only the minimum access needed for the specific task, for only as long as it's needed.  A compromised account can only reach a narrow slice of the environment.
+The old model  - Traditional perimeter security works like a castle with a moat. The moat is your firewall, VPN, and external defences —
+everything that keeps outsiders out.  The castle is your internal network. The core assumption is simple: If you're inside the walls, you're trusted. 
+
+
+zero trust and change management. 
+Teach-back: My take - so a castle was built to keep those ur enemys out so the moat is like your vpn firewall ect. the probem is thats based on the assumption that everyone inside is trusted. this system doesn't account for the maid having access to the wine seller or the cook having access to the wardrobe. So zero trust is you trust no one not even your own employees as they can get access to other sections and if they are at
+home maybe their family can also get in by the over the shoulder or other ways so its always verify who they are and what they are accessing. this is basic answer
+
+Adaptive Identity (Control Plane) Goes beyond username and password 
+Continuous verification = continually checking past your logon and password so its checking your time, location, device and habit. If my job is to be in oulook sendin 
+email and meetings then one day im on facebook thats would be something that needs to verigfed. It also stops lateral movement to stop the main wandering around. 
+My Analogy - adaptive identity is more than i logged in with username and password it looks at the whole context. if i was in ballarat at 10 there is no way i could be in russia at 3 and the system needs to look at other things was it the same device or a different one. it continuing to look at the whole scope maybe my job is only checking emails but when i logged in in next time i started looking at websites like 
+facebook ect this is not my normal pattern it would be like the judge looking beyond my login details and all the other variables that are always checking
+
+Adaptive Technology - adjusts the level of risk
+
+low - same latptop you always use at ten am
+Medium - new device still in Aus it may ask for extra proff thats step up authentications
+High - so if i login from aus at ten am then russia at three pm
+
+The three core principles (NIST SP 800-207):
+Principle	What it means Verify explicitly	Every access request is authenticated and authorised using all available signals (identity, device health, location, behaviour, time, etc.) 
+— regardless of where the request comes from. Use least privilege	Grant only the minimum access needed for the specific task, for only as long as it's needed. 
+A compromised account can only reach a narrow slice of the environment.
 Assume breach	Design security as if attackers are already inside.  The goal shifts from "prevent every intrusion" to limiting blast radius and detecting/responding quickly.
+
+Microsegmentation - Granting privilige of least required. If a maid only has the access to the bed chamber.
+give extra access if needed” is called just-in-time (JIT) access if maid needs to polish the jewellry then access can be given
+for two hours a week. This stops the maid getting to the cellar and having a party drinking all the spirits and wine wearing all the jewelly all the time.
+
+Why it had to change The Castle was built to keep your enemys out but these days the mote of vpn, firewall is not enough. 
+Cloud services, remote/hybrid work, BYOD, APIs, and third-party integrations have dissolved the perimeter.There was no longer a inside outside of the castle. 
+
+
 Change Management
-
-
 Public Key 1.4
 
 Encrypted Data 1.4 
