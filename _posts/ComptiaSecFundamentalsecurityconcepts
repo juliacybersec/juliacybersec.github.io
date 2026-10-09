@@ -55,9 +55,14 @@ usually just me trying to remember yaho26tmatehos7nex11 when i forget a password
 differentiator between honeyfile and honeytoken: a honeyfile is a tangible file that alerts when opened; a honeytoken is a piece of data (fake credential, record, API key) 
 that alerts when used or interacted with. 
 
-0 trust
+Zero trust
 
+Verify explicitly	Every access request is authenticated and authorised using all available signals (identity, 
+device health, location, behaviour, time, etc.) — regardless of where the request comes from. 
+Use least privilege	Grant only the minimum access needed for the specific task, for only as long as it's needed.  A compromised account can only reach a narrow slice of the environment.
+Assume breach	Design security as if attackers are already inside.  The goal shifts from "prevent every intrusion" to limiting blast radius and detecting/responding quickly.
 Change Management
+
 
 Public Key 1.4
 
