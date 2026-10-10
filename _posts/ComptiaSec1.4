@@ -1,0 +1,137 @@
+Comptia Security Study notes 1.4
+
+Learn to Learn. This is the most important skill to have and why I understand how to learn. A lot of people have passed the comptia security exam by cramming and memory I dont feel
+I need to take the exam at this stage as I understand the material. Learning to learn is more important than any one cert.
+Each chapter I have tested myself so I understand it. The main problem I find when learning the way people do is they watch all the videos or read but it doesn't
+sink in this is why when it comes time to test they dont know the answers. Learning is all about retrieval of information and being able to explain it to someone else.
+I use analogys and my past work, life history and even chaos and stupid stories to help me understand. Note these are a combination of my own silly notes that I have 
+wrote for myself. I touch type fast so the faster I type the more mistakes! yikes
+
+Tech Change Management
+If a bouncer in ballarat nite club had a deny list it would have 120k names on it so a allow list would work better 
+Why an allow list is safer (the real reason). A deny list only lists the known bad stuff, which is why it’s dangerous:
+anything new gets straight through. A brand new piece of malware isn’t on anyone’s banned list yet, so the deny-list
+bouncer waves it in. The allow-list bouncer doesn’t care whether you’re a known troublemaker. If you’re not on the guest list,
+you’re not coming in, full stop. That’s why allow lists stop zero-day malware (new threats
+nobody has seen yet) and deny lists don’t. The trade-off is that allow lists are more work to manage, 
+which is why IT staff who understand the risks surrounding security and researchers who need to use so many sites and resources to get their often get looser rules,
+
+Maintenance windows: Friday night or Saturday at ANZ, the quiet times when a change affects the fewest people.
+Staged (phased) rollout: updating a few machines at a time on a 24/7 system instead of everything at once. If something breaks, only a small part is affected.
+Redundancy: keeping spare machines so work never stops. In big systems this becomes high availability, where a backup server takes over automatically while the main one is restarted.
+Standard image (golden image): every ANZ computer built from the same base image, so any machine can replace any other.
+Access tied to the user, not the device: that’s very zero trust,
+Mid-task: if the payroll machine restarted halfway through a pay run, you could end up with half-written data, so some staff paid twice and some not at all. That’s called data corruption.
+Service restart vs system restart: sometimes you only need to restart one program (a service), not the whole computer. Less disruption, but you need to know which one.
+Legacy apps: old systems may not come back cleanly after a restart this is what happened at MIA and i expected this but I had no choice 
+
+
+Public Key 1.4
+symetric is much faster but both symetric and asymetric are used together hybrid. 
+
+Bob has Sally's public key (which, yes, everyone has access to).
+Bob encrypts his plaintext with Sally's public key.
+The ciphertext is sent to Sally.
+Sally decrypts with her private key.
+Sally reads the plaintext.
+
+public encrypts, private decrypts" for confidentiality.
+how digital signatures work The reverse — "private signs, public verifies" 
+So Bob actually does two things:
+
+Signs the message with his own private key → creates a digital signature that proves it came from him and can't be denied later (non-repudiation). 
+Encrypts the message with Sally's public key → guarantees only she can read it. 
+Memory trick for the exam:
+
+Encrypt → recipient's public key (you're locking it for them)S
+Sign → your own private key (you're stamping it as you) 
+
+Secrecy: encrypt with the recipient’s public key (Sally’s padlock).
+Signature: sign with your own private key (Bob’s signet ring).
+
+Sally then does the reverse: her private key unlocks the message, and Bob’s public key checks his signature.
+
+One detail you’ll meet soon: in practice, Bob doesn’t sign the whole message. He signs a hash of it, a short fingerprint of the message. 
+If even one letter changes, the fingerprint changes completely, so the signature no longer matches. Hashing is coming up next in 1.4, 
+and it’s what makes integrity actually work.
+
+Encrypted Data 1.4 
+
+Disk and database encryption. BitLocker (Windows) and FileVault (Mac) are both full disk encryption: 
+if a laptop is stolen, the thief gets scrambled data. For databases, you’re right that you can encrypt just the important parts. Messer’s terms:
+
+Transparent encryption: the whole database is encrypted.
+Record-level (or column-level) encryption: only sensitive fields, like a credit card or Medicare number column, are encrypted. 
+The rest stays readable and fast to search.
+
+ modern processors have AES built into the hardware, so encryption is much less of a slowdown than it used to be. 
+The bigger reason not to encrypt everything is often searchability and complexity, not time.
+
+DES vs AES. DES uses 64-bit blocks, but its key is effectively only 56 bits, which a modern computer can brute force quickly. 
+That’s why it’s been retired. AES works on 128-bit blocks with keys of 128, 192 or 256 bits. 
+You’re right that as computers get faster, key lengths go up. That’s exactly what happened with DES. 
+Every extra bit doubles the number of possible keys, so 256-bit AES isn’t just twice as strong as 128-bit; it’s astronomically stronger.
+
+The lock analogy. This is a real principle: Kerckhoffs’s principle. 
+The algorithm is public and the key is the secret. And your lock-picking point is a good one. In crypto, “picking the lock” is either:
+
+Brute force: trying every possible key, which is why key length matters.
+Cryptanalysis: finding a flaw in the algorithm itself, like finding a weakness in the lock design.
+
+A good algorithm with a long key means picking it would take longer than the age of the universe.
+Encryption and decription systems need to be the same as noted with DES and AES you have to decide what you are going to use as compatable encription.
+Also we use to use 56 now we are at 128 key incryption and as our processors and things change it may go up and stretch to 256. 
+In Messers video he talks about a database with employees details including socail sec number. If we wanted we could encrypt everything but when we want to 
+retrieve that data it would need to be decripted. This means more processing and possibly effect retrieval.
+Moral of Encryptions is what is encrypted has to be decrypted so they need to be compatable.
+
+security through obscurity = I worked at ANZ at South Yarra and from the outside it was the oldest, ugliest building in the whole street you would never know
+the building was the main tech building with the server room on the top floor as there is no signs and none of us wore any uniform or identifing features.
+This is also known as the grey man if you want to not be seen dress in plain non identifing brands or colors. 
+
+Public Key Infrastructure 1.4 
+
+Key exchange without sending the key. This is Diffie-Hellman (often shortened to DH). The classic analogy is mixing paint:
+
+Bob and Sally publicly agree on a starting colour, say yellow. Anyone can see this.
+Each picks a secret colour they never share: Bob picks red, Sally picks blue.
+Each mixes their secret colour with yellow and sends the result across. Anyone can see these mixes too.
+Bob adds his red to Sally’s mix; Sally adds her blue to Bob’s mix. They both end up with the same final colour (yellow + red + blue).
+
+An eavesdropper sees yellow and both mixes, but can’t “unmix” paint to work out the secret colours. So Bob and Sally now share a session key that never
+travelled across the network.
+
+2. Throwaway keys. This is perfect forward secrecy (PFS). You explained it well: each session uses a fresh temporary key (called an ephemeral key) that’s thrown 
+away afterwards. If a server’s long-term private key is stolen next year, an attacker who recorded old traffic still can’t decrypt it, because those session keys
+no longer exist anywhere.
+
+Analogy: it’s like using a new combination padlock for every delivery and destroying it afterwards. Stealing the master key to the warehouse doesn’t open last year
+’s boxes.
+
+ Without perfect forward secrecy, why would an attacker bother recording encrypted traffic they can’t read yet?
+So attackers can record and keep these recordings easily because no one is watching! The reason no one is watching or keeping track is because they all think
+that so what if the attackers have the data they cant encrypt or see it so its not big deal. This is underestimating what will happen in the future just because they
+cant see it today doesn't mean they cant see it tomorrow. My question was what changes between today and tomorrow as it wasn't coincedence or a mistake it was 
+these below with the server's private key gets out so the keys are now available for anyone that recorded the data a while back. This is why you can never underestimate
+patience especially when its easy and undetectable why not record this if you can thats if you were an attacker knowing that you could have full access in the future.
+
+These are the reasons that attackers wait for
+
+The server’s private key gets stolen. This is the big one. Without perfect forward secrecy, the session keys were protected by the server’s long-term private key. So that one key is like a master key to every recorded box. Steal it, through a breach, an insider, a misconfigured backup, or a software bug, and every recording ever made opens at once. A real example: the 2014 Heartbleed bug let attackers pull private keys straight out of servers’ memory. Anyone holding years of recorded traffic from those servers could suddenly read it all.
+
+2. The algorithm gets weaker over time. Remember DES? Uncrackable when it came out, brute-forceable later as computers got faster. Traffic recorded under a weak algorithm today might be crackable in ten years.
+
+3. Quantum computers. This is why harvest-now-decrypt-later is a hot topic right now. A powerful enough quantum computer could break today’s asymmetric algorithms like RSA and Diffie-Hellman. Governments are believed to be stockpiling encrypted traffic for that day, which is why there’s a big push toward post-quantum cryptography: new algorithms designed to survive quantum attacks.
+
+Where PFS fits: with perfect forward secrecy, way 1 stops working. There’s no master key, because each session’s key was thrown away. Stealing the server’s key gets you nothing from the past. (Ways 2 and 3 are why algorithms and key lengths keep getting upgraded.)
+
+So the attacker’s strategy is patience: record now, cheaply and quietly, and wait for one of those doors to open.
+Exam framing: The question will typically be phrased as "Which attack is mitigated by forward secrecy?" → Harvest now, decrypt later
+(also called retroactive decryption or selective disclosure). This wording is my hardest part everything else seems easy and I understand it all but the naming 
+
+Key Exchange 1.4
+
+Encrypt Tech
+Obfusication
+Hashine and Digital Signatures
+Block chains 
