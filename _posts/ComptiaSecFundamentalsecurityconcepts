@@ -91,15 +91,31 @@ Why it had to change The Castle was built to keep your enemys out but these days
 Cloud services, remote/hybrid work, BYOD, APIs, and third-party integrations have dissolved the perimeter.There was no longer a inside outside of the castle. 
 
 
-Change Management
-Public Key 1.4
+Change Management A Lesson I Learned the Hard Way
+Early in my career I worked as a field technician for a medical imaging company, travelling to clinics across Victoria and working
+alongside doctors and specialists. One of my jobs was rolling out an upgraded operating system to every computer at every site.
+Most of the upgrades went smoothly, until I reached a clinic with a very old machine in the back room. It turned out that this legacy computer ran the payroll 
+for the whole clinic, using an application nobody could name and nobody had documented.
 
-Encrypted Data 1.4 
+I was worried the hardware couldn't handle the new OS and told head office so, but I was instructed to upgrade every machine regardless. I worked with the staff
+to back up the data they said was important and ran the upgrade during a quiet overnight window.
+The machine never came back up. The data was saved, but without knowing what the payroll application was, there was no way to restore it.
 
-Key Exchange
-Encrypt Tech
-Obfusication
-Hashine and Digital Signatures
-Block chains 
+Looking back, this was a textbook change management failure:
+
+- **No impact analysis**: nobody had identified which machines were business-critical. A payroll system should have been at the top of the list.
+- **No stakeholder input**: the clinic staff who relied on the machine weren't consulted before the change was scheduled.
+- **Unknown dependencies**: the legacy application wasn't documented anywhere.
+- **No testing**: the upgrade wasn't trialled on similar hardware first, and no full test was required afterwards.
+- **No backout plan**: there was no agreed way to undo the change if it failed.
+- **No formal approval or ownership**: the decision wasn't reviewed by anyone with the authority to say "not this machine."
+
+My own lesson was documentation. I raised my concerns verbally, but I never put them in writing. If I had emailed my manager and head office setting out the risks,
+my backup and the lack of a rollback plan, the decision and its risks would have been on record. Today I document everything, which is a big part of why this blog
+exists. Looking back It wouldn't have made any difference I was paid minimum wage and using my own car to travel thousands of km a week. I left at 5am and was home at 7 to 9pm
+I gave it my all but like I have for every role but they didn't see it that way. I realized why they hired me in such a short time. 
+It was a contract-style field role with a lot of travel and unpaid vehicle costs, and it wasn’t sustainable. 
+
+
 
 
