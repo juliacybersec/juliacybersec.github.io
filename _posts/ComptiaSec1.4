@@ -129,6 +129,7 @@ Exam framing: The question will typically be phrased as "Which attack is mitigat
 (also called retroactive decryption or selective disclosure). This wording is my hardest part everything else seems easy and I understand it all but the naming 
 
 Key Exchange 1.4
+
 Hybrid encryption: Why don’t we just use asymmetric encryption for everything? What does each type do in a hybrid setup?
 hybrid encryption. The reason we don't just use asymmetric encryption for everything. Well, I know that most encryption is hybrid, so a combination of asymmetric and symmetric. symmetric AES is fast, but I think there's an issue where they both need the same key and you can't just give it over. So we use it combined with asymmetric. asymmetric is slower than symmetric. So if you're encrypting, say, a file, um, maybe like um, a multi, like a gigabyte file, or um, it would be sort of unusable. how do I explain? Maybe it would be like trying to use a bank vault to encrypt one one word. It'll be like so secure, but it would be like using an a van for each item of my home when I move house. It would take forever I have a lot of stuff and im not a hoarder. 
 
@@ -165,10 +166,25 @@ Security Enclave - protected place for secrets. May look like a seperate cpu but
 =real time memory  encryption 
 =does AES encryption on your system 
 
-Obfuscation 1.4 upto here 
+Obfuscation 1.4  
 
- Obfusication is hiding data in plain sight and if you know how its hidden you can work out how to get to it
+ Obfusication is hiding data in plain sight and if you know how its hidden you can work out how to Steganography is greek for concealed writing so security through obscurity so you can hide data in an image. Its the covertext inside an image. can hide it insice tcp packets and if you know how its sent you can find it. you can put dots on a peice of pater like invisible watermarks. If you know the format you can track back to the printer that printed the page. so you can store in audio so inside a music or video track. 
 
+ Tokenization  is replace sensitive data and replace with a non sensitive place holder. This is how creadit card processes work, its a temp token during payments if an attacker gets the card numbers it cant use them later on.
+ Its not encryption or hashing.
+
+So you have your phone and its sent that token to the REMOTE TOKEN SERVICE SERVER then it goes to the MERCHANT PAY PROCESSING SERVER and back to the phone.
+ 1.  Register a credit card on phone 
+ 2. card is registered with the token service server to register
+ 3. Token service server provides a token instead The receipt may show the number but it doesn't match
+ 4. Phone is used at shop during checkout using NFC
+ 5. Pay with the card dumber 
+ 6. the token goes to the MERCHANT PAYEMENT for validating the card number.
+
+Data Masking = The data is still intact and stored the control the view based on permissions.
+ On receipt the card number has only the 4 last card nunber this prevents people from getting the whole card number therfore keeps it safe.  The person from the bank may only see the last four numbers so not even they know the whole credit card number. 
+ 
+ 
  CONTINUE VIDEO FROM HERE 
 
 Encrypting for someone → use their public key (only their private key decrypts). 
@@ -179,15 +195,50 @@ CompTIA trick I need to keep in mind.  a digital signature does not provide conf
 
 Hashine and Digital Signatures
 
+Hashes can be a digital signature a popular has example is SHA256-256 bits / 64 hex characters/
+
+My name is professor Messer -SHA256 has: 19da9a2e.......
+My name is Professor Messer! -SHA256 has 19da ..then very different cos of the !
+
+Hash should be unique and never create the same hash if so its a collision 
+MD5 has a collision problem so dont use MD5 for anything important use a different hash type like SHA256
+
+Practical Hashing - if you download a file 
+
+Check a file is the right one by compare and verify the hashes
+So you can make sure the downloaded file is the same from the website by comparing the downloaded file hash to the posted hash balue if they are the same then
+Hashing can be used to store password instead of storing the password we store a salted hash 
+Add salt - random data added to a password when hashing every user 
+Rainbow table is a reverse non salted hash but  wont work with salted hashes Rainbow slows down brute force.
+So if wehave dragon and the hash
+then we have dragon and add an extra leter it then is the same password but creates a different hash
+
+Digital Signature similar to any document and give integrity and proves the source and make sure the signature isn't fake thats non repudiation. sign with the private key  the verify with the public key any change means its dodgy
+
+Creating a digital signature 
+So Alice sends plain texxt and uses a hashing algorithm that has of the plain text now in a hash that hash is then encrypted using Alices private Key so this creates a Digital Signature and then the text is plaintext and Digital Signature. The digital signature is included at the bottom or as an attachment to the email. 
+
+Now we can verify the message from Alice is really real and sent from Alice so his going to load the message from the email client and it will check the digital signature either say its verified or not verified and recognise but it actually looking for the digital signature and check using Alices's public key. Remember the keys are mathematically related so you encrypt with one key and can decrypt with the other. can now do a hash and if they match then it really is from alice. 
+
 If you sign a message, which key do you sign it with, yours or the receiver’s, public or private? Which key does the receiver use to check it? And what does a valid signature prove?
 
 Encryption: sender uses the receiver’s public key, and only the receiver’s private key can decrypt.
 Signing: you sign with your own private key, and anyone can verify with your public key.
 
-Encrypt Tech done video done but check
-Obfusication done video done but check
-Hashine and Digital Signatures
+what does a valid signature prove? Three things:
+
+Authenticity. The message really came from the person who owns that private key.
+Integrity. The message hasn’t been changed since it was signed.
+Non-repudiation. The sender can’t later deny sending it, because only their private key could have produced that signature.
+Remember for exam with this 
+Sign with my private key → anyone can verify it’s me.
+Encrypt with your public key → only you can read it.
+
+Encrypting for someone → use their public key (only their private key decrypts). 
+Signing for someone → use your private key (only your public key verifies). 
+The two operations are mirror images. One protects confidentiality (only the intended recipient can read), the other protects authenticity + integrity + non-repudiation (anyone can verify, but only the signer could have created it).
+
+One thing CompTIA loves to trip you on: a digital signature does not provide confidentiality.  The message can be sent in the clear and still be signed — anyone can read it, but they can't forge or alter it without detection.
 
 
-
-Block chains 
+Block chains 1.4
