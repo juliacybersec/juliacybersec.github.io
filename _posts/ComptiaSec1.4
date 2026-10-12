@@ -43,7 +43,7 @@ Signs the message with his own private key → creates a digital signature that 
 Encrypts the message with Sally's public key → guarantees only she can read it. 
 Memory trick for the exam:
 
-Encrypt → recipient's public key (you're locking it for them)S
+Encrypt → recipient's public key (you're locking it for them)
 Sign → your own private key (you're stamping it as you) 
 
 Secrecy: encrypt with the recipient’s public key (Sally’s padlock).
@@ -51,14 +51,14 @@ Signature: sign with your own private key (Bob’s signet ring).
 
 Sally then does the reverse: her private key unlocks the message, and Bob’s public key checks his signature.
 
-One detail you’ll meet soon: in practice, Bob doesn’t sign the whole message. He signs a hash of it, a short fingerprint of the message. 
-If even one letter changes, the fingerprint changes completely, so the signature no longer matches. Hashing is coming up next in 1.4, 
-and it’s what makes integrity actually work.
+ in practice, Bob doesn’t sign the whole message. He signs a hash of it, a short fingerprint of the message. 
+If even one letter changes, the fingerprint changes completely, so the signature no longer matches. Hashing is 
+ what makes integrity actually work.
 
 Encrypted Data 1.4 
 
 Disk and database encryption. BitLocker (Windows) and FileVault (Mac) are both full disk encryption: 
-if a laptop is stolen, the thief gets scrambled data. For databases, you’re right that you can encrypt just the important parts. Messer’s terms:
+if a laptop is stolen, the thief gets scrambled data. For databases, you’re right that you dont have to encrpt all data in the database you can encrypt just the important parts. 
 
 Transparent encryption: the whole database is encrypted.
 Record-level (or column-level) encryption: only sensitive fields, like a credit card or Medicare number column, are encrypted. 
@@ -101,12 +101,11 @@ Bob adds his red to Sally’s mix; Sally adds her blue to Bob’s mix. They both
 An eavesdropper sees yellow and both mixes, but can’t “unmix” paint to work out the secret colours. So Bob and Sally now share a session key that never
 travelled across the network.
 
-2. Throwaway keys. This is perfect forward secrecy (PFS). You explained it well: each session uses a fresh temporary key (called an ephemeral key) that’s thrown 
+ Throwaway keys. This is perfect forward secrecy (PFS).  each session uses a fresh temporary key (called an ephemeral key) that’s thrown 
 away afterwards. If a server’s long-term private key is stolen next year, an attacker who recorded old traffic still can’t decrypt it, because those session keys
 no longer exist anywhere.
 
-Analogy: it’s like using a new combination padlock for every delivery and destroying it afterwards. Stealing the master key to the warehouse doesn’t open last year
-’s boxes.
+Analogy: it’s like using a new combination padlock for every delivery and destroying it afterwards. Stealing the master key to the amazon warehouse doesn’t open all last year’s boxes.
 
  Without perfect forward secrecy, why would an attacker bother recording encrypted traffic they can’t read yet?
 So attackers can record and keep these recordings easily because no one is watching! The reason no one is watching or keeping track is because they all think
@@ -130,8 +129,65 @@ Exam framing: The question will typically be phrased as "Which attack is mitigat
 (also called retroactive decryption or selective disclosure). This wording is my hardest part everything else seems easy and I understand it all but the naming 
 
 Key Exchange 1.4
+Hybrid encryption: Why don’t we just use asymmetric encryption for everything? What does each type do in a hybrid setup?
+hybrid encryption. The reason we don't just use asymmetric encryption for everything. Well, I know that most encryption is hybrid, so a combination of asymmetric and symmetric. symmetric AES is fast, but I think there's an issue where they both need the same key and you can't just give it over. So we use it combined with asymmetric. asymmetric is slower than symmetric. So if you're encrypting, say, a file, um, maybe like um, a multi, like a gigabyte file, or um, it would be sort of unusable. how do I explain? Maybe it would be like trying to use a bank vault to encrypt one one word. It'll be like so secure, but it would be like using an a van for each item of my home when I move house. It would take forever I have a lot of stuff and im not a hoarder. 
 
-Encrypt Tech
-Obfusication
+Asymmetric algorithms like RSA can only encrypt a small amount of data at a time, smaller than the key itself. So to encrypt a big file with RSA alone, you really would have to chop it into tiny pieces and encrypt each one separately. That’s your “one van per item”: slow, and “costly” in computing terms (CPU time, battery, server load).
+
+So the full picture with my analogy: Move house in one quick move using hybrid. 
+
+Asymmetric only: one van per item. It works, but it’s absurdly slow and expensive. If I have a lot of items it would be millions of van trips time consuming, processor consuming or in this case mechanically that trucks doing a lot of clicks. imagine the petrol bill yikes. 
+Hybrid: you use a secure courier once to deliver the key to a big removal truck (asymmetric sends the session key), then load everything into the truck and move it in one go (symmetric/AES encrypts the data).
+
+What each type does in the hybrid setup:
+
+Step	Who/What	Role
+1. Handshake	Asymmetric (or key-exchange like ECDHE)	Securely agrees on a fresh symmetric session key between the two parts.  This is the part that's slow, and it only encrypts a tiny amount of data the key itself.
+ only does the first part the key its slow 
+2. Data transfer	Symmetric (AES)	Encrypts and decrypts all the actual traffic using that session key.  Fast, efficient, handles the bulk.
+  symetric does all the rest quick.=
+  
+Basic break down is: asymmetric is the lock on the key; symmetric is the key that opens the door to everything else. 
+
+FYI a little extra I may need to know 
+In TLS (HTTPS), SSH, IPsec, PGP — all of them work this way. The asymmetric part is a one-time (or per-session) cost; after that, everything rides on the fast symmetric cipher. If the session key is ephemeral (generated fresh each session and discarded after), you also get forward secrecy — even if the server's long-term private key is later compromised, past sessions remain unreadable. 
+
+Encryption Technologies 1.4 
+
+Trusted Platform Module - is a cryptographic processor it provides encryption for a single device
+What is HSM Hardware Security Module? a box that holds all the crpto keys for thousands of devices used in large environments and always available redundant power. Say you had a heap of web servers well you would store all the cripto keys in this one box and it can encrypt and decrypt. think of of a hdd with all your crypto keys on it that keeps it all secure, like no password breakins ect. 
+
+Key Management System - would be where both the TPM and HSM are centralised management can be software from a third provider for SSL/TLS or even SSH login thats for remote login to your terminal like when I login to kali linux using SSH. If you dont know SSH you need to learn you kali linux. 
+
+Security Enclave - protected place for secrets. May look like a seperate cpu but its job it to keep our data secure. Attackers are constantly trying to get our data so its a game for my neighbors dog and mutley seeing who can dig under the fence first. 
+=own boot rom
+=random number generator 
+=real time memory  encryption 
+=does AES encryption on your system 
+
+Obfuscation 1.4 upto here 
+
+ Obfusication is hiding data in plain sight and if you know how its hidden you can work out how to get to it
+
+ CONTINUE VIDEO FROM HERE 
+
+Encrypting for someone → use their public key (only their private key decrypts). 
+Signing for someone → use your private key (only your public key verifies). 
+The two operations are mirror images. One protects confidentiality (only the intended recipient can read), the other protects authenticity + integrity + non-repudiation (anyone can verify, but only the signer could have created it).
+
+CompTIA trick I need to keep in mind.  a digital signature does not provide confidentiality.  The message can be sent in the clear and still be signed — anyone can read it, but they can't forge or alter it without it being detected.
+
 Hashine and Digital Signatures
+
+If you sign a message, which key do you sign it with, yours or the receiver’s, public or private? Which key does the receiver use to check it? And what does a valid signature prove?
+
+Encryption: sender uses the receiver’s public key, and only the receiver’s private key can decrypt.
+Signing: you sign with your own private key, and anyone can verify with your public key.
+
+Encrypt Tech done video done but check
+Obfusication done video done but check
+Hashine and Digital Signatures
+
+
+
 Block chains 
