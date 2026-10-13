@@ -206,14 +206,14 @@ MD5 has a collision problem so dont use MD5 for anything important use a differe
 Practical Hashing - if you download a file 
 
 Check a file is the right one by compare and verify the hashes
-So you can make sure the downloaded file is the same from the website by comparing the downloaded file hash to the posted hash balue if they are the same then
+So you can make sure the downloaded file is the same from the website by comparing the downloaded file hash to the posted hash value if they are the same then
 Hashing can be used to store password instead of storing the password we store a salted hash 
 Add salt - random data added to a password when hashing every user 
 Rainbow table is a reverse non salted hash but  wont work with salted hashes Rainbow slows down brute force.
 So if wehave dragon and the hash
 then we have dragon and add an extra leter it then is the same password but creates a different hash
 
-Digital Signature similar to any document and give integrity and proves the source and make sure the signature isn't fake thats non repudiation. sign with the private key  the verify with the public key any change means its dodgy
+Digital Signature - similar to any document and give integrity and proves the source and make sure the signature isn't fake thats non repudiation. sign with the private key  then verify with the public key any change means its dodgy
 
 Creating a digital signature 
 So Alice sends plain texxt and uses a hashing algorithm that has of the plain text now in a hash that hash is then encrypted using Alices private Key so this creates a Digital Signature and then the text is plaintext and Digital Signature. The digital signature is included at the bottom or as an attachment to the email. 
@@ -222,14 +222,15 @@ Now we can verify the message from Alice is really real and sent from Alice so h
 
 If you sign a message, which key do you sign it with, yours or the receiver’s, public or private? Which key does the receiver use to check it? And what does a valid signature prove?
 
-Encryption: sender uses the receiver’s public key, and only the receiver’s private key can decrypt.
+Encryption: to verify sender uses the receiver’s public key
 Signing: you sign with your own private key, and anyone can verify with your public key.
 
 what does a valid signature prove? Three things:
 
-Authenticity. The message really came from the person who owns that private key.
-Integrity. The message hasn’t been changed since it was signed.
-Non-repudiation. The sender can’t later deny sending it, because only their private key could have produced that signature.
+Authenticity.-  The message really came from the person who owns that private key.
+Integrity. - The message hasn’t been changed since it was signed.
+Non-repudiation. - The sender can’t later deny sending it, because only their private key could have produced that signature.
+
 Remember for exam with this 
 Sign with my private key → anyone can verify it’s me.
 Encrypt with your public key → only you can read it.
@@ -242,3 +243,53 @@ One thing CompTIA loves to trip you on: a digital signature does not provide con
 
 
 Block chains 1.4
+
+if you were a bank with a single central database, what would an attacker need to do to change a record? And how does that compare with blockchain?
+in a central database to change a record you would only need to break in to that one database like on a holiday when no one is looking on a block chain you would have to get access to every computer that has the block chain records and you would have to be quick about it before some one noticed it could be 1 milion computers and so you would need a long holiday with no one looking
+
+You don’t need every computer, just the majority. If an attacker controls more than half the network’s computing power, they can push their version of the ledger as the “truth”. This is called a 51% attack. For large blockchains like Bitcoin it’s wildly expensive, which is the protection. Smaller blockchains with fewer participants have actually been hit by this, so size matters.
+Changing one record also means redoing every block after it. Change letter 3 and you have to recalculate the stamps on 4, 5, 6 and onwards, faster than the honest network keeps adding new ones. With proof of work, each stamp is deliberately slow to make, so you’re racing a million people who have a head start.
+
+ central-database comparison is the key exam point: a central database has a single point of failure; blockchain removes it by spreading trust across the network.
+
+
+In your own words, explain to me:
+
+Why changing one old transaction in a blockchain would be noticed.
+Which part of the CIA triad blockchain mainly protects, and which part it doesn’t.
+
+CLEAN UP THIS ANSWER 
+1, its like a chain of letters with a stamp that is unique if one tiny little thing is changed on the  stamp it would change the stamp completely so if letter 3 is changed it would effect letter 4 letter 5 and so on im thinking its like old xmas lights when someone knocks it and you have to check every globe is connected right otherwise you know someone tampered it  and you cant change letter 1 it wont let you being immutable  2, the blockchain protects the integrity so data in the letters cant be deleted, modified .. it doesn't protect confidenciality if you mean that everyone has access to every letter as its public every one can see the letters by design. Availability is protected the letters are public designed that way  
+Technically, someone could edit their own copy of letter 3. What stops them is that thousands of other people hold the original copy. Their forged version won’t match the majority, so the network rejects it. Immutability comes from the hashes plus the distributed copies working together. That second half was the piece missing from my  answer.
+
+
+The stamp = the hash. Yes, and the “one tiny change alters the stamp completely” part  That property even has a name: the avalanche effect.
+
+n short: blockchain is essentially an integrity machine with good availability, but it's deliberately not a confidentiality system — the data is public unless you add something on top.
+
+Certificates 1.4 - 
+
+Digital sinature adds trus and PKI uses Certificate Authorities for added trust. Certificate creatio can be built into the OS part of Win Domain Services or 3rd party
+
+If you're in a web browser connected securely click the little lock in address bar to see the details of the certificate associated with that web server.
+A Digital Certificate standard is called a X.509(standardized format) details inc serial no, version, signature algorithm, issuer, cert holder name, public key, entensions ect. When you go to a website for the first tine you can see the digital signature by a cert authority. 
+The CA is built into the internals of the browser looking at the list theres hundreds of cert authorities trusted by your browser.
+
+Certificate Signing Request 5.57 in to Certificates CompTIA sec 1.4 
+
+Need a good way to trust sonething you dont know. How to trust an unknown entity? you trust the CA so you trust the website
+
+A certificat authority is
+Note to find a better laptop (resource hungry practice for Active Directory) Lookup creating certificate authority in windows
+
+
+
+
+
+
+
+
+
+
+
+
