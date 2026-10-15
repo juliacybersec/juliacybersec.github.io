@@ -250,10 +250,24 @@ Now we can verify the message from Alice is really real and sent from Alice so h
 
 If you sign a message, which key do you sign it with, yours or the receiver’s, public or private? Which key does the receiver use to check it? And what does a valid signature prove?
 
+as a driver’s licence for a public key:
+
+It says: “This public key belongs to Sally.”
+It’s signed by a trusted authority, a Certificate Authority (CA), the way VicRoads backs your licence.
+You trust it because you trust the CA, not because Sally says it’s her key.
+
+Digital signature: proves the message came from whoever owns this key.
+Certificate: proves who actually owns this key.
 Encryption: to verify sender uses the receiver’s public key
 Signing: you sign with your own private key, and anyone can verify with your public key.
 
-what does a valid signature prove? Three things:
+what does a valid signature prove? Three things:   
+  Integrity the hashs need to match so it checks its the same and no changes
+  Non repudiation - It was sent from that person they cant say it wasn't them
+  Authentication - Only the private key could have made that signature as its checked by the public key (every one can see
+  
+Certificates
+Self-signed certificate = “I’m a doctor, trust me.” Anyone can print their own degree at home. The value comes from a trusted third party vouching for you: the university for the doctor, the CA for the website. That’s exactly why browsers throw a big warning on self-signed certificates.
 
 Authenticity.-  The message really came from the person who owns that private key.
 Integrity. - The message hasn’t been changed since it was signed.
