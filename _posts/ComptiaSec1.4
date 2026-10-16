@@ -281,9 +281,55 @@ Encrypting for someone → use their public key (only their private key decrypts
 Signing for someone → use your private key (only your public key verifies). 
 The two operations are mirror images. One protects confidentiality (only the intended recipient can read), the other protects authenticity + integrity + non-repudiation (anyone can verify, but only the signer could have created it).
 
-One thing CompTIA loves to trip you on: a digital signature does not provide confidentiality.  The message can be sent in the clear and still be signed — anyone can read it, but they can't forge or alter it without detection.
+CA CERTIFICATES TRUST CRL AND OCSP
+the CA never touches the website’s private key. Nobody else should ever see a private key, not even the CA.
 
+What  happens:
 
+The website makes its own key pair and keeps the private key to itself.
+It sends the CA its public key plus “I am example.com” (this request is called a CSR, Certificate Signing Request).
+The CA checks they really own example.com, then signs the certificate with the CA’s own private key.
+Your browser verifies that signature using the CA’s public key, which is already built into your browser or operating system (the root store).
+a digital signature does not provide confidentiality.  The message can be sent in the clear and still be signed — anyone can read it, but they can't forge or alter it without detection.
+
+A: the downloadable list = CRL (Certificate Revocation List)
+
+The CA publishes a list of revoked certificate serial numbers, and your browser downloads it.
+Cons: the list gets huge, and it’s only as fresh as the last time it was published. That’s your “maybe AHPRA is still processing it” worry.
+
+B: ring AHPRA = OCSP (Online Certificate Status Protocol)
+
+Your browser asks the CA’s server, “is certificate #12345 still good?” and gets back good, revoked or unknown.
+Pros: one small, current answer instead of a giant list.
+Cons: exactly what you said, millions of checks hammering the CA’s server. There’s also a sneaky issue the CA now sees every site you visit, which is a privacy problem.
+
+Certificates and revocation: the doctor analogy
+
+When I go to a new doctor, I see their degree on the wall, say a Doctorate of Medicine from Stanford. I’ve never met this doctor, but I trust the degree because I trust Stanford. A digital certificate works the same way. It says “this public key belongs to example.com,” and it’s signed by a Certificate Authority (CA) that my browser already trusts. My browser ships with a built-in list of trusted CAs (the root store), just as everyone already knows Stanford.
+
+The website never hands its private key to the CA. It sends a Certificate Signing Request (CSR) containing its public key and its name. The CA checks the site really owns that domain, then signs the certificate with the CA’s own private key. My browser verifies that signature using the CA’s public key. A self-signed certificate is like a doctor who printed their own degree: it might be genuine, but nobody independent has vouched for it.
+
+A real degree doesn’t guarantee the doctor is still allowed to practise, though. As a nurse I had to be registered with AHPRA, and a doctor can have a genuine Stanford degree but be deregistered. Certificates have the same problem: if a website’s private key is stolen, the certificate is still validly signed but can no longer be trusted. The CA can revoke it, and there are three ways to check:
+
+CRL (Certificate Revocation List): like downloading AHPRA’s full list of deregistered doctors. It works, but the list gets huge and is only as current as its last update.
+OCSP (Online Certificate Status Protocol): like ringing AHPRA every time to ask “is this doctor still OK?” You get a current answer, but millions of calls overload the CA, and the CA learns every site you visit.
+OCSP stapling: the doctor rings AHPRA each morning and pins a signed, dated note next to the degree saying “registered as of today.” Patients just read the note. The website fetches the CA-signed response and staples it to its certificate. It’s fresh, it means one request instead of millions, and it keeps my browsing private. It has to be signed by the CA, not the website, otherwise any dodgy site could vouch for itself, like a doctor writing their own registration note.
+EXAM TIP  A CA-signed note expires quickly, often within days, so the website has to keep going back to the CA. Once the CA revokes the certificate, the site can’t get a fresh “good” note any more.
+
+ENTER DIAGARAM HERE SHOWING THE CA REQUEST
+
+Master house key versus 
+Wildcard certificates: the master key problem
+
+At home I have a separate key for my front door, my bedroom and my study. One master key would be more convenient, since there’d be no fumbling for the right key, but if I lent it to someone to get through the front door, they could also walk into my bedroom and study. With separate keys, someone who gets through the front door still can’t get any further.
+
+A wildcard certificate (*.example.com) is that master key. One certificate and one private key cover every subdomain, which is cheaper and quicker to manage. But if the private key is stolen from just one server, every subdomain is exposed, and the company has to revoke the certificate and replace it everywhere at once. Individual certificates are like separate keys: there’s more to manage and renew, but a compromise stays behind one door. In security terms, a wildcard has a bigger blast radius. It’s a trade-off between convenience and security.
+blast radius: how much damage one compromise can do. A wildcard cert has a big blast radius. There’s also a second sting. When that one key is stolen, the company has to revoke the wildcard and replace the certificate on all 50 servers at once, not just the one that was breached. It’s like changing every lock in the house because you lost one key.
+
+So the trade-off you named, convenience versus security, is the whole story:
+
+Wildcard: cheaper and easier to manage, but a bigger blast radius.
+Individual certs: more admin, but a compromise is contained.
 Block Chains 1.4
 
 if you were a bank with a single central database, what would an attacker need to do to change a record? And how does that compare with blockchain?
@@ -323,6 +369,8 @@ Need a good way to trust sonething you dont know. How to trust an unknown entity
 
 A certificat authority is
 Note to find a better laptop (resource hungry practice for Active Directory) Lookup creating certificate authority in windows.
+
+
 
 
 
