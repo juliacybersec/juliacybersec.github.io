@@ -60,3 +60,100 @@ Q3 Attackers quietly sit inside a defence contractor’s network for 18 months, 
 
 Q4 A marketing team starts using a free online file-sharing site because the company’s approved one is too slow. Shadown IT a staff member is not trying to cause problems but its convenient to use a faster system, just to get the work done. 
 
+THREAT VECTORS 2.3
+2.2 Overview: Threat vectors and attack surfaces
+
+The analogy: your house.
+
+The attack surface is every possible way into your house. That includes the front door, back door, windows, the dog flap, the garage, and the spare key under the mat. More doors and windows means a bigger attack surface.
+A threat vector is the route a burglar actually uses to get in, such as climbing through the bathroom window.
+
+Security work is mostly about shrinking the attack surface, by closing windows and removing the spare key, and guarding the vectors you can’t remove.
+
+The vectors CompTIA wants you to know
+
+1. Message-based. Email, SMS (smishing), and instant messaging. These are malicious links or attachments arriving through the letterbox. Email is the most common vector of all.
+
+2. Image-based. Malicious code hidden inside an image file, such as an SVG that contains script. It’s like a postcard with a hidden message written in invisible ink.
+
+3. File-based. Infected PDFs, Office documents with macros, or zipped files. You open the parcel and something nasty jumps out.
+
+4. Voice call (vishing). Someone rings pretending to be the bank, Microsoft, or the ATO. You already know this one from your phishing study.
+
+5. Removable devices. USB sticks are the classic example. Attackers sometimes drop infected USBs in a car park and wait for someone curious to plug one in. It’s like finding a key on the footpath and trying it in your own front door.
+
+6. Vulnerable software. Unpatched programs with known holes. Messer splits these into two types:
+
+Client-based software has an agent installed on the device, which can be exploited.
+Agentless software runs without an install, for example in the browser, but can still be attacked.
+
+7. Unsupported systems and applications. Old software that no longer gets patches, like Windows 7. This is a window with a broken latch that the manufacturer won’t fix anymore.
+
+8. Unsecure networks.
+
+Wireless: open Wi-Fi or weak encryption.
+Wired: someone plugs into a spare network port in the office.
+Bluetooth: attacks such as bluejacking and bluesnarfing.
+
+9. Open service ports. Every open port is a door left open. If a service doesn’t need to be running, close the port.
+
+10. Default credentials. Routers and cameras shipped with admin/admin as the login. This is leaving the factory key in the lock.
+
+11. Supply chain. You get attacked through someone you trust:
+
+Managed service providers (MSPs): your outsourced IT company gets breached, and the attacker uses its access to reach you.
+Vendors and suppliers: compromised hardware or software updates. SolarWinds is the famous example.
+
+The analogy here is that your house is secure, but the burglar bribes your cleaner, who has a key.
+
+12. Human vectors and social engineering. You’ve covered some of these already, but here’s the full list:
+
+Phishing, vishing, smishing: these are fake messages, calls, and texts.
+Misinformation and disinformation: both are false information. Disinformation is spread deliberately.
+Impersonation and pretexting: pretexting means inventing a believable story, like “I’m from IT, I need your password to fix your account.”
+Business email compromise (BEC): the attacker poses as the CEO or a supplier and asks for a payment.
+Watering hole: the attacker infects a website the target group visits regularly. It’s like poisoning the waterhole the animals drink from, instead of chasing them.
+Brand impersonation: fake websites and emails pretending to be a real company.
+Typosquatting: registering look-alike domains, such as “amaz0n.com” or “gooogle.com”.
+The key idea to hold onto
+
+Every vector on that list is either a door you could close (ports, default passwords, unsupported software) or a person who could be tricked (social engineering, supply chain). Keep those two buckets in mind while you watch, because most exam questions boil down to which bucket the scenario falls into.
+
+(threat vectors, phishing, impersonation, watering hole, other social engineering). Then explain:
+
+ what’s the difference between an attack surface and a threat vector?
+Apps, services, machines, and employees are part of the attack surface. You said they’re “attack areas, but not necessarily surface areas.” In fact, they’re the main part of it. The attack surface isn’t only physical. It covers everything an attacker could target:
+
+Digital: open ports, web apps, cloud services, APIs, every device on the network
+Physical: server rooms, USB ports, spare network sockets in the office
+Human: every employee who could be phished, vished, or impersonated
+
+ the bigger the network gets, the bigger the attack surface. Every new app is like adding another door to the house. Every new employee is like giving out another key. That’s why businesses remove software they don’t use and switch off old accounts. They’re bricking up doors no one walks through anymore.
+
+Threat vector: perfect. “The way they’re choosing to get in”
+
+Pick any vectors and give me a real-world example of each.
+1. The toll text (smishing). This is a perfect real example, and you spotted the red flags yourself:
+
+A time but no rego: a real toll notice would identify your car.
+The wrong amount: scammers keep it small (like $5) so people pay without thinking twice.
+You don’t use tolls: always check the message against what you actually know.
+
+These scams work through urgency (“pay now or get fined”) and small amounts that lower people’s guard.
+
+2. The bonus attachment (file-based vector plus social engineering). it shows two things working together: a malicious file, and curiosity as the hook. Everyone wants to know their bonus. A file can pretend to be something it isn’t. A classic trick is Bonuses_2026.pdf.exe, which Windows may display as just Bonuses_2026.pdf.
+
+3. Your old computer (unsupported system). If it can no longer receive patches, that’s an unsupported system rather than just vulnerable software. Vulnerable software means patches exist but haven’t been applied. Unsupported means nobody is making patches anymore. And keeping it offline is exactly what a security pro would do. You’re removing it from the attack surface. In Security+ terms, that’s isolation, and it’s a good compensating control.
+
+4. The malicious charging cable (removable device). This is real. There are cables that look identical to normal ones but hide a tiny chip. They can pretend to be a keyboard and type commands, or record keystrokes. That’s why you should never use a charger or cable you didn’t buy yourself, and why public USB charging stations are risky.
+
+5. Browser-based apps (agentless). You’re trusting the provider to keep it secure, because there’s nothing on your machine for you to patch.
+
+6. Target and the HVAC company (supply chain). This is the textbook example. What makes it even better is that attackers phished the HVAC company first, stole its login to Target’s vendor portal, and then moved from there into the payment systems. It’s two vectors chained together: phishing led to a supply chain attack. Real attacks often work like this.
+
+What makes a watering hole attack different from phishing?
+Phishing is direct contact via text, email or phone vishing and a watering hole attack is getting into a real site that many people trust, attachers set this trap and wait. Everyone will get thirsty (in my case for learning so I will login to tryhackme like I've done before) and drink from this site with out knowing. Tech savy people will usually pick the phishing but the watering hole attack not so much. Think of the watering hole attack as an attackers trap they hacked in, now they just wait. 
+Many of these attacks are variations on the same trick. The way to keep them apart is to ask one or two sorting questions:
+
+Do they contact you, or wait for you? (Phishing vs. a trap.)
+If it’s a trap, is the site fake or real? (Typosquatting and impersonation vs. a watering hole.)
