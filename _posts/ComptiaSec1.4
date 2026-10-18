@@ -1,13 +1,12 @@
 Comptia Security Study notes 1.4
 
-Learn to Learn. This is the most important skill to have and why I understand how to learn. A lot of people have passed the comptia security exam by cramming and memory I dont feel
-I need to take the exam at this stage as I understand the material. Learning to learn is more important than any one cert.
-Each chapter I have tested myself so I understand it. The main problem I find when learning the way people do is they watch all the videos or read but it doesn't
-sink in this is why when it comes time to test they dont know the answers. Learning is all about retrieval of information and being able to explain it to someone else.
-I use analogys and my past work, life history and even chaos and stupid stories to help me understand. Note these are a combination of my own silly notes that I have 
-wrote for myself. I touch type fast so the faster I type the more mistakes! yikes
+Learning. I have heard of people who have passed in two weeks. I personally think this is unrealistic for most, the most likely answer was they knew most of the material before starting study or they crammed using memory. If its the latter this information doen't sink in and the knowledge will probably be lost not long after. 
 
-Tech Change Management
+Each chapter I have explained it to Princess(my rubber ducky) and verify. Learning is all about retrieval of information and being able to explain it to someone else. I use analogys and my past work, life history and make sure to explain it to Princess. My learning is slow, uncomftable, feeling like I am not getting anywhere. In reality this discomfort is real learning. 
+
+I touch type fast so I type more mistakes! yikes
+
+Tech Change Management 1.4
 If a bouncer in ballarat nite club had a deny list it would have 120k names on it so a allow list would work better 
 Why an allow list is safer (the real reason). A deny list only lists the known bad stuff, which is why it’s dangerous:
 anything new gets straight through. A brand new piece of malware isn’t on anyone’s banned list yet, so the deny-list
@@ -133,7 +132,7 @@ Exam framing: The question will typically be phrased as "Which attack is mitigat
 Key Exchange 1.4
 
 Hybrid encryption: Why don’t we just use asymmetric encryption for everything? What does each type do in a hybrid setup?
-hybrid encryption. The reason we don't just use asymmetric encryption for everything. Well, I know that most encryption is hybrid, so a combination of asymmetric and symmetric. symmetric AES is fast, but I think there's an issue where they both need the same key and you can't just give it over. So we use it combined with asymmetric. asymmetric is slower than symmetric. So if you're encrypting, say, a file, um, maybe like um, a multi, like a gigabyte file, or um, it would be sort of unusable. how do I explain? Maybe it would be like trying to use a bank vault to encrypt one one word. It'll be like so secure, but it would be like using an a van for each item of my home when I move house. It would take forever I have a lot of stuff and im not a hoarder. 
+hybrid encryption. The reason we don't just use asymmetric encryption for everything. Most encryption is hybrid, so a combination of asymmetric and symmetric. symmetric AES is fast, but I think there's an issue where they both need the same key and you can't just give it over. So we use it combined with asymmetric. asymmetric is slower than symmetric. So if you're encrypting, say, a file, um, maybe like um, a multi, like a gigabyte file, or um, it would be sort of unusable. how do I explain? Maybe it would be like trying to use a bank vault to encrypt one one word. It'll be like so secure, but it would be like using an a van for moving every single item for each trip from my home when I move house. It would take forever I have a lot of stuff and im not even a hoarder. 
 
 Asymmetric algorithms like RSA can only encrypt a small amount of data at a time, smaller than the key itself. So to encrypt a big file with RSA alone, you really would have to chop it into tiny pieces and encrypt each one separately. That’s your “one van per item”: slow, and “costly” in computing terms (CPU time, battery, server load).
 
@@ -242,11 +241,24 @@ Hashing can be used to store password instead of storing the password we store a
 Add salt - random data added like a ! is added by the software(website, app ect) to a users password 
 Rainbow table is a reverse non salted hash but  wont work with salted hashes Rainbow slows down brute force.
 
+Heres how the whole hashing private key, public key flow
+
+INSERT IMAGE PICTURE HERE
+flowchart TD
+    A["Sally writes an email"] --> B["Sally hashes the email"]
+    B --> C["Sally encrypts the HASH with her PRIVATE key = digital signature"]
+    C --> D["Email + signature sent to Bob"]
+    D --> E["Bob decrypts the signature with Sally's PUBLIC key = Hash 1"]
+    D --> F["Bob hashes the email himself = Hash 2"]
+    E --> G{"Do Hash 1 and Hash 2 match?"}
+    F --> G
+    G -->|Yes| H["Email is from Sally and unchanged"]
+    G -->|No| I["Email was tampered with or not from Sally"]
 
 Digital Signature - similar to any document and give integrity and proves the source and make sure the signature isn't fake thats non repudiation. sign with the private key  then verify with the public key any change means its dodgy
 
 Creating a digital signature 
-So Alice sends plain text and uses a hashing algorithm that has of the plain text now in a hash that hash is then encrypted using Alices private Key so this creates a Digital Signature and then the text is plaintext and Digital Signature. The digital signature is included at the bottom or as an attachment to the email. 
+The digital signature is included at the bottom or as an attachment to the email. 
 
 Now we can verify the message from Alice is really real and sent from Alice so his going to load the message from the email client and it will check the digital signature either say its verified or not verified and recognise but it actually looking for the digital signature and check using Alices's public key. Remember the keys are mathematically related so you encrypt with one key and can decrypt with the other. can now do a hash and if they match then it really is from alice. 
 
