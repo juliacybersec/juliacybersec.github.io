@@ -63,7 +63,7 @@ Q4 A marketing team starts using a free online file-sharing site because the com
 THREAT VECTORS 2.3
 2.2 Overview: Threat vectors and attack surfaces
 
-The analogy: your house.
+The analogy: my house.
 
 The attack surface is every possible way into your house. That includes the front door, back door, windows, the dog flap, the garage, and the spare key under the mat. More doors and windows means a bigger attack surface.
 A threat vector is the route a burglar actually uses to get in, such as climbing through the bathroom window.
@@ -153,7 +153,156 @@ These scams work through urgency (“pay now or get fined”) and small amounts 
 
 What makes a watering hole attack different from phishing?
 Phishing is direct contact via text, email or phone vishing and a watering hole attack is getting into a real site that many people trust, attachers set this trap and wait. Everyone will get thirsty (in my case for learning so I will login to tryhackme like I've done before) and drink from this site with out knowing. Tech savy people will usually pick the phishing but the watering hole attack not so much. Think of the watering hole attack as an attackers trap they hacked in, now they just wait. 
-Many of these attacks are variations on the same trick. The way to keep them apart is to ask one or two sorting questions:
+
+2.3 Memory Injections COME BACK TO THIS WITH LESS DISTRACTIONS 
+
+Batch 1 overview: Application and OS vulnerabilities
+
+1. Memory injections (including buffer overflows)
+
+When a program runs, it stores data in memory in neat, labelled boxes. A buffer overflow happens when a program puts more data into a box than it can hold. Think of pouring two litres into a one-litre jug: the extra spills into the box next door and overwrites whatever was there. An attacker carefully designs that spill so it contains their own instructions, and the computer then runs them.
+
+Memory injection is the broader idea: sneaking malicious code into a running program’s memory so that a trusted program runs it. It’s like slipping a fake page into a recipe book while someone is in the middle of cooking from it.
+
+2. Race conditions
+
+This is a timing weakness: two things happen at nearly the same moment, and the system gets confused about the order. The term to remember is TOCTOU (time-of-check to time-of-use). Here’s a bank example: you have $100. You make two $100 withdrawals at exactly the same time. Both requests check the balance, both see $100, and both are approved before the balance updates. You get $200 out of a $100 account. The weakness is the gap between checking and using.
+
+3. Malicious updates
+
+You trust software updates because they come from the vendor. An attacker who compromises the vendor’s update system can slip malware into a legitimate-looking update. Everyone installs it because it looks completely normal. It’s like a trusted delivery driver bringing a parcel that someone tampered with at the depot. This links to supply chain, which you covered in 2.2. A famous real case is SolarWinds (2020).
+
+4. Operating system vulnerabilities
+
+Windows, macOS and Linux are huge and complex, so flaws are always being found. This is why Patch Tuesday exists: Microsoft releases fixes on the second Tuesday of each month. The danger is the gap between a patch being released and organisations actually installing it. Attackers study the patches to work out what was broken, then target anyone who hasn’t updated yet. Your rollout work at Medical Imaging Australia sits right in this space.
+
+While you watch, listen for:
+
+What’s the difference between a buffer overflow and a race condition?
+
+Why is a malicious update so hard to spot?
+
+Why is the time after a patch is released risky?
 
 Do they contact you, or wait for you? (Phishing vs. a trap.)
 If it’s a trap, is the site fake or real? (Typosquatting and impersonation vs. a watering hole.)
+
+Overview: Misconfiguration Vulnerabilities 2.3  
+
+The big idea: The software itself might be fine. The problem is how someone set it up. Messer describes these as the vulnerabilities we create ourselves. Think of it like buying a top-quality deadlock and leaving the key in it.
+
+Misconfigurations are very common because systems ship with settings designed to be easy, not secure, and busy staff don’t always go back and tighten them.
+
+The five types to know:
+
+1. Open permissions
+Files or cloud storage left open so anyone on the internet can read them. A classic example is a company’s cloud storage “bucket” accidentally set to public, exposing millions of customer records. Big companies have done this many times. It’s like leaving your filing cabinet on the footpath.
+
+2. Unsecured admin accounts
+The all-powerful accounts (Administrator in Windows, root in Linux) with weak passwords, or used for everyday work. If an attacker gets one, they own the system. Good practice is to use a normal account day to day and only “step up” to admin when needed. Your ANZ example of forgetting to log off as admin fits perfectly here.
+
+3. Insecure protocols
+Old protocols that send everything, including passwords, in plain text. Anyone listening on the network can read them. The insecure versions have secure replacements:
+
+Telnet → SSH
+FTP → SFTP
+HTTP → HTTPS
+
+It’s like the difference between sending a postcard and a sealed letter. You’ll remember a lot of these from Network+.
+
+4. Default settings
+Devices left with factory passwords and settings. A famous real case is the Mirai botnet (2016). It scanned the internet for cameras and routers still using default logins like admin/admin, took over hundreds of thousands of them, and used them to knock major websites offline.
+
+5. Open ports and services
+Services left running that nobody uses, or firewall rules that allow far more than needed. Every open port is another door into the house, which links back to the attack surface from 2.2.
+
+CompTIA Security+ 2.3: Misconfiguration Vulnerabilities
+Why are misconfigurations so common?
+A misconfiguration vulnerability isn’t a flaw in the software itself. It’s a weakness created by how something was set up. It’s like buying a top-quality deadlock and leaving the key in it. These are some of the most common vulnerabilities in the real world, because we create them ourselves.
+
+Why are misconfigurations so common? There are several reasons. Devices ship with default settings designed to be easy to use rather than secure, so they work straight out of the box. Many people don’t realise those defaults are publicly known. Time pressure plays a big part too: if you’ve just spent half an hour getting a new security camera working, changing the default password feels like one more chore. In home and small business environments, security is often an afterthought. People just want things up and running.
+
+Default settings, and what your Wi-Fi name gives away. Every model of modem and camera has default settings and logins that anyone can look up online. When I checked the Wi-Fi networks around my area, I noticed several still using the default network name (SSID), showing the brand and even the exact model number. That tells an attacker exactly what equipment is being used, so they can look up its default admin login and any known vulnerabilities. Many newer routers come with a unique Wi-Fi password on a sticker, but the admin login is often left at the default. This is how the Mirai botnet (2016) worked: it scanned the internet for cameras and routers still using default logins like admin/admin, took over hundreds of thousands of them, and used them to take major websites offline.
+
+Unsecured admin accounts. When I worked in IT support at ANZ, we logged on to users’ computers with our admin accounts to install software or make changes. With people constantly asking for help, it was very easy to walk away and accidentally leave the computer logged in as admin, giving the user full control of the machine. This is why the principle of least privilege matters: use a normal account day to day, and only step up to admin when it’s needed.
+
+Orphaned accounts. At Orica, a big part of my job was opening and closing user accounts, and accounts were closed quickly when someone left. In companies with high staff turnover, there can be a gap where someone has left but their account is still active. These are called orphaned or dormant accounts, and they give a former employee, or anyone who knows the login, continued access. Shared logins make it worse, because they break non-repudiation: if several people use one account, you can’t prove who did what.
+
+Insecure protocols. Older protocols send everything, including passwords, in plain text, like sending a postcard instead of a sealed letter. Telnet should be replaced with SSH, FTP with SFTP, and HTTP with HTTPS. The same goes for Wi-Fi security: older standards like WEP and WPA are easily broken, so networks should use WPA2 or WPA3. Many people are still running old modems on outdated security without realising how exposed they are. An old modem that no longer receives firmware updates is also a separate hardware/end-of-life vulnerability, another part of 2.3.
+
+Open ports and services. Every open port is another door into the house. The risk isn’t a port for a service that’s been fully stopped, because nothing is listening there. The risk is a service left running that nobody uses anymore, or a firewall rule left open after the service has gone. Regularly reviewing what’s running and what the firewall allows helps keep the attack surface small.
+
+The Real World Security Breech - The Owner of this membership education platform was setup by a third party. No password was added on the discord so someone found it and had some fun posting gay photos. 
+You can outsource the work, but not the responsibility. If you hire someone else to build your system, the security failure is still yours. That links to supply chain and third-party risk. Your point about security only being taken seriously after a breach is also a big theme in this course.
+
+Overview: Mobile Device Vulnerabilities 2.3
+
+The big idea: Phones come with built-in guard rails. The official app store checks apps before you can install them, and the operating system keeps each app in its own “room” so it can’t interfere with other apps or the system. Most mobile vulnerabilities come from removing those guard rails.
+
+1. Sideloading
+Installing an app from outside the official store, for example downloading an app file from a website or getting one sent to you. Nobody has checked it for malware. It’s like buying medicine from a stranger’s car boot instead of a pharmacy. It might be fine, but there’s no quality control. Android allows sideloading more easily. Apple has traditionally blocked it, though rules are loosening in some countries.
+
+2. Jailbreaking (iPhone) and rooting (Android)
+Deliberately breaking the phone’s built-in restrictions to get full control. This lets people install anything and change system settings. But it also removes the walls that keep malware contained, so a bad app could reach everything. It’s like taking out every internal door and lock in your house because they’re inconvenient. Jailbroken phones may also stop receiving security updates.
+
+3. Why businesses care
+If a jailbroken or rooted phone has work email, files or company apps on it, the risk spreads to the whole organisation. That’s why workplaces use MDM (Mobile Device Management). It can detect jailbroken or rooted phones, block them from company data, enforce passcodes, and even wipe a lost phone remotely.
+
+
+What’s the difference between sideloading and jailbreaking/rooting?
+
+Why would a company block a rooted phone from accessing work email? 
+CompTIA Security+ 2.3: Mobile Device Vulnerabilities
+
+Phones come with built-in guard rails. The official app store checks apps before you install them, and the operating system keeps each app in its own space so it can’t interfere with other apps or the system. Most mobile vulnerabilities come from removing those guard rails, either by accident or on purpose.
+
+Sideloading means installing apps from outside the official app store. Nobody has checked these apps for malware. It’s like buying medicine from a stranger’s car boot instead of a pharmacy. I’ve seen this first-hand with someone I care for who isn’t confident with technology. He’d see an ad on Facebook promising money or an investment return, tap it, and land on a website warning that his phone “needed cleaning.” He’d tap install, more pop-ups would appear, he’d install more, and soon his phone was stuck in a loop he couldn’t escape. Some of this was probably sideloaded malware or adware. Some may have been browser notification spam, where a scam site tricks you into tapping “Allow” and then floods your phone with fake alerts. Two Android settings help prevent this: switch “Install unknown apps” off for browsers and Facebook, and remove any unrecognised sites from Chrome’s notification settings.
+
+How I handled it. Twice, I did a full factory reset, because when you can’t be sure a device is clean, wiping it is the only safe option. In security terms, that’s remediation. After the first time, I set it up so nothing could be installed without my PIN. After the second time, I set up parental controls so every download needs my approval. That’s essentially a home version of MDM (Mobile Device Management), which businesses use to control what goes on work phones. In future when I get a new modem I will setup a guest WIFI so that it doesn't cause a problem for my network. This is segmentation, keeping evey part secure so it cant creep or pivot into my network.
+Right now, everything shares one network, so any device on it can potentially “see” and reach every other device, including your laptop. A guest network gives a guest a key to the front gate only. He can get out to the street (the internet), but there’s no internal door into the house.
+
+In a business, the idea is the same, just bigger. From Network+:
+
+VLANs divide one physical network into separate virtual networks: staff, guests, printers, security cameras and so on.
+Separate SSIDs are often linked to each VLAN. That’s why an office might have “Company-Staff” and “Company-Guest” Wi-Fi.
+Firewall rules or ACLs between the segments control what’s allowed to cross. Guests usually get internet only, with no access to internal systems.
+
+Many guest networks also have client isolation, which stops guest devices from even seeing each other. So if one guest’s phone is infected, it can’t reach another guest’s phone either. The main trade-off is that devices on the guest network usually can’t reach things on your main network, like a shared printer or a casting device
+
+Jailbreaking (iPhone) and rooting (Android) are different. They’re deliberate. The owner breaks the phone’s built-in restrictions to get full control, so they can install anything and change system settings. But this also removes the protections that keep malware contained. It’s like taking out every internal door and lock in your house because they’re inconvenient. Installing updates often undoes a jailbreak, so people avoid updating, which leaves the phone unpatched and exposed. This is different from turning on Android’s Developer options, which are built in and don’t remove the phone’s security protections (though it’s wise to switch off USB debugging when you’re not using it).
+
+Why businesses care. If an employee’s jailbroken or rooted phone has work email, files or apps on it, the risk spreads to the whole company, because an attacker could use that phone as a way back into the network. That’s why companies use MDM to detect and block these phones. I apply the same thinking at home: I don’t want a possibly compromised phone sharing my Wi-Fi with my own devices. Putting untrusted devices on a separate guest network is a simple form of network segmentation. My own modem is 8 to 10 years old and may not support it, which is a reminder that old hardware is a vulnerability too. Once a device stops receiving firmware updates, it’s end-of-life, and any new flaws will never be fixed.
+
+Zero-day 2.3 
+What “zero day” actually counts. It’s not quite “zero days since anyone knew about it.” It means the vendor has had zero days to fix it. An attacker might have known about the flaw and used it for months. It’s still a zero-day as long as the vendor doesn’t know, or knows but hasn’t released a patch yet.
+
+Two related terms:
+
+Zero-day vulnerability: the flaw itself
+Zero-day exploit or attack: using that flaw before a fix exists
+
+hy zero-days are so dangerous. This was the question from the overview, and you’ve partly answered it:
+
+No patch exists, so you can’t fix it the normal way.
+Antivirus often can’t detect it, because traditional antivirus looks for known threats, and this one is new.
+How you defend against something you don’t know about. This part is worth knowing for the exam. You can’t patch it, so you rely on layers:
+
+Behaviour-based detection (EDR): looks for suspicious activity rather than known malware
+Least privilege and segmentation: limit how far an attacker can get once inside (your guest Wi-Fi thinking again)
+Patch quickly once a fix is released
+The sandbox examples Messer mentioned. A sandbox is a contained area where a browser or app runs code so that it can’t reach the rest of the system. Some of the most valuable zero-days are sandbox escapes: flaws that let malicious code break out of that container. It’s the same idea as VM escape, which you’ll see in the virtualisation video. A famous real-world example of zero-days in action is Stuxnet, which used several zero-days at once to sabotage Iran’s nuclear program. That’s nation-state work, which links back to 2.1.
+
+
+
+CompTIA Security+ 2.3: Zero-day Vulnerabilities
+
+A zero-day vulnerability is a hidden flaw in software that the vendor doesn’t know about yet, or knows about but hasn’t fixed. The name means the vendor has had zero days to fix it. An attacker might have known about the flaw and been using it for months, but as long as there’s no patch, it’s still a zero-day. Using the flaw before a fix exists is called a zero-day exploit or zero-day attack.
+
+A zero-day is different from a misconfiguration. A misconfiguration is a weakness created by how something was set up, like a door left unlocked. A zero-day is a flaw in the code itself, like a lock with a manufacturing defect that nobody at the factory has noticed. It doesn’t matter how carefully you lock up.
+
+Why are zero-days so dangerous? You can’t protect against something nobody knows exists. There’s no patch to install, and traditional antivirus often can’t detect the attack, because it looks for known threats. It becomes a race: will the vendor find and fix the flaw first, or will an attacker find it and use it? Zero-days are valuable, so they’re often used by well-funded attackers like nation-states. A famous example is Stuxnet, which used several zero-days at once to sabotage Iran’s nuclear program.
+
+How do you defend against an unknown flaw? You use layers. Behaviour-based detection (EDR) looks for suspicious activity instead of known malware. Least privilege and network segmentation limit how far an attacker can get once inside. And when a patch is finally released, you install it quickly, because attackers study patches to work out what was broken.
+
+Sandboxes. A sandbox is a contained space where code runs separately from the rest of the system, so if something goes wrong, the damage stays inside. Some of the most valuable zero-days are sandbox escapes, flaws that let malicious code break out of that container. I use this idea myself: I run Kali Linux in a virtual machine, so if anything goes wrong, I can delete the VM and my laptop is unaffected. Windows also includes Windows Sandbox (on Pro and Enterprise editions), a disposable copy of Windows running inside Windows. You can open a suspicious attachment there instead of on your main computer, and everything is wiped when you close it. One important point: a VM or sandbox protects your computer’s files, but it can still reach your network if networking is switched on. When testing something suspicious, switch networking off so malware can’t reach other devices on your Wi-Fi.
+
