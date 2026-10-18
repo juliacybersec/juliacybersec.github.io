@@ -306,5 +306,163 @@ How do you defend against an unknown flaw? You use layers. Behaviour-based detec
 
 Sandboxes. A sandbox is a contained space where code runs separately from the rest of the system, so if something goes wrong, the damage stays inside. Some of the most valuable zero-days are sandbox escapes, flaws that let malicious code break out of that container. I use this idea myself: I run Kali Linux in a virtual machine, so if anything goes wrong, I can delete the VM and my laptop is unaffected. Windows also includes Windows Sandbox (on Pro and Enterprise editions), a disposable copy of Windows running inside Windows. You can open a suspicious attachment there instead of on your main computer, and everything is wiped when you close it. One important point: a VM or sandbox protects your computer’s files, but it can still reach your network if networking is switched on. When testing something suspicious, switch networking off so malware can’t reach other devices on your Wi-Fi.
 
+Operating System 2.3 
+Overview: Operating System Vulnerabilities
 
+The big idea: An operating system like Windows, macOS or Linux is enormous, with tens of millions of lines of code written by thousands of people. With that much code, mistakes are guaranteed. Some of those mistakes become security holes. And because the OS sits underneath everything on the computer, a flaw there can give an attacker control of the whole machine.
+
+Think of the OS as the foundations and frame of a house. A faulty lock on one door is bad. A crack in the foundations affects every room.
+
+Key points:
+
+1. Flaws are found constantly
+This isn’t a rare event. New OS vulnerabilities are discovered every month, by vendors, security researchers and attackers. That’s why every major OS has a regular update cycle.
+
+2. Patch Tuesday
+Microsoft releases its security fixes on the second Tuesday of each month. Each month’s release often fixes dozens of vulnerabilities at once, and some of them are rated critical, meaning an attacker could take control of the computer remotely.
+
+3. The danger window
+Once a patch is released, attackers study it to work out what was broken, then go after everyone who hasn’t installed it yet. So the period after a patch comes out, before organisations install it, is when unpatched systems are most at risk. Sometimes this is described as “Patch Tuesday, Exploit Wednesday.”
+
+4. Best practices for patching BACK UP YOUR DATA Having a OS backup image using Rufus like for my Ubuntu server is a good idea. 
+
+Patch regularly and promptly. Don’t let updates pile up
+.
+Test first. In a business, updates are tested on a few machines before rolling out to everyone, because a patch can occasionally break an important application.
+Have a fallback plan. Take backups and know how to roll back an update if it causes problems.
+Automate where possible. Tools like WSUS, Intune or other patch management systems push updates to many computers at once.
+Why operating systems are a big target?
+find one flaw, and you’ve found it for millions of machines. That scale is exactly what makes OS flaws so valuable. One working exploit can be used against every unpatched computer running that OS.
+
+The risk after a patch?
+Attackers reverse-engineer the patch to work out what was broken.
+People delay updates. A day becomes a week, and that’s a week of exposure. “Patch Tuesday, Exploit Wednesday” is exactly right.
+
+Why test before rolling out?
+one bad patch pushed to everyone at once could take down mortgages, cards, the whole bank.
+
+Pilot group or phased rollout: patch a small group first, check nothing breaks, then expand.
+Test environment: ideally, patches are tested on non-production machines before going anywhere near real users.
+
+The pivoting point needs separating out. Two different risks got blended together:
+Rollout risk: a bad patch breaks a whole clinic at once. Doing one or two machines first reduces this.
+Exposure risk: any machine still waiting for the patch is vulnerable, and an attacker could pivot between them.
+Every phased rollout has this trade-off: going slowly is safer for stability, but leaves machines exposed for longer. Businesses balance it by patching the most critical and internet-facing systems first, and by segmenting networks, like keeping clinics separate, so one compromised machine can’t easily reach the rest.
+
+Overview: Malicious Updates 2.3
+
+The big idea: We’re always told to install updates, and for good reason. But what if the update itself is the attack? A malicious update is malware delivered through a legitimate update channel. Because it comes from a trusted source, it looks normal, passes the usual checks, and gets installed by everyone.
+
+It’s like a trusted delivery company bringing you a parcel that someone tampered with at the depot. You’d never suspect it, because you know the driver.
+
+How it happens:
+
+Compromising the vendor: attackers break into the software company’s systems, often the servers that build or distribute updates, and slip their code into a genuine update before it’s released.
+Real digital signatures: because the update comes out of the vendor’s own system, it’s signed by the real vendor. The signature proves who it came from, but not that the vendor’s systems were clean. This links back to digital signatures in 1.4.
+Fake update prompts: the less sophisticated version is a pop-up like “Your browser is out of date, click to update” on a dodgy website. That’s closer to what happened with Al’s phone.
+
+A famous example: SolarWinds (2020).
+Attackers broke into SolarWinds, whose network monitoring software is used by thousands of organisations, including US government agencies. They hid a backdoor inside a genuine software update. Around 18,000 customers installed it, and it went undetected for months. It was attributed to a nation-state, which links back to 2.1. It’s also a supply chain attack, which links to 2.2 and the next video.
+
+How to defend against it:
+
+Only download updates from the official source, never from pop-ups or links.
+Test updates on a small group before rolling them out widely (your phased rollout point from the OS topic).
+Monitor for unusual behaviour after updates, since a valid signature isn’t proof of safety.
+Vendors must protect their own build systems, because they’re a prime target.
+
+The tension to notice: you’re told to patch quickly, but a patch could be the attack. That’s why testing and monitoring matter, not just speed.
+
+Why is a malicious update so hard to spot? If an update is properly digitally signed, why isn’t that enough to prove it’s safe?
+Q1: Why are malicious updates so hard to spot?
+Ebay has been doing updates for their app for ages and fortunatly never had an issue.  It comes through the official app, from a company people have trusted with their money for years. Even a tech-savvy person has no way to tell. Its a catch-22 perfectly: don’t update and you’re exposed to known flaws; update and the update itself could be the attack.
+
+How the catch-22 is actually handled
+
+I could propose wait a day for personal devices? 
+For businesses: that’s the phased rollout from the OS topic. Patch a small pilot group first, watch for problems, then expand. A day or two of waiting catches both broken patches and malicious ones. The exception is a critical patch for a flaw that’s already being exploited. That gets fast-tracked, because the known danger outweighs the small chance of a bad update.
+For individuals: keep automatic updates on, from official sources. Malicious updates like SolarWinds are rare. Unpatched devices being attacked through known flaws is far more common. So on balance, updating is still the safer choice.
+Afterwards: your instinct to monitor is exactly right. Businesses use behaviour-based tools (EDR) that flag unusual activity, like a trusted program suddenly contacting a strange server. That’s how SolarWinds was eventually caught.
+
+Q2: Why isn’t a digital signature enough? 
+
+Think back to 1.4. A digital signature proves two things:
+
+Who it came from (the real vendor)
+That it hasn’t been changed since it was signed
+
+What it can’t prove is that the code was clean at the moment it was signed. In SolarWinds, the attackers inserted their code before the signing step. So the vendor’s own system signed the malware, and the signature was completely genuine.
+
+Think of tamper-evident packaging. The seal on a medicine bottle proves nobody opened it after it left the factory. But if someone contaminated the medicine on the factory line, before the seal went on, the seal is intact and genuine, and it tells you nothing. The signature is the seal. The attack happened inside the factory.
+
+Many OS will only approve updates from 
+Automatic updates are usually trustworthy as it checks the digital signature.
+
+BACKUP BACKUP and then after you backup, backup again and have a image or be ready to full factory reset just in case. At least this way it wont hurt as bad as losing a photo of your first motor bike ride on Philip island. 
+
+Supply Chain 2.3
+
+Overview: Supply Chain Vulnerabilities
+
+The big idea: No organisation builds everything itself. It relies on other companies for services, hardware and software. Every one of those suppliers is a potential way in. Your security is only as strong as the weakest company you trust.
+
+Think of your house again. You might have excellent locks, but you’ve given a key to the cleaner, the plumber and the alarm company. If any of them is careless with that key, or one of their staff is dishonest, your locks don’t matter.
+
+Messer breaks it into three types:
+
+1. Service providers
+Companies with access to your systems: IT support (MSPs), cloud providers, contractors, maintenance companies. Attackers target them because one breach can open doors into all their clients.
+
+Example: you already know this one. In the Target breach (2013), attackers got in using login details stolen from Target’s air-conditioning contractor, then moved from there into the payment systems.
+Australian example: the Medibank breach (2022) reportedly began with stolen login details belonging to a worker at a third-party IT provider.
+
+2. Hardware providers
+Can you trust that the equipment is genuine and hasn’t been tampered with?
+
+Counterfeit hardware sold cheaply can contain hidden flaws or backdoors. There have been cases of fake network switches made to look like a well-known brand, sold through unofficial sellers.
+Defence: buy from the manufacturer or authorised resellers, not the cheapest listing online.
+
+3. Software providers
+Every app and library you install is code someone else wrote.
+
+Example: SolarWinds, which you just covered. A malicious update is a software supply chain attack.
+Modern software is built from open-source libraries, so one flaw in a widely used library can affect thousands of products at once.
+
+How organisations defend against it:
+
+Vet suppliers before signing. Check their security practices, and write security requirements into the contract.
+Least privilege for vendors. Give suppliers access only to what they need, only when they need it. Target’s air-conditioning contractor never needed a path to payment systems.
+Segmentation. Keep vendor access in its own section of the network.
+
+Monitor vendor activity, and remove access as soon as a contract ends. That’s what I did at Orica everyday.
+
+
+Why do attackers target a supplier instead of going straight for the company they want?
+Attckers try to get to the supplier because it may be a way of getting straight into the company they really want. There are a few reasons I can think of: maybe the supplier is a smaller buisness that handles the office cleaning and they have weaker security. The target company will have some amount of trust with the supplier and may not see it as a risk or it's underated. This also applies to the cleaning company may be working for the target company for many years without incident. Also suppliers if they are a small family buisness may not be a financial, tech or health may have less investment in security possibility.
+
+
+Pick one of the three types (service, hardware or software) and explain how a business could reduce that risk.
+Vet all suppliers and check how they run their security regardless of service, hardware or software. The security regulations on the software is really important especially if your saas or paas even cloud having access to your data. For all it may be worth a note into the contract. 
+Give the HVAC only access to the system not the server room or payments.  The hardware supplier make sure you buy your products from reputable vendors. Cheap is not always better for a reason. 
+
+Other throughts: We have to trust suppliers and buisness's dont have much choice. Its about mitigating the risks. Segment their access. If your hardware vendor no longer sells the laptop you need remove them from your supplier list(so a new employee doesn't order 100 laptops that are too slow) maybe get one of your own employees to clean the server room floor or at least supervise instead of giving it to the cleaning company. Cleaning companys know nothing about racks and computers and may move a cable while cleaning or unplug and not tell anyone this is unlikely buy stranger things have happened. 
+
+Not an exact analogy my last house move I gave the cleaner my front door key it had a huge big red ribbon on it and told them to leave it in the elec box before they left, as the carpet cleaner was comming in the morning. I got a call at 9am "Im the carpet cleaner wheres the key I have the cleaner for your flee bombing that I booked for you". The cleaner had forgot and taken the key home over night. I called the cleaner at nine and by 12am misteriously the key with a big red ribbon was back there. This shows how much trust we put in other buisnesses. 
+
+Q1: Why target the supplier?
+
+The pivot: get into the supplier, then use their trusted access to reach the real target.
+It doesn’t look like an attack: traffic from a long-trusted backup supplier doesn’t raise alarms.
+Smaller suppliers often have weaker security: a family-run business may have no security staff at all.
+
+one supplier can unlock many victims. Break into an IT provider that manages 200 companies, and you potentially have a way into all 200. That’s why MSPs are such attractive targets.
+
+Q2: Reducing the risk.
+Third-party risk management, and you’re right that it sits under governance and compliance. Some terms to attach to your ideas:
+
+Vetting suppliers: often done with security questionnaires, or by checking for certifications like ISO 27001.
+Contract terms: a right-to-audit clause lets you check their security, and an SLA (service level agreement) sets what they must deliver. Rather than rewriting the contract every quarter, the usual approach is regular reviews of the supplier, with the contract updated when needed.
+HVAC access: That’s least privilege and segmentation.
+Reputable hardware vendors: correct. Buying from authorised resellers reduces the risk of counterfeit equipment.
+Supervising cleaners in the server room: a physical control called an escort, which links to physical security in 1.2. Locking down sensitive areas is right too.
 
