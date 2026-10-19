@@ -1,7 +1,6 @@
 CompTIA Security 2.1
 
-
-The six threat actors:
+The six threat actors: 1
 
 Nation-state. Government-backed, huge budgets, very skilled, patient.
 Unskilled attacker. Uses other people’s tools without really understanding them. (Older material calls them “script kiddies.”)
@@ -154,7 +153,108 @@ These scams work through urgency (“pay now or get fined”) and small amounts 
 What makes a watering hole attack different from phishing?
 Phishing is direct contact via text, email or phone vishing and a watering hole attack is getting into a real site that many people trust, attachers set this trap and wait. Everyone will get thirsty (in my case for learning so I will login to tryhackme like I've done before) and drink from this site with out knowing. Tech savy people will usually pick the phishing but the watering hole attack not so much. Think of the watering hole attack as an attackers trap they hacked in, now they just wait. 
 
-2.3 Memory Injections COME BACK TO THIS WITH LESS DISTRACTIONS 
+2.3  1. Memory Injections
+
+Overview: memory is a set of labelled boxes
+
+When a program runs, it gets a chunk of memory (RAM). Picture a pharmacy dispensing shelf: each slot is labelled and sized for one patient’s medication. The program trusts that whatever goes in a slot belongs there.
+
+Buffer overflow
+
+A buffer is one of those slots, a fixed-size space set aside for some data, like a 10-character username field. A buffer overflow happens when the program doesn’t check the size of what’s going in. Someone pours in 500 characters, and the extra spills into the neighbouring slots and overwrites whatever was there.
+
+Picture a careless pharmacist stuffing a huge order into a small slot so it overflows into the next patient’s slot. Now patient B’s medication has been replaced.
+
+Why attackers care: sometimes the neighbouring slot holds the return address, the note telling the program “when you’re done here, go back to this spot.” If an attacker overwrites that note, they can redirect the program to run their code instead.
+
+Key points for the exam:
+
+The root cause is no input/bounds checking by the developer.
+It’s hard to do reliably. Attackers often spend ages getting it right, but once it works, it’s powerful.
+Defences include input validation, safer programming languages, and OS protections like ASLR, which shuffles where things sit in memory so the attacker can’t predict where to aim. It’s like the pharmacy rearranging its shelves every day.
+
+Memory injection
+
+This is the broader idea: getting malicious code into a running program’s memory, so it executes with that program’s permissions. A buffer overflow is one way to do it. Another is DLL injection on Windows, where a program is tricked into loading a malicious library file (DLL) as if it were a legitimate one.
+
+Picture slipping a fake drug into a trusted patient’s dosette box. It gets administered because it’s in a trusted container, not because anyone checked it.
+
+Why it’s sneaky: the malware hides inside a legitimate process, so it doesn’t show up as a suspicious new program. This links back to fileless malware from 2.4, which you’ll meet soon.
+
+In your own words, what is a buffer overflow, and why does it happen? Who’s at fault?
+The source of the RAM/disk confusion: the scale is much, much smaller. A buffer overflow isn’t about whether the computer has enough RAM or disk space overall. The program has already reserved its memory. The problem is one tiny box inside that memory, often just a few bytes, set aside for one piece of input.
+
+Think of a 10 ml medicine cup on a tray of cups lined up for different patients. The cup is a fixed size, and nobody’s asking whether the ward has enough medicine. The question is whether anyone checks the dose fits the cup before pouring. Pour 50 ml in, and it overflows into the next patient’s cup and contaminates it.
+
+In code, that looks like this: a login form has a username box the developer sized for 20 characters. The attacker types in 500. If the program never asks “is this longer than 20?”, the extra 480 characters overwrite whatever sits next door in memory.
+
+The check that’s missing is called BOUNDS CHECKING or INPUT VALIDATION: “does this input fit this box?”
+
+Why don’t developers just check? A few reasons:
+
+Older languages like C and C++ don’t check for you. The developer has to write the check by hand every single time, and humans forget or get it wrong. Newer languages like Python, Java and Rust do the check automatically, which is why buffer overflows are mostly a C/C++ problem.
+The developer doesn’t control the input. They know how big the box is, but they can’t know what a user (or attacker) will type in. That’s why you never trust input.
+Speed. Checks cost a tiny bit of performance, and older code often skipped them.
+
+How is memory injection different from just running a malicious program?
+In short: injection hides behind a trusted process's identity and avoids the file system entirely, so traditional signature-based and file-based defenses have nothing to latch onto.  The attacker must instead be caught by behavioral signals (e.g. WriteProcessMemory + CreateRemoteThread sequences) or memory scanning. 
+
+Why does ASLR make an attacker’s job harder?
+
+What ASLR does
+ASLR randomizes the base addresses of key memory regions — the executable image, shared libraries (DLLs), stack, and heap — every time a process starts.  Without it, those regions load at the same predictable addresses every run, which is exactly what an exploit needs. 
+
+What ASLR is like:
+ASLR (Address Space Layout Randomisation): where’s the cookie jar?
+
+Without ASLR, an attacker can walk into any house and head straight to the kitchen for the cookie jar, because it’s always in the same spot in every house. ASLR moves the cookie jar somewhere different in each house, and moves it again every time. One house might have it in the lounge room, another in the bedroom. The attacker can’t rely on knowing where it is. They’d have to rummage around every single house, and even if they found it once, it won’t be there next time. In computer terms, ASLR shuffles where a program’s pieces are loaded in memory each time it runs, so an attacker can’t predict the exact address to aim their exploit at. If they guess wrong, the program usually just crashes instead of being taken over.
+
+And even if they do find the jar, the dog might be sitting on it. That’s DEP (Data Execution Prevention), an extra layer that stops code from running in parts of memory meant only for storing data.
+
+ASLR stands for Address Space Layout Randomisation. It’s a protection built into the operating system (Windows, Linux, macOS, Android and iOS all have it).
+“Address space” is the house. It’s the program’s memory.
+“Layout randomisation” means the furniture gets moved. Each time the program starts (or the computer reboots), its pieces load into different memory locations.
+The cookie jar is the attacker’s target. That’s the spot their fake bookmark has to point to.
+
+Here’s why that’s so effective against buffer overflows. The attacker has to write a specific address into the fake bookmark, like “go to the kitchen, second shelf.” With ASLR, that address is out of date. The program jumps to the wrong spot, finds nothing useful, and crashes instead of getting taken over. A crash is annoying, but it’s much better than an attacker in control.
+
+Even if an attacker works out the layout once, it’s reshuffled next time, so their exploit doesn’t work reliably across machines or restarts.
+
+The Dog Mutley is a security Dog guarding the cookies! Real systems stack other protections on top of ASLR. One common one is DEP (Data Execution Prevention), which marks certain areas of memory as “storage only, no running code here.” So even if the attacker finds the jar, the dog won’t let them eat the cookies.
+
+Without ASLR:
+Every house in the whole world is laid out the same way. The jar is always under the bed, on the left side. A thief just needs to break into one bedroom, learn where the chest is, and then break into every other bedroom using the same plan. 
+
+ASLR means the cookie jar moves every time the house is opened, so the thief's plan ("just go to the kitchen") stops working.
+
+That's it. Randomize the layout so the bad guy can't memorize where things are.
+This breaks the core assumption most memory-corruption exploits rely on: knowing where things are in memory. 
+
+ASLR,DEP AND NX DATA EXECUTION PREVENTION 
+How the exam frames it
+CompTIA groups ASLR with DEP/NX (Data Execution Prevention) as the two primary defenses against injection attacks:
+
+Defense	What it does
+DEP / NX	Marks stack & heap as non-executable, so injected shellcode can't run even if the attacker knows its address
+ASLR	Randomizes where code and data live, so the attacker can't target a specific address
+
+Together they address two different failure modes: DEP stops "execute my payload here" and ASLR stops "jump to that known address." The exam also notes that ASLR can be bypassed via information-disclosure bugs or brute-force (especially on 32-bit systems with lower entropy), so it's a mitigation, not a complete fix.
+Memory injection vs. running a malicious program
+The core difference is where the code lives and whose identity it wears:
+
+If the attacker can rewrite the “go back here” note, they can point it at their own code instead, and the program follows it without question. That’s the whole trick.
+
+Say the programmer writes the code if it already puts the characters in the slot then go and do this code. This is where the attackers want their code to run from. The return address isn’t an if/else the developer wrote to handle overflows. The program has no idea an overflow happened at all. That’s the problem. The return address is more like an automatic bookmark. Whenever a program jumps off to do a sub-task (say, “go check this username”), the computer quietly writes down “come back to line X when you’re done.” When the sub-task finishes, it reads the bookmark and goes back. It’s routine and happens constantly, and nothing checks whether the bookmark has been tampered with.
+
+So the attacker’s oversized input is cleverly packed with two things:
+
+Their malicious code, which spills into memory.
+A fake bookmark, positioned exactly where the real one sits, pointing back at that malicious code.
+
+The sub-task finishes, the computer reads the bookmark, and it jumps straight into the attacker’s code. Picture swapping the patient’s “return to Ward 4” note for “return to the attacker’s room.” The orderly just follows the note.
+
+This is also why it’s hard to pull off. The attacker has to know exactly how far the overflow needs to reach to land on the bookmark. Get it wrong by a little and the program just crashes. That crash is a clue for the next question about ASLR.
+
 
 Batch 1 overview: Application and OS vulnerabilities
 
@@ -176,8 +276,6 @@ You trust software updates because they come from the vendor. An attacker who co
 
 Windows, macOS and Linux are huge and complex, so flaws are always being found. This is why Patch Tuesday exists: Microsoft releases fixes on the second Tuesday of each month. The danger is the gap between a patch being released and organisations actually installing it. Attackers study the patches to work out what was broken, then target anyone who hasn’t updated yet. Your rollout work at Medical Imaging Australia sits right in this space.
 
-While you watch, listen for:
-
 What’s the difference between a buffer overflow and a race condition?
 
 Why is a malicious update so hard to spot?
@@ -186,6 +284,7 @@ Why is the time after a patch is released risky?
 
 Do they contact you, or wait for you? (Phishing vs. a trap.)
 If it’s a trap, is the site fake or real? (Typosquatting and impersonation vs. a watering hole.)
+
 
 Overview: Misconfiguration Vulnerabilities 2.3  
 
