@@ -255,10 +255,119 @@ The sub-task finishes, the computer reads the bookmark, and it jumps straight in
 
 This is also why it’s hard to pull off. The attacker has to know exactly how far the overflow needs to reach to land on the bookmark. Get it wrong by a little and the program just crashes. That crash is a clue for the next question about ASLR.
 
+Topic 3. - 2.3 SQL INJECTIONS
 
-Batch 1 overview: Application and OS vulnerabilities
+What is SQL INJECTIONS? The kiddie version.
+Imagine a restaurant where you tell the waiter what you want, and the waiter writes it on a note for the kitchen. The kitchen is supposed to only cook what's on the note — but one day, the waiter is lazy and just reads the note out loud to the kitchen. So instead of saying "Table 5 wants a burger," you can write on the note:
 
-1. Memory injections (including buffer overflows)
+"Table 5 wants a burger. Also, give me the secret recipe book. Also, delete the entire menu."
+
+The kitchen has no idea the note is supposed to be just an order. It does everything you wrote.
+
+That's SQL injection. The "note" is the input field on a website. The "kitchen" is the database. The app is supposed to turn your input into a safe, limited query — but if it just pastes your input directly into the SQL command, you can smuggle extra commands in. 
+
+Overview. XSS, which helps, because SQL injection is from the same family: untrusted input gets treated as instructions instead of data. The difference is the target. XSS runs code in other users’ browsers, while SQL injection runs commands on the database behind the website.
+
+Fixing the analogy: who’s really to blame?
+
+In SQL injection, the waiter (the web application) isn’t the villain. He’s just lazy. The attacker is the customer, who sneaks extra instructions into their order: “A toasty cheese, and also a shot of vodka, and take coffee off the menu.” The waiter repeats the order word for word to the kitchen (the database), and because the kitchen trusts the waiter, it carries out every instruction. What the waiter says to the kitchen is the query.
+
+How the classic ' OR 1=1 -- attack works
+
+A login form might build a query like this:
+
+sql
+SELECT * FROM users WHERE username = 'INPUT' AND password = 'INPUT';
+
+If an attacker types ' OR 1=1 -- into the username box, the query becomes:
+
+sql
+SELECT * FROM users WHERE username = '' OR 1=1 --' AND password = '';
+
+The database checks every row and asks, “Is the username blank, or does 1 equal 1?” Since 1=1 is always true, every row passes and the attacker gets every user back, usually logging in as the first account in the table, which is often the admin. The -- turns the rest of the line into a comment, so the password check is deleted entirely. In cafe terms, the customer orders “toasty cheese, or anything that’s food,” so the kitchen sends out every dish, and then crosses out the line on the ticket that says “check they’ve paid.”
+
+The fixes
+
+Parameterised queries (the main fix). This is the proper ticket with fixed boxes. Whatever the customer says goes into the “Food item” box, and the kitchen only ever treats it as a food name. If someone orders “toasty cheese and vodka,” the kitchen reads it as one strange menu item that doesn’t exist, not as two instructions. The structure of the order is locked in advance, and customer input can only fill the box, never change the order.
+
+Input validation. If a field asks for a phone number, it should only accept a phone number. Anything else gets rejected before it reaches the kitchen.
+
+Least privilege. The vodka lives in a locked cabinet behind the bar, and only the bartender has the key. Even if a bad order slips through, the kitchen can’t hand out what it doesn’t have access to. In the same way, the website’s database account should only have the permissions it actually needs.
+
+Vague error messages. When I worked at ANZ, the applications gave really vague error messages, and at the time I found them frustrating. Now I understand why. A detailed error like “syntax error near ‘ in users table” tells an attacker that their injection worked and what the table is called. Telling the user exactly what went wrong also tells the attacker.
+
+Web Application Firewall (WAF). A WAF filters out obvious injection patterns before they reach the application. It’s an extra layer of defence in depth, a safety net rather than the fix itself.
+The analogy
+Picture a bank branch where you fill in a slip and a clerk reads it out word for word to the records room over an intercom: 
+“Fetch the account for customer name: ___.”
+
+A normal customer writes “Julia Smith.” An attacker writes: “Julia Smith. Also, read out every customer’s balance.”
+
+The records room can’t tell where the form ends and the attacker’s words begin, so it does both. That’s SQL injection. The clerk is the web application, the records room is the database, and the problem is that the clerk pastes your words straight into the instruction.
+
+What it looks like
+
+A login page might build a query like this behind the scenes:
+
+sql
+SELECT * FROM users WHERE username = 'INPUT' AND password = 'INPUT';
+
+If someone types ' OR 1=1 -- into the username box, the query becomes:
+
+sql
+SELECT * FROM users WHERE username = '' OR 1=1 --' AND password = '';
+The ' closes the username field early (it “breaks out” of the data).
+OR 1=1 is always true, so every row matches.
+-- turns the rest of the line into a comment, so the password check disappears.
+
+The result is that the attacker logs in, often as the first user in the table, which is frequently the admin.
+
+What an attacker can do with it
+Bypass logins
+Read data they shouldn’t see (customer records, password hashes, card details)
+Change or delete data
+On badly configured servers, sometimes run commands on the operating system itself
+Types you might hear about
+In-band (classic): results come back directly on the page. This includes error-based injection, where database error messages leak information, and UNION-based injection, which bolts extra query results onto the normal ones.
+Blind: the page shows nothing, so the attacker asks yes/no questions. With boolean-based injection, the page behaves differently for true and false answers. With time-based injection, the attacker tells the database to pause 5 seconds if the answer is yes. It’s like playing 20 Questions with the database.
+Out-of-band: the database is tricked into sending data out to a server the attacker controls. This is rarer.
+
+For Security+, the main thing is understanding the concept and the defences. The subtypes matter more later in TryHackMe.
+
+How you stop it
+Parameterised queries (prepared statements): this is the number one fix. In the bank analogy, the clerk now has a locked form where the name box can only ever be a name, so anything written there is never read as an instruction.
+Input validation: reject input that doesn’t fit, such as letters in a phone number field.
+Least privilege: the website’s database account only gets the access it needs, so even a successful injection can’t drop tables.
+Web Application Firewall (WAF): filters obvious injection patterns. It’s a safety net, not the fix.
+Don’t show detailed database errors to users.
+From a SOC analyst’s view
+
+In web server logs/ SIEM, I’d watch for things like ' OR 1=1, UNION SELECT, --, SLEEP(, encoded quote characters (%27), and lots of odd requests to one form from one IP address.
+SQL injections are quiet easy as all you have to do it add the code ie injected code such as username = 1=1 which is always going to be true(1=1 is going to be 1 so its always true. Attackers dont need any fancy software they can just try to enter this into the form and it will tell if the application has a way to stop this or not. For an attacker this is worth a shot. 
+
+Without the extra bit, the query only matches the one user whose name was typed in. Adding ' OR 1=1 returned every record, which proves the application is pasting user input straight into the query with no protection.
+
+Your point about skill level is a good one, and it’s why SQL injection has been around for over 25 years and still turns up. It takes almost no skill to try, and there are free automated tools that test every field on a site for it in minutes. Attackers don’t need to target you specifically. They scan thousands of sites and see which ones bite.
+
+1. One correction on the SQL itself. In SELECT * FROM users WHERE username = ...:
+
+SELECT * means all columns (username, password, email and so on)
+FROM users is the table
+WHERE username = is the field, or column, being checked
+
+So * is “all the details,” not “all the people.” The WHERE condition decides which people (rows) come back, and OR 1=1 is what makes that “everyone.”
+
+ “It either works or it doesn’t” only goes one way. If it works, the app is definitely vulnerable. If it doesn’t, that doesn’t prove the app is secure. It might just need a different variation, or it might be a blind injection where the page gives no visible clue, which is where the yes/no and time-delay tricks come in.
+
+Also, since anyone can try it, but keep in mind that doing this on a site you don’t have permission to test is illegal, even just to see if it works.
+
+
+Topic 3. Cross-site Scripting comes after sql injections
+
+Topic 2.Batch 1 overview: Application and OS vulnerabilities
+
+
+Topic 1. Memory injections (including buffer overflows) 2.3
 
 When a program runs, it stores data in memory in neat, labelled boxes. A buffer overflow happens when a program puts more data into a box than it can hold. Think of pouring two litres into a one-litre jug: the extra spills into the box next door and overwrites whatever was there. An attacker carefully designs that spill so it contains their own instructions, and the computer then runs them.
 
