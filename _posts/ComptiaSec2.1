@@ -59,6 +59,20 @@ Q3 Attackers quietly sit inside a defence contractor’s network for 18 months, 
 
 Q4 A marketing team starts using a free online file-sharing site because the company’s approved one is too slow. Shadown IT a staff member is not trying to cause problems but its convenient to use a faster system, just to get the work done. 
 
+The 2.3 list runs:
+
+Application (memory injection, buffer overflow, race conditions, malicious update)
+Operating system-based
+Web-based (SQL injection, XSS)
+Hardware
+Virtualization
+Cloud-specific
+Supply chain
+Cryptographic
+Misconfiguration
+Mobile device
+Zero-day
+
 THREAT VECTORS 2.3
 2.2 Overview: Threat vectors and attack surfaces
 
@@ -394,8 +408,130 @@ Why is the time after a patch is released risky?
 Do they contact you, or wait for you? (Phishing vs. a trap.)
 If it’s a trap, is the site fake or real? (Typosquatting and impersonation vs. a watering hole.)
 
+Topic 4: Hardware 2.3
+Software problems can usually be fixed with an update. Hardware problems are harder, because the flaw is built into the physical device or the low-level code that runs it, and sometimes the manufacturer has stopped caring about it altogether.
 
-Overview: Misconfiguration Vulnerabilities 2.3  
+The analogy: your house
+Firmware is the wiring inside the walls.
+End-of-life is when the builder stops building that style of house.
+Legacy is the old house still standing that nobody wants to renovate.
+1. Firmware
+
+Firmware is the software built into hardware: the code that tells a router, printer, BIOS, hard drive or smart device how to work. It sits below the operating system.
+
+The problems:
+
+It’s often forgotten. People patch Windows but never update the router or printer firmware.
+The manufacturer controls it. If they don’t release a fix, you can’t patch it yourself.
+It’s hard to detect. Malware hiding in firmware can survive a complete reinstall of the operating system.
+
+That’s like faulty wiring inside the walls. You can repaint every room (reinstall the OS), but the problem is still in the walls, and only an electrician (the manufacturer) can fix it properly.
+
+A famous example is Spectre and Meltdown in 2018: flaws in the design of the processors themselves, affecting nearly every computer made in the previous 20 years. They needed firmware and OS patches as a workaround, because you can’t patch a chip’s physical design.
+
+2. End-of-life (EOL) and end-of-service-life (EOSL)
+
+These are two stages:
+
+End-of-life (EOL): the manufacturer stops selling the product. It may still get support and patches for a while.
+End-of-service-life (EOSL): the manufacturer stops supporting it. There are no more security patches or fixes.
+
+EOSL is the dangerous one. Any vulnerability found after that date stays open forever, and attackers know it.
+
+In car terms, EOL is when the dealer stops selling that model. EOSL is when there are no more recalls, parts or servicing. The car still runs, but if the brakes have a known fault, nobody’s coming to fix it.
+
+3. Legacy platforms
+
+Legacy systems are old hardware or software still in use after support has ended, usually because:
+
+Replacing them is expensive
+Critical software only runs on the old system
+“It still works, so why change it?”
+
+I know this one from Medical Imaging Australia. Medical and imaging equipment is a classic example. A scanner that cost a fortune is often tied to an old version of Windows, and the vendor certifies the machine only with that exact setup. The hospital can’t just upgrade the OS without breaking the equipment or its certification, so the old system stays in use. This machine that was old should have been replaced years ago and never even attempt to do a OS rollout.
+
+How organisations deal with it
+
+When you can’t patch or replace, you reduce the risk around it:
+
+Update firmware regularly, and include it in patch management, not just the OS.
+Track EOL/EOSL dates in asset management so replacements are planned before support ends.
+Isolate legacy systems with network segmentation. Put the old scanner on its own network segment with no internet access, so even if it’s vulnerable, attackers can’t easily reach it.
+Compensating controls: extra monitoring, strict access control and firewalls around the weak system.
+Replace when possible.
+
+Back to the house: if you can’t rewire, you lock the door to that room, put a smoke alarm in it, and don’t let anyone plug a heater into it.
+EOL vs. EOSL for Security+
+EOL — End of Life	EOSL — End of Service Life
+What stops	Production and sale of the product	All vendor support: patches, updates, help desk, spare parts
+Patches?	May still be available (sometimes paid/extended)	No. Every new CVE after this date is permanent
+Security meaning	A warning — start planning replacement	Reality — you have no patch path; exposure is unbounded
+Analogy	The store stopped stocking the product, but the manufacturer will still answer your phone for a while	The manufacturer deleted your number from their system
+
+Timeline: EOL comes first, EOSL comes after (typically 2–5 years later). 
+
+How the exam wants you to think about it
+A question that says "vendor no longer sells the product" → EOL
+A question that says "no longer receives security patches or vendor support" → EOSL
+The security risk question: the dangerous date is EOSL, because that's when the patch path is permanently gone.  EOL is the planning window; EOSL is the exposure window.
+Exam tip: If a scenario describes a system that "still works but will never be patched again," the answer is EOSL, not EOL. The product is still running — it just has no safety net. 
+Exam tips
+Know the difference between EOL (stops selling) and EOSL (stops supporting, no more patches).
+EOL is its still running and there is still support gives you time to plan but its time to start looking at a replacement.
+EOSL DANGER SYSTEM this is when it turns into a legacy system  there is no more patches and it needs to be used carefully like isolating, segment and security controls still using it on the network is a bad idea. It may be time to repurpose this machine as an offline or some other use if possible. 
+
+Firmware sits below the OS and is often overlooked in patching.
+For legacy systems, the usual answer is segmentation or isolation plus compensating controls.
+CompTIA Security+ 2.3: Hardware Vulnerabilities
+
+Software problems can usually be fixed with an update. Hardware problems are harder, because the flaw is built into the physical device or the low-level code that runs it, and sometimes the manufacturer has stopped caring about it altogether.
+
+A simple way to picture it is a house:
+
+Firmware is the wiring inside the walls.
+End-of-life is when the builder stops building that style of house.
+Legacy is the old house still standing that nobody wants to renovate.
+Firmware
+
+Firmware is the software built into hardware: the code that tells a laptop’s BIOS/UEFI, a router, a printer or a hard drive how to work. It sits below the operating system, which is why it’s so often overlooked.
+
+Part of the problem is that responsibility is split. On a Windows laptop, Microsoft patches the operating system through Windows Update, which most organisations manage well. But the firmware is the responsibility of the hardware maker (HP, Dell, Lenovo) or the chip maker (Intel, AMD), and it’s often delivered through their own separate tools. Because it’s a separate patching channel, it gets missed. Firmware updates are also riskier, because a failed update can brick the device, so admins tend to put them off.
+
+Faulty firmware is like faulty wiring inside the walls. You can repaint every room (reinstall the operating system), but the problem is still there, and only the electrician (the manufacturer) can fix it properly.
+
+End-of-life (EOL) vs end-of-service-life (EOSL)
+EOL: the vendor stops selling the product. It may still get security patches for a while, but it’s a warning that support is ending soon.
+EOSL: the vendor stops supporting the product. No more security patches, no more fixes. Any vulnerability found after this date stays open forever.
+Legacy systems
+
+A legacy system is any outdated hardware or software still in use, usually because it’s expensive to replace, critical software only runs on it, or “it still works, so why change it?” A system can be legacy before it reaches EOSL, but once a legacy system is also past EOSL, it’s in a dangerous state.
+
+A real-world example: the orange payroll computer
+
+When I worked as a field technician for a medical imaging company, I came across a computer at one of the clinics that ran their payroll. It was clearly from the 1980s, and this was in the 2000s. It had been white once, but it had aged to orange. It was definitely legacy, and long past any vendor support.
+
+Nobody seemed to know much about it. The clinic knew it did the payroll, and I only ever dealt with one staff member who used it. Headquarters couldn’t tell me anything about it either. When I backed it up, I had a feeling there were applications on it I didn’t know about and couldn’t back up. I told them to make sure everything it did was backed up, because if it died, I didn’t think it would come back.
+
+It was a security problem, but it was also an every-week payroll problem. The machine was doing its job, so no one had thought about what would happen if it stopped. Coffee, a dead hard drive or an attacker would all lead to the same result: no payroll.
+
+In security terms, this computer was a single point of failure, and the risk wasn’t just to confidentiality or integrity but to availability, the A in the CIA triad. The organisation had decades to plan for it. Setting up the payroll on a second machine, or having a documented recovery plan, wouldn’t have been expensive with that much warning, and the company easily had the budget.
+
+How to manage hardware vulnerabilities
+
+When you can’t patch or replace something straight away, you reduce the risk around it:
+
+Include firmware in patch management, not just the operating system.
+Track EOL and EOSL dates in asset management, so replacements are planned before support ends.
+Keep an asset inventory. You can’t protect, back up or replace something nobody has documented.
+Isolate legacy systems by taking them off the network or segmenting them, with firewalls around them. This doesn’t fix the vulnerability, but it makes it much harder for an attacker to reach.
+Limit who uses them. Fewer users means a smaller attack surface.
+Build in redundancy and continuity plans, so critical work like payroll can continue on another system if the old one fails.
+Replace the system when possible.
+
+Topic.5:  2.3 Virtualization. UPTO HERE NEXT STUDY SESSSION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
 
 The big idea: The software itself might be fine. The problem is how someone set it up. Messer describes these as the vulnerabilities we create ourselves. Think of it like buying a top-quality deadlock and leaving the key in it.
 
@@ -443,7 +579,7 @@ Open ports and services. Every open port is another door into the house. The ris
 The Real World Security Breech - The Owner of this membership education platform was setup by a third party. No password was added on the discord so someone found it and had some fun posting gay photos. 
 You can outsource the work, but not the responsibility. If you hire someone else to build your system, the security failure is still yours. That links to supply chain and third-party risk. Your point about security only being taken seriously after a breach is also a big theme in this course.
 
-Overview: Mobile Device Vulnerabilities 2.3
+Topic 10: Overview: Mobile Device Vulnerabilities 2.3
 
 The big idea: Phones come with built-in guard rails. The official app store checks apps before you can install them, and the operating system keeps each app in its own “room” so it can’t interfere with other apps or the system. Most mobile vulnerabilities come from removing those guard rails.
 
@@ -481,7 +617,7 @@ Jailbreaking (iPhone) and rooting (Android) are different. They’re deliberate.
 
 Why businesses care. If an employee’s jailbroken or rooted phone has work email, files or apps on it, the risk spreads to the whole company, because an attacker could use that phone as a way back into the network. That’s why companies use MDM to detect and block these phones. I apply the same thinking at home: I don’t want a possibly compromised phone sharing my Wi-Fi with my own devices. Putting untrusted devices on a separate guest network is a simple form of network segmentation. My own modem is 8 to 10 years old and may not support it, which is a reminder that old hardware is a vulnerability too. Once a device stops receiving firmware updates, it’s end-of-life, and any new flaws will never be fixed.
 
-Zero-day 2.3 
+Topic: 10 Zero-day 2.3 
 What “zero day” actually counts. It’s not quite “zero days since anyone knew about it.” It means the vendor has had zero days to fix it. An attacker might have known about the flaw and used it for months. It’s still a zero-day as long as the vendor doesn’t know, or knows but hasn’t released a patch yet.
 
 Two related terms:
