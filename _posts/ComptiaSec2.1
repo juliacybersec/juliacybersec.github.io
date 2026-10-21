@@ -800,6 +800,8 @@ Rotation	If a key does leak, rotate it immediately. Assume it's compromised the 
 Least privilege	The key you accidentally commit should only have the minimum permissions it needs — not admin. If it's a read-only S3 key for one bucket, the blast radius is small.
 
 Managed identities	The real fix is use IAM roles / managed identities instead of static keys entirely. The cloud platform handles credentials automatically — there's nothing to leak.
+With use an IAM (is like the bouncer) role instead of a static key, instead of writing down your house code on a sticky note, you get a temporary keycard from the bouncer
+every morning that expires at midnight. There's no permanent key to steal, leak, or commit to a repo. The bouncer (IAM) hands you a new one each time you need it.
 
 How it happens: You write the key down (in a file, in code, in a config) and it ends up somewhere public. The "left it on the window" part.
 How to stop it: Don't write it down in the first place (secrets manager / IAM role), and if you did, catch it before it leaves your machine (pre-commit hook / secret scanning).
