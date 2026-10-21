@@ -61,17 +61,17 @@ Q4 A marketing team starts using a free online file-sharing site because the com
 
 The 2.3 list runs:
 
-Application (memory injection, buffer overflow, race conditions, malicious update)
-Operating system-based
-Web-based (SQL injection, XSS)
+1Application (memory injection, buffer overflow, race conditions, malicious update)
+2Operating system-based
+3Web-based (SQL injection, XSS)
 Hardware
 Virtualization
 Cloud-specific
-Supply chain
-Cryptographic
-Misconfiguration
-Mobile device
-Zero-day
+7Supply chain
+8Cryptographic
+9Misconfiguration
+10 Mobile device
+11 Zero-day
 
 THREAT VECTORS 2.3
 2.2 Overview: Threat vectors and attack surfaces
@@ -742,7 +742,6 @@ What the shared responsibility model is, in your own words or your own analogy
 The landlord analogy:
 
 You rent an apartment in a secure building.
-
 The landlord (cloud provider) takes care of the building — the structure, the front gate, the security cameras in the lobby, the plumbing, the power.
 You (the customer) take care of your apartment — who you let in, whether you lock your door, what you leave on the windowsill. 
 The building is safe. Your apartment is only as safe as you make it.
@@ -778,12 +777,20 @@ exam answer
 The provider's infrastructure is a small, professionally hardened, redundant target that has essentially never been fully breached. The customer's configuration surface is large, constantly changing, and set by humans who make mistakes — and misconfigurations don't require an exploit, just a scan. That's why the "building" is safe but the "apartment door" is left unlocked.
 
 Exam tip: If a question asks "why do most cloud breaches happen?" and one answer is "customer misconfiguration" and another is "provider vulnerability," the answer is customer misconfiguration — always. 
-One way leaked keys could happen, and how you’d stop it happening to you.
 
-One way: committing a .env file to GitHub
-The scenario:You're building a small app. You create a .env file with your AWS key or Stripe secret, it works locally, you push to GitHub to share with a teammate — and you forgot to add .env to .gitignore. Within minutes, automated scanners (GitGuardian, TruffleHog, GitHub's own secret scanning) pick it up. GitHub detected 39 million leaked secrets on its platform in 2024 alone. 
+One way leaked keys could happen, and how you’d stop it happening to you?
 
-Even if you delete the file and push again — it's still in the git history. Anyone can git log and find it. "Private" repos aren't safe either: GitGuardian found 35% of private repos contain plaintext secrets (AWS keys appear 5× more often in private repos than public ones). 
+The sticky note on the front door
+You move into a new house. Your alarm code is 4-7-2-9. You write it on a sticky note and stick it to the front door so you don't forget.
+
+That's your .env file. It's just a text file that holds your secrets — API keys, passwords, tokens. Locally, on your machine, it's fine. It's in your pocket.
+But then you push to GitHub. That's taking the sticky note, peeling it off the front door, and taping it to the outside of your front window for the whole street to see.
+
+Now everyone walking past can read it. And here's the part that catches people out:
+
+"Oh no, I'll just peel it off and push again."
+
+No. The whole street already saw it. And even worse — the tape residue is still there. That's git history. You deleted the file, but anyone who looks at the old commits can still read 4-7-2-9.
 
 How to stop it
 Layer	What to do
@@ -797,6 +804,8 @@ Managed identities	The real fix: use IAM roles / managed identities instead of s
 
 Exam one-liner
 The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
+
+
 ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
