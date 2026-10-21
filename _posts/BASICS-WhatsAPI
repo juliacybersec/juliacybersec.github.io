@@ -23,3 +23,12 @@ and it decides what you're allowed to order(as long as you pay your tab too.
 
 Lose that name (leak your key), and anyone at the restaurant can order food on your tab.
 
+What is IAM = Identity and Access Management. 
+
+It's the system that decides who you are (identity) and what you're allowed to do (access). 
+Its like the bouncer at a club: they check your ID (authentication) and then check the guest list to see if you're allowed in the VIP area (authorization). 
+
+
+
+
+
