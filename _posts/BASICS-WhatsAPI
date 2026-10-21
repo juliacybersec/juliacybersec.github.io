@@ -1,0 +1,25 @@
+What is an API — the waiter 
+You're in a restaurant. You don't walk into the kitchen and grab the coffee yourself. 
+You tell the waiter what you want, they take it to the kitchen, and bring back what the kitchen made.
+
+That's an API.
+
+Restaurant	Tech
+You (the customer)	Your app / your code
+The waiter	The API
+The kitchen	The actual server / database / service
+The menu	The API's documentation (what you can order)
+"Sorry, we don't do that"	An error response
+
+An API (Application Programming Interface) is just a set of rules that lets one program talk to another. 
+Your code says "hey, give me the weather in Melbourne" → the API passes that to the weather service → the service sends back {"temp": 22, "condition": "sunny"}.
+
+You never talk to the kitchen directly. You go through the waiter. The API is the waiter.
+
+So what's an "API key" then?
+The cafe lets you order, but they need to know who you are so they can write it on your cup and put on your tab(i ordered a latte not too hot).
+You give them your name and it's a take away coffee. That's your API key — it's how the service knows which account is making the request, 
+and it decides what you're allowed to order(as long as you pay your tab too.
+
+Lose that name (leak your key), and anyone at the restaurant can order food on your tab.
+
