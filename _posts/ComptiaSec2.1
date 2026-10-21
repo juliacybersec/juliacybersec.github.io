@@ -528,9 +528,7 @@ Limit who uses them. Fewer users means a smaller attack surface.
 Build in redundancy and continuity plans, so critical work like payroll can continue on another system if the old one fails.
 Replace the system when possible.
 
-Topic.5:  2.3 Virtualization. UPTO HERE NEXT STUDY SESSSION +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
+Topic.5:  2.3 Virtualization. 
 The setup: a hypervisor is the software that lets one physical machine run lots of virtual machines. Think of it as an hotel building. Each VM is a separate room with its own lock. The hypervisor is the building itself: the walls, plumbing and the manager with master keys.
 
 1. VM escape. An attacker inside one VM finds a flaw that lets them break out of their “room” into the hypervisor. From there they can get at every other VM on that host, because they’re now in the building’s service corridors. It’s rare and hard to pull off, but serious when it happens. Security researchers have shown it in real life by chaining several exploits together, going from a browser to the guest operating system and then out to the hypervisor. For you this is personal: your Kali VM sits on your laptop, so an escape would land someone on your actual laptop.
@@ -802,9 +800,12 @@ Rotation	If a key does leak, rotate it immediately. Assume it's compromised the 
 Least privilege	The key you accidentally commit should only have the minimum permissions it needs — not admin. If it's a read-only S3 key for one bucket, the blast radius is small.
 Managed identities	The real fix: use IAM roles / managed identities instead of static keys entirely. The cloud platform handles credentials automatically — there's nothing to leak.
 
-Exam one-liner
-The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
+How it happens: You write the key down (in a file, in code, in a config) and it ends up somewhere public. The "left it on the window" part.
+How to stop it: Don't write it down in the first place (secrets manager / IAM role), and if you did, catch it before it leaves your machine (pre-commit hook / secret scanning).
 
+FOR THE EXAM:if it's a multiple choice, the answer they're looking for is almost always secrets management (don't store keys in plaintext) or key rotation (if it's already leaked, kill it). "Don't write it down" = use a secrets manager. "Catch it before" = secret scanning / pre-commit hooks.
+
+The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
 
 ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
