@@ -187,7 +187,7 @@ The root cause is no input/bounds checking by the developer.
 It’s hard to do reliably. Attackers often spend ages getting it right, but once it works, it’s powerful.
 Defences include input validation, safer programming languages, and OS protections like ASLR, which shuffles where things sit in memory so the attacker can’t predict where to aim. It’s like the pharmacy rearranging its shelves every day.
 
-Memory injection
+Topic  Memory injection 2.3
 
 This is the broader idea: getting malicious code into a running program’s memory, so it executes with that program’s permissions. A buffer overflow is one way to do it. Another is DLL injection on Windows, where a program is tricked into loading a malicious library file (DLL) as if it were a legitimate one.
 
@@ -563,27 +563,29 @@ What a VM escape is and why it’s worse than a normal compromise of one machine
 Code running inside a guest VM exploits a vulnerability in the hypervisor (or its virtual device emulation, shared memory channels, or guest tools) to execute on the host or hypervisor layer.  The isolation boundary that was supposed to contain the damage is gone.
 Q1: VM escape
 
-What you nailed:
-
 The attacker exploits a flaw in the hypervisor, not just in the VM.
 That breaks isolation, which is the whole point of virtualization.
 The blast radius is much bigger: one compromised room becomes every room.
 
-One correction, and it’s an important one. A VM escape usually isn’t lateral movement across the network, floor to floor through the corridors. The attacker goes down into the hypervisor and comes up inside the other VMs from underneath. They skip the network entirely. That’s why firewalls and network detection between VMs don’t help much here. In hotel terms, they don’t sneak down the hallway past security cameras. They’re now inside the walls of the building itself, so the guests and the hallway cameras never see them.
+A VM escape usually isn’t lateral movement across the network, floor to floor through the corridors. The attacker goes down into the hypervisor and comes up inside the other VMs from underneath. They skip the network entirely. That’s why firewalls and network detection between VMs don’t help much here. In hotel terms, they don’t sneak down the hallway past security cameras. They’re now inside the walls of the building itself, so the guests and the hallway cameras never see them.
 
 Your point about tearing a VM down and rebuilding it ties in nicely. Normally that’s your safety net. After a VM escape, rebuilding the room doesn’t fix anything, because the problem is in the building, not the room.
 
-On the example: as I understand it, the escape Messer mentions was demonstrated by researchers at a hacking competition. They chained several bugs together, and VMware patched it once it was disclosed. So you’re right that it was caught by the good guys rather than used in the wild.
-
-One-line version you could say in an interview:
+One-line version 
 
 “A VM escape is when an attacker breaks out of a virtual machine into the hypervisor. That breaks isolation and gives them access to every other VM on that host, without going over the network.”
 
 Q2: Resource reuse
+Resource reuse: the room nobody cleaned
 
-The unmade bed with the Red Bull can and breadcrumbs is a great analogy. Keep it for the blog. Leftover data from the previous user is exactly the risk.
+Sticking with the hotel, imagine it’s fully booked and everyone wants a room. To keep up, the hotel lets one guest sleep in a room, and as soon as that guest heads out for the day, someone else is given the same room. There’s no time to clean it in between. The bed hasn’t been changed, and the new guest finds an empty Red Bull can and breadcrumbs left by the last person.
 
-One refinement to your numbers example: it isn’t data being left in a VM. It’s the hypervisor taking memory or disk space back from one VM (because it shut down, or memory is being shuffled around) and handing it to another VM without wiping it first. The new VM can then read what the old one left behind. The fix is basically housekeeping: the hypervisor should clear memory and storage before reassigning it. That’s the “clean the room between guests” rule.
+That’s resource reuse. A hypervisor shares out memory and disk space between VMs. When one VM shuts down or gives memory back, the hypervisor can hand that same memory or storage to a different VM. If it doesn’t wipe it first, the new VM might find data the previous one left behind. Instead of a Red Bull can, it could be passwords, files or other sensitive information.
+
+The fix is good housekeeping: the hypervisor should clear memory and storage before giving it to the next VM, just as a hotel should clean a room before the next guest checks in.
+The unmade bed with the Red Bull can and breadcrumbs analogy. Leftover data from the previous user is exactly the risk.
+
+it isn’t data being left in a VM. It’s the hypervisor taking memory or disk space back from one VM (because it shut down, or memory is being shuffled around) and handing it to another VM without wiping it first. The new VM can then read what the old one left behind. The fix is basically housekeeping: the hypervisor should clear memory and storage before reassigning it. That’s the “clean the room between guests” rule.
 Why it's worse than compromising one VM
 Normal VM compromise	VM escape
 Blast radius	One VM's data and processes	Every VM on the host + the host itself
@@ -617,6 +619,7 @@ The problem: the manager never makes the bed between guests.
 Guest #1 falls asleep, gets moved to a different bed. Guest #2 is put in that bed and wakes up to find Guest #1's diary, phone, and half-eaten sandwich still on the pillow.
 
 That's resource reuse. The hypervisor reuses the same physical memory/storage between VMs without clearing it first, so one VM can read data that belonged to a different VM. 
+Resource reuse is when the hypervisor reassigns memory or storage from one VM to another without wiping it, so the new VM can find data the last one left behind. The fix is for the hypervisor to clear it before reassigning.
 
 What the exam wants you to know
 Where it lives	Virtualization (Domain 2.3), alongside VM escape
@@ -633,11 +636,169 @@ Severity	Confidentiality loss	Total compromise (confidentiality + integrity + av
 
 Exam tip: If the question mentions "data from a previous VM is visible to a new VM" or "shared memory not cleared," the answer is resource reuse.  If it mentions "executing code on the host from inside a guest," that's VM escape.
 
-
 One thing you’d do to protect your own Kali/laptop setup?
 
 key exam sentence: A VM escape invalidates the isolation guarantee that makes virtualization safe.  Once the attacker is at the hypervisor level, all guest-level security controls are meaningless because the attacker controls the layer that enforces them. 
+Securing a Kali VM on a Windows Host
 
+Here's a practical checklist, ordered from most important to least:
+
+1. Network isolation (biggest win)
+Don't use Bridged mode. That puts Kali on your real LAN as if it were a physical machine — your router, your phone, your NAS are all reachable. 
+
+Mode	What it does	When to use
+NAT	Kali gets internet, but your LAN can't see it	Default — good for learning, updates, browsing
+Host-Only	Kali can only talk to your Windows host	When you need to reach it from Windows but not the LAN
+Internal	Kali can only talk to other VMs on the same internal network	When building a multi-VM lab
+Bridged	Kali is a peer on your physical network	Avoid unless you have a dedicated lab VLAN
+
+Practical setup: Use NAT for internet access (updates, package installs). If you also want to run target VMs, add a second adapter set to Internal Network with a custom name (e.g. intnet). 
+
+2. Disable integration features
+These are the "bridges" between guest and host — each one is a potential escape vector:
+
+Shared Clipboard → set to Disabled (VirtualBox: Settings → General → Advanced)
+Drag & Drop → set to Disabled
+Shared Folders → remove all; only mount one temporarily when you need a file, then unmount
+USB Passthrough → disable unless you specifically need a device
+Guest Additions → only install if you need them; they add kernel modules that are a known attack surface 
+3. Harden the guest (Kali side)
+Change the default kali/kali password immediately
+Disable unnecessary services:
+sudo systemctl disable ssh    # if you're not using remote access
+sudo systemctl disable avahi-daemon
+
+Enable the firewall:
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw enable
+
+Keep it updated:
+sudo apt update && sudo apt full-upgrade
+
+4. Protect the host (Windows side)
+Keep Windows and your hypervisor (VirtualBox/VMware/Hyper-V) patched
+Run the hypervisor as a standard user, not admin, if possible
+Add the VM folder to Windows Defender exclusions so it doesn't flag your Kali tools (Kali's official docs recommend this) — but only for the specific VM folder, not the whole disk
+Don't store sensitive host credentials (banking, work accounts) in the same browser profile you use for Kali 
+5. Operational habits
+Take a clean snapshot after setup.  After any risky test, revert to it.
+Don't log into real accounts (Google, work email) inside the VM.
+Don't scan real networks without written authorization — this is illegal in most jurisdictions, including Australia (Criminal Code Act s.476–477).
+When in doubt, power off the VM rather than leaving it running with network access.
+TL;DR for the exam
+The Security+ principle here is least privilege + isolation: minimize the channels between guest and host (disable shared features), restrict network visibility (NAT/host-only, not bridged), and keep both layers patched. The VM boundary is the security control — every feature you enable to make it convenient is a feature you're removing from that boundary.
+
+___________________________________________NOTE: FOR MY HOME LAN STEPS REQUIRED FOR A SECURE SETUP _____________________________________________________________
+For My home lab I want to setup a few VMs and make sure:
+Keep it off your home network: network segmentation. 
+Protect the computer running the VM 
+Disable what you don’t use (SSH, services): hardening / reducing the attack surface
+Don’t run as admin: least privilege
+Update, patch, firewall, change passwords: standard hardening. All correct.
+Tear it down and rebuild: exactly what VMs are good for.
+
+Patch Kali (the guest), but the defence against VM escape is patching the hypervisor itself, meaning VirtualBox, VMware. The escape exploits a bug in the building, not the room. Updating the room doesn’t fix holes in the walls.
+
+Three practical extras for the lab:
+
+Network adapter setting. Bridged puts the VM straight onto your home network, so I want to avoid it. Host-only or internal network keeps it walled off. Kali needs internet to update, so a common approach is NAT while updating, then switch to host-only for mucking around.
+Turn off shared folders, shared clipboard and drag-and-drop. They’re doors in the wall between your VM and Windows. If isolation is the goal, close them.
+Use snapshots instead of backups. Take one when it’s clean and patched, and you can roll back in seconds after breaking something.
+
+RAM I gave the VM is only taken while the VM is running. When it’s shut down, Windows gets it all back. I can also lower it in the VM’s settings without rebuilding. Memory can’t be moved to your other laptop, though, unless you physically swap RAM sticks.
+
+
+================================================================================================================================================================
+Topic 6. 2.3 Cloud-Specific Vulnerabilities.
+The big idea: the shared responsibility model. Cloud is like renting a unit in a big storage facility. The facility (AWS, Azure, Google) is responsible for the fence, the gate, the security guards and the building itself. You’re responsible for your own unit: locking the roller door, deciding who gets a key, and what you leave inside. Most cloud breaches don’t happen because the facility gets broken into. They happen because a customer left their own roller door open.
+
+The main vulnerabilities:
+
+Misconfiguration, the number one cause. The classic example is a storage bucket (like Amazon S3) accidentally set to public, so anyone on the internet can browse the files. There have been many real breaches exactly like this, with millions of customer records sitting open. That’s the roller door left up.
+Weak identity and access management. Accounts with far more permissions than they need, no MFA, or leaked access keys. A really common one: developers accidentally upload their cloud keys to GitHub, and bots scan GitHub constantly looking for them. Keep that in mind with your own GitHub. That’s handing a copy of your unit key to a stranger.
+It’s publicly accessible by design. Cloud services are built to be reached from anywhere, so the attack surface is huge. That opens the door to DDoS and to attackers probing for normal application flaws: authentication bypass (getting in without logging in properly), directory traversal (wandering into folders you shouldn’t see), and remote code execution (running your own commands on their server).
+Shared tenancy. You’re sharing physical hardware with strangers, so everything you just learned applies: VM escape and resource reuse are cloud risks too. That’s your link back to the last topic.
+
+OPSEC: what I’m careful not to share ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+While studying cloud vulnerabilities, something clicked for me. Misconfiguration is one of the biggest causes of breaches, and the same goes for what we share publicly. This blog is public, and anyone can read it, including attackers. They do their research too.
+
+Imagine someone writing a post like: “I’ve set up a new computer, haven’t patched it, haven’t changed any of the default settings, and can’t remember where i put it.” That’s like putting a sign on your front gate saying the door has no lock, there’s no alarm, and you’re never home. It’s an open invitation.
+
+In security this is called OPSEC (operational security): being careful about what you reveal, because small details can add up to a picture an attacker can use.
+
+So these are my rules for this blog:
+
+I’ll write about my lab after I’ve secured it, or keep it general
+I’ll never post IP addresses, usernames, hostnames, passwords, keys or details of my home network
+I’ll check every screenshot before posting, because details hide in the corners: terminal prompts, browser tabs, file paths
+
+Sharing what I’m learning is the whole point of this blog. But just like a hotel room, it’s my job to make sure I’m not leaving my access card out the front.
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+What the shared responsibility model is, in your own words or your own analogy
+
+The landlord analogy:
+
+You rent an apartment in a secure building.
+
+The landlord (cloud provider) takes care of the building — the structure, the front gate, the security cameras in the lobby, the plumbing, the power.
+You (the customer) take care of your apartment — who you let in, whether you lock your door, what you leave on the windowsill. 
+The building is safe. Your apartment is only as safe as you make it.
+
+That's the entire model: the provider secures the cloud; you secure what's in it. 
+
+The one-line version the exam uses
+Security OF the cloud = provider's job (hardware, data center, physical security, hypervisor)
+Security IN the cloud = your job (data, identities, access controls, application config) 
+AWS secured the data center, the hardware, the network — the "building" was fine. But Capital One misconfigured their own WAF and IAM rules — they left their "apartment door" unlocked.  The breach was 100% on the customer's side of the line.
+
+Exam tip: If a scenario says "the cloud provider's infrastructure was secure but the customer's bucket was public" or "the provider patched the hypervisor but the customer didn't patch the guest OS," the answer is shared responsibility — the breach was on the customer's side of the line, not the provider's. 
+
+Why misconfiguration causes more cloud breaches than the cloud provider getting hacked
+1. The provider's side is a small, hardened target
+AWS, Azure, and Google Cloud have thousands of security engineers, bug bounties, penetration testing, redundant controls, and decades of operational hardening. A full hypervisor or data-center compromise is essentially unheard of — it would be a global news event.
+
+2. The customer's side is enormous and constantly changing
+A single enterprise might have thousands of resources across multiple accounts, regions, and services — each one a configuration decision. Every new deployment, migration, or "quick test" is a chance to leave a door open. An average account has ~43 misconfigurations at any given time (SentinelOne, 2024). 
+
+3. Misconfigurations don't require a clever exploit
+This is the key point. A provider hack requires a zero-day or novel technique — rare, expensive, and hard to pull off. A misconfiguration just requires a scanner:
+
+Public S3 bucket? → curl it
+Open security group on port 3389? → RDP in
+Overly permissive IAM role? → aws sts assume-role. Lots of places not using MFA/best practices. 
+Attackers automate scanning for these. They don't need to break anything — they just need to find what you already left open. 
+
+4. It's a human problem, not a technology problem
+82% of misconfigurations are caused by human error, not software flaws (SentinelOne).  The cloud is powerful because it's highly configurable — and that same power means one wrong checkbox, one "temporarily" public bucket, one default password, and you're exposed. 
+
+exam answer
+The provider's infrastructure is a small, professionally hardened, redundant target that has essentially never been fully breached. The customer's configuration surface is large, constantly changing, and set by humans who make mistakes — and misconfigurations don't require an exploit, just a scan. That's why the "building" is safe but the "apartment door" is left unlocked.
+
+Exam tip: If a question asks "why do most cloud breaches happen?" and one answer is "customer misconfiguration" and another is "provider vulnerability," the answer is customer misconfiguration — always. 
+One way leaked keys could happen, and how you’d stop it happening to you.
+
+One way: committing a .env file to GitHub
+The scenario:You're building a small app. You create a .env file with your AWS key or Stripe secret, it works locally, you push to GitHub to share with a teammate — and you forgot to add .env to .gitignore. Within minutes, automated scanners (GitGuardian, TruffleHog, GitHub's own secret scanning) pick it up. GitHub detected 39 million leaked secrets on its platform in 2024 alone. 
+
+Even if you delete the file and push again — it's still in the git history. Anyone can git log and find it. "Private" repos aren't safe either: GitGuardian found 35% of private repos contain plaintext secrets (AWS keys appear 5× more often in private repos than public ones). 
+
+How to stop it
+Layer	What to do
+Prevention	Add .env to .gitignore before the first commit. Never hardcode keys in source.
+Secret storage	Use a secrets manager (AWS Secrets Manager, Azure Key Vault, HashiCorp Vault) or at minimum environment variables injected at deploy time — not a file in your repo
+Detection	Enable secret scanning (GitHub's built-in, or GitGuardian/TruffleHog in CI) — it blocks the push or alerts you before the key is public
+Git hooks	Add a pre-commit hook (e.g. gitleaks or detect-secrets) that scans staged files and rejects the commit if a pattern looks like a key
+Rotation	If a key does leak, rotate it immediately. Assume it's compromised the moment it's public.
+Least privilege	The key you accidentally commit should only have the minimum permissions it needs — not admin. If it's a read-only S3 key for one bucket, the blast radius is small.
+Managed identities	The real fix: use IAM roles / managed identities instead of static keys entirely. The cloud platform handles credentials automatically — there's nothing to leak.
+
+Exam one-liner
+The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
+))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
 
 The big idea: The software itself might be fine. The problem is how someone set it up. Messer describes these as the vulnerabilities we create ourselves. Think of it like buying a top-quality deadlock and leaving the key in it.
@@ -659,7 +820,7 @@ Telnet → SSH
 FTP → SFTP
 HTTP → HTTPS
 
-It’s like the difference between sending a postcard and a sealed letter. You’ll remember a lot of these from Network+.
+It’s like the difference between sending a postcard and a sealed letter.I do remember these from Network+.
 
 4. Default settings
 Devices left with factory passwords and settings. A famous real case is the Mirai botnet (2016). It scanned the internet for cameras and routers still using default logins like admin/admin, took over hundreds of thousands of them, and used them to knock major websites offline.
