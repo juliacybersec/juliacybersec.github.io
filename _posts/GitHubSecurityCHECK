@@ -1,1 +1,46 @@
+Security+ 2.3 in practice: checking my own GitHub Pages blog with curl
 
+I'm studying for Security+, and one of the things that keeps coming up is misconfiguration — the idea that most breaches aren't some fancy zero-day,
+they're just a door left unlocked. A file that shouldn't be there. A setting that was "temporary" and never got changed back.
+ 
+So I thought: I've got a blog on GitHub Pages. Nobody's going to hack it and probably no one will ever read it! (but I'm writing it for me still since its out there might as well do a check)
+The same principles apply. If I left a .env file in my repo, or a .git directory exposed, or a draft post that was never supposed to be public — it's sitting there for anyone to find. The fact that it's "only a blog" doesn't change the mechanism. A misconfiguration is a misconfiguration whether the data inside is your AWS keys or your half-finished study notes.
+
+So I did what I'd do against any target: I knocked on the door with curl and listened to see what came back.
+
+Misconfiguration is the main reason security is a problem in the cloud.  
+
+I first ran a curl(this is the knock knock at the door)
+
+curl -I https://juliacybersec.github.io   
+
+no version number, HSTP present and a 200 OK site running so this checked and all good within the confines of GitHub.
+
+My headers are secure as GitHub Pages can be. Note that the risk for a GitHub Pages sites isn't these headers — it's files I commit to the repo (.env, .git/, drafts, etc.).
+That's the curl check that actually matters:
+I checked by running
+curl -s -o /dev/null -w "%{http_code}" https://juliacybersec.github.io/.env
+curl -s -o /dev/null -w "%{http_code}" https://juliacybersec.github.io/.git/config   
+
+so -s is just run the command and -o /dev/null is the output response body to throw it to /dev/null is the trash bin. I dont want to see the contents only if it exists.
+Output the response body to /dev/null — that's a "trash can" that throws data away. You don't want to see the file contents, you just want to know if it exists.
+
+the -w "%{http_code}" is a variable that curl fills in with the status number (200, 404, 403, etc.) if you remember your network course 200 is ok 404 is the infamous not found)
+
+This one's separate from the 2.3 write-up. Misconfiguration was the topic that made me go and check my own blog. Not because it needed checking — it's a static GitHub Pages
+site with no backend, no database, no login. But the principle is the same whether the data is your AWS keys or your half-finished study notes, so I ran a few curl commands
+against it and wrote down what came back.
+
+Took me about 40 minutes to sit down and actually do it properly instead of just skimming the headers. I explained the whole thing to Princess first
+(you've met her — pink ducky, yellow crown, sits on the shelf). She's the only audience I have thats going to tell me if I'm full of it, and she can't talk back, 
+so we get along great.
+
+
+
+
+
+
+
+So it returned 404 thats not found so all good. 
+
+(thats 404 not found so there are a few numbers but the main ones are 200 ok or 404 not found and if you get a 500 and cant remember just look it up)
