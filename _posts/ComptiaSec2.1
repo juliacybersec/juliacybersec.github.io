@@ -641,7 +641,7 @@ Securing a Kali VM on a Windows Host
 
 Here's a practical checklist, ordered from most important to least:
 
-1. Network isolation (biggest win)
+1. Network isolation -the best thing to do first
 Don't use Bridged mode. That puts Kali on your real LAN as if it were a physical machine — your router, your phone, your NAS are all reachable. 
 
 Mode	What it does	When to use
@@ -735,8 +735,7 @@ I’ll check every screenshot before posting, because details hide in the corner
 Sharing what I’m learning is the whole point of this blog. But just like a hotel room, it’s my job to make sure I’m not leaving my access card out the front.
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-What the shared responsibility model is, in your own words or your own analogy
-
+What the shared responsibility model is
 The landlord analogy:
 
 You rent an apartment in a secure building.
@@ -812,12 +811,33 @@ How to stop it: Don't write it down in the first place (secrets manager / IAM ro
 Secret scanning: GitHub can automatically spot keys and block the push before it goes public
 Least privilege: give each key only the permissions it needs, so a leaked key can do less damage
 
+
 FOR THE EXAM: Keys get leaked when they’re hardcoded and pushed to a public repo. Prevent it with secrets management and secret scanning. If it happens, revoke the key immediately, because deleting it doesn’t remove it from history.
 
 if it's a multiple choice, the answer they're looking for is almost always secrets management (don't store keys in plaintext) or key rotation (if it's already leaked, kill it). "Don't write it down" = use a secrets manager. "Catch it before" = secret scanning / pre-commit hooks.
 
 The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
+)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))UPTO HERE))))))))))))))))))))))))))))))))))))))))))))))))))))))
+Topic  2.3 Overview: cloud-specific vulnerabilities
 
+Cloud is a big, attractive target. More and more of the world’s data lives there, so attackers put real effort into it. The attacks aren’t magic new cloud-only tricks; mostly they’re the same vulnerabilities you’ve already studied, now aimed at internet-facing cloud services.
+The usual suspects still apply. Expect a list that will feel familiar:
+Denial of service (DoS): flooding a service until it can’t respond.
+Authentication bypass: getting in without proper credentials, often through weak or misconfigured login settings.
+Directory traversal: tricking an app into handing over files outside the folder it should be serving, like walking out of your unit and into the building’s storeroom.
+Remote code execution (RCE): getting the server to run the attacker’s code. The worst case.
+Server-side request forgery (SSRF): tricking the server into making requests on the attacker’s behalf, often to internal systems the attacker can’t reach directly. Think of convincing the building manager to open another tenant’s door “for a delivery.”
+Cross-site scripting (XSS) and injection: you’ve done these. Same attacks, cloud-hosted apps.
+Out-of-bounds write: writing data past where it should go in memory. This overlaps with buffer overflows, which you’ll get to later.
+
+The bit worth holding onto beyond the video: in real breaches, the top causes are usually on the customer’s side of the line: publicly exposed storage buckets, overly generous permissions (everyone has the master key), unpatched cloud servers, and leaked access keys (people accidentally publish them to GitHub, which ties nicely to why you’re careful about what goes in your repo). That’s exactly your coffee-on-the-deck thought.
+
+
+Which attacks are the most common in cloud?
+
+How is SSRF different from just attacking the server directly?
+
+Where does the shared responsibility line fall for each attack: provider’s problem, customer’s, or both?
 ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
