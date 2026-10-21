@@ -798,12 +798,21 @@ Detection	Enable secret scanning (GitHub's built-in, or GitGuardian/TruffleHog i
 Git hooks	Add a pre-commit hook (e.g. gitleaks or detect-secrets) that scans staged files and rejects the commit if a pattern looks like a key
 Rotation	If a key does leak, rotate it immediately. Assume it's compromised the moment it's public.
 Least privilege	The key you accidentally commit should only have the minimum permissions it needs — not admin. If it's a read-only S3 key for one bucket, the blast radius is small.
-Managed identities	The real fix: use IAM roles / managed identities instead of static keys entirely. The cloud platform handles credentials automatically — there's nothing to leak.
+
+Managed identities	The real fix is use IAM roles / managed identities instead of static keys entirely. The cloud platform handles credentials automatically — there's nothing to leak.
 
 How it happens: You write the key down (in a file, in code, in a config) and it ends up somewhere public. The "left it on the window" part.
 How to stop it: Don't write it down in the first place (secrets manager / IAM role), and if you did, catch it before it leaves your machine (pre-commit hook / secret scanning).
+1. Deleting it doesn’t fix it. You said they can pull it down, and that’s the trap. Git keeps history, so the key is still sitting in old commits even after you delete it from the code. Worse, bots scan GitHub constantly, and leaked keys can be found and used within minutes. The only real fix is to revoke (rotate) the key so it stops working, then issue a new one. Hotel version: if you’ve lost your access card, you don’t just hope nobody finds it. You go to reception and get it cancelled.
 
-FOR THE EXAM:if it's a multiple choice, the answer they're looking for is almost always secrets management (don't store keys in plaintext) or key rotation (if it's already leaked, kill it). "Don't write it down" = use a secrets manager. "Catch it before" = secret scanning / pre-commit hooks.
+ The proper terms for “don’t store keys in code Secrets management. keep keys in environment variables or a dedicated vault (AWS Secrets Manager, Azure Key Vault), never in the code
+.gitignore: a file that tells Git which files never to upload, such as the file holding your keys
+Secret scanning: GitHub can automatically spot keys and block the push before it goes public
+Least privilege: give each key only the permissions it needs, so a leaked key can do less damage
+
+FOR THE EXAM: Keys get leaked when they’re hardcoded and pushed to a public repo. Prevent it with secrets management and secret scanning. If it happens, revoke the key immediately, because deleting it doesn’t remove it from history.
+
+if it's a multiple choice, the answer they're looking for is almost always secrets management (don't store keys in plaintext) or key rotation (if it's already leaked, kill it). "Don't write it down" = use a secrets manager. "Catch it before" = secret scanning / pre-commit hooks.
 
 The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
 
