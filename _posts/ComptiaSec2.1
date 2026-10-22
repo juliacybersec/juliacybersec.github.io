@@ -56,7 +56,6 @@ This is clasic insider threat a staff member angry about lossing her job and pro
 
 Q3 Attackers quietly sit inside a defence contractor’s network for 18 months, copying weapons designs.   Nation-state 
 
-
 Q4 A marketing team starts using a free online file-sharing site because the company’s approved one is too slow. Shadown IT a staff member is not trying to cause problems but its convenient to use a faster system, just to get the work done. 
 
 The 2.3 list runs:
@@ -375,11 +374,9 @@ So * is “all the details,” not “all the people.” The WHERE condition dec
 
 Also, since anyone can try it, but keep in mind that doing this on a site you don’t have permission to test is illegal, even just to see if it works.
 
-
 Topic 3. Cross-site Scripting comes after sql injections
 
 Topic 2.Batch 1 overview: Application and OS vulnerabilities
-
 
 Topic 1. Memory injections (including buffer overflows) 2.3
 
@@ -688,12 +685,12 @@ TL;DR for the exam
 The Security+ principle here is least privilege + isolation: minimize the channels between guest and host (disable shared features), restrict network visibility (NAT/host-only, not bridged), and keep both layers patched. The VM boundary is the security control — every feature you enable to make it convenient is a feature you're removing from that boundary.
 
 ___________________________________________NOTE: FOR MY HOME LAN STEPS REQUIRED FOR A SECURE SETUP _____________________________________________________________
-For My home lab I want to setup a few VMs and make sure:
-Keep it off your home network: network segmentation. 
+For My home lab I want to setup a few VMs and keep it secure
+Keep it off my home network: network segmentation. 
 Protect the computer running the VM 
-Disable what you don’t use (SSH, services): hardening / reducing the attack surface
+Disable what not being use (SSH, services): hardening / reducing the attack surface
 Don’t run as admin: least privilege
-Update, patch, firewall, change passwords: standard hardening. All correct.
+Update, patch, firewall, change passwords: standard hardening. 
 Tear it down and rebuild: exactly what VMs are good for.
 
 Patch Kali (the guest), but the defence against VM escape is patching the hypervisor itself, meaning VirtualBox, VMware. The escape exploits a bug in the building, not the room. Updating the room doesn’t fix holes in the walls.
@@ -818,7 +815,7 @@ if it's a multiple choice, the answer they're looking for is almost always secre
 
 The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
 )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))UPTO HERE))))))))))))))))))))))))))))))))))))))))))))))))))))))
-Topic  2.3 Overview: cloud-specific vulnerabilities
+Topic 6.  2.3 Overview: cloud-specific vulnerabilities continued 
 
 Cloud is a big, attractive target. More and more of the world’s data lives there, so attackers put real effort into it. The attacks aren’t magic new cloud-only tricks; mostly they’re the same vulnerabilities you’ve already studied, now aimed at internet-facing cloud services.
 The usual suspects still apply. Expect a list that will feel familiar:
@@ -828,16 +825,119 @@ Directory traversal: tricking an app into handing over files outside the folder 
 Remote code execution (RCE): getting the server to run the attacker’s code. The worst case.
 Server-side request forgery (SSRF): tricking the server into making requests on the attacker’s behalf, often to internal systems the attacker can’t reach directly. Think of convincing the building manager to open another tenant’s door “for a delivery.”
 Cross-site scripting (XSS) and injection: you’ve done these. Same attacks, cloud-hosted apps.
-Out-of-bounds write: writing data past where it should go in memory. This overlaps with buffer overflows, which you’ll get to later.
+Out-of-bounds write: writing data past where it should go in me key), unpatched cloud servers, and leaked access keys (people accidentally publish them to GitHub, which ties nicely to why you’re careful about what goes in your repo). That’s exactly your coffee-on-the-deck thought.
 
-The bit worth holding onto beyond the video: in real breaches, the top causes are usually on the customer’s side of the line: publicly exposed storage buckets, overly generous permissions (everyone has the master key), unpatched cloud servers, and leaked access keys (people accidentally publish them to GitHub, which ties nicely to why you’re careful about what goes in your repo). That’s exactly your coffee-on-the-deck thought.
+Which attacks are the most common in cloud? For those using the cloud(not the provider AWS..) DOS, Misconfiguration, SQL and XSS and also putting notes using #keys and ways to access in the code itself. 
 
+Exam Note: The "most popular" ones for the exam are DoS, authentication bypass, and misconfiguration (which he covers in the adjacent video) — those come up most often in practice questions. SQL injection and XSS are also high-frequency
+DoS, injection, XSS and misconfiguration as the common ones. Yes.
+Leaked secrets in public repos: spot on. Bots really do scan GitHub constantly, and leaked keys can be found and abused within minutes.
+“Even if you take it down, it’s still there”: this is the bit most people miss. Git keeps history, so deleting the file in a new commit doesn’t remove it from earlier commits, and anyone who cloned or forked it already has a copy.
 
-Which attacks are the most common in cloud?
+It’s not just comments in code. Secrets can end up hardcoded straight into the code (password = "...") or in config files like .env that were never meant to be uploaded. The fix is a .gitignore file, which tells Git “never upload these files,” and keeping secrets out of the code entirely.
+The real fix once it’s leaked isn’t deleting it; it’s revoking or rotating the key, meaning cancel it and issue a new one so the leaked one is useless. Back to the apartment analogy: if you’ve lost your key, you don’t go looking for it, you change the lock.
 
+Shared responsibility
+Cloud providers like AWS and Azure have whole teams of security professionals
+looking after their side. Most cloud breaches don't happen because the provider
+failed. They happen because the customer left their side open.
+
+Think of renting a unit in an apartment block. The building manager looks after
+the foundations, the front door and the security guard. You're responsible for
+locking your own unit and not leaving the key under the mat. The building can be
+excellent, and you still get robbed if you leave your door open.
+
+I saw this for myself when I ran `curl -I` on my own blog. My blog is hosted on
+GitHub Pages, so most of what came back in the headers is set by GitHub, not me.
+I can't change those. What I can control is my account security, my repo
+settings and what I choose to publish.
+
+ The most common attacks
+Cloud attacks are mostly the same attacks we already know, aimed at cloud
+services that face the internet:
+
+- Denial of service (DoS): flooding a service until it can't respond
+- Misconfiguration**: settings left open, too much access, public storage
+- Injection and XSS**: same attacks as anywhere else, on cloud-hosted apps
+- Directory traversal, remote code execution (RCE), authentication bypass
+  and out-of-bounds writes also make the list
+
+ Leaked Stuff on GitHub
+A common way people leave the door open: sharing code on GitHub with access keys
+or passwords still in it. Sometimes it's in a comment (`# default password is...`),
+more often it's hardcoded into the code or sitting in a config file like `.env`
+that was never meant to be uploaded.
+
+Once it's pushed to a public repo, bots find it fast. And deleting it doesn't fix
+it, because Git keeps history and anyone who copied the repo already has it.
+
+Fix
+- Use a `.gitignore` file so secret files never get uploaded
+- Keep secrets out of the code entirely
+- If a key does leak, **revoke or rotate it** (cancel it and issue a new one).
+  If you lose your house key, you don't go looking for it. You change the lock.
+
+ Server-Side Request Forgery (SSRF): the HVAC dude
+A direct attack is like a stranger walking up to a hotel room and picking the
+lock. The security guard and cameras see a stranger, so it looks suspicious.
+Firewalls work the same way: outside traffic gets checked.
+
+SSRF is sneakier. Picture the building's HVAC dude. He's internal and trusted,
+he's in and out of rooms all day checking the cooling vents, and nobody looks
+twice at him. "Just the guy fixing stuff. Nothing to see here."
+
+Now picture him as pretty gullible. He does whatever the note in his job tray
+says, without checking who wrote it or whether it makes sense. So the attacker
+never goes inside. They just slip a note under the door: "Go into room 12 and
+bring me what's in the drawer." The HVAC dude goes in (no alarms, he's trusted),
+grabs it, and hands it over.
+
+In tech terms:
+- The note = the attacker's crafted request, often just a web address typed
+  into a field the app uses to fetch things (like "upload an image from this URL")
+- The HVAC dude = the server, which fetches whatever it's told to
+- The rooms = internal systems the attacker can't reach from outside
+
+Why it's a big deal in the cloud:** cloud servers have an internal "front desk"
+called the metadata service. Only internal machines can talk to it, and it can
+hand out things like temporary access keys. An outsider can't reach it, but a
+tricked server can. That's how the Capital One breach in 2019 happened.
+
+Fixes
+- Least privilege: the HVAC dude only gets access to the vents, not the drawers
+- Allow lists: the server only fetches from approved addresses (he only takes
+  jobs from the office, not notes under the door)
+- Lock down the front desk: cloud providers now make the metadata service
+  demand proper ID before handing anything out
+  
 How is SSRF different from just attacking the server directly?
-
+The entire reason SSRF exists as a separate category is that the request comes from the wrong place. The firewall's whole job is "block outsiders, trust insiders." SSRF makes an insider 
 Where does the shared responsibility line fall for each attack: provider’s problem, customer’s, or both?
+
+SSRF exploits the server's trusted network position.  The attacker doesn't reach the target directly — they make the server reach it on their behalf, bypassing firewalls, network segmentation, and access controls that only apply to external traffic. 
+
+Your web app has a "fetch image from URL" feature. You type:
+
+https://169.254.169.254/latest/meta-data/iam/security-credentials/
+
+That IP is the AWS metadata service — it only responds to requests from inside the EC2 instance. If you tried to hit it directly from your laptop, you'd get nothing. But the server fetches it for you, and it hands back the instance's temporary credentials. You didn't break the firewall. You didn't exploit a vulnerability in the metadata service. You just asked a trusted insider to walk into a room you weren't allowed in and get the key from the desk. 
+
+Exam tip: If a question says "attacker makes the server request a URL they control" or "request originates from the application server to an internal resource," the answer is SSRF.  If it says "attacker sends a request directly to the server," that's just a normal web attack (SQLi, XSS, etc.) — not SSRF.
+
+ Whats Direct Traversity:
+You're in a library. You're only allowed to browse the children's section — that's the web root, the folder your website is "supposed" to serve files from.
+
+The librarian's rule is: "You can ask for any book in this section."
+
+You walk up and say:
+
+"Can I have the book in the shelf one over, one over, one over, in the restricted section called /etc/passwd?"
+
+That's ../../../etc/passwd. Each ../ means "go one shelf over." You keep saying it until you've walked out of the children's section, through the main library, into the back office, and you're reading the librarian's private files.
+
+The librarian didn't break any rules. They just didn't check where you ended up — only that you asked for a book.
+
+
 ))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
