@@ -377,7 +377,7 @@ Also, since anyone can try it, but keep in mind that doing this on a site you do
 Topic 3. Cross-site Scripting comes after sql injections
 
 Topic 2.Batch 1 overview: Application and OS vulnerabilities
-
+==========================================================================================================================================================
 Topic 1. Memory injections (including buffer overflows) 2.3
 
 When a program runs, it stores data in memory in neat, labelled boxes. A buffer overflow happens when a program puts more data into a box than it can hold. Think of pouring two litres into a one-litre jug: the extra spills into the box next door and overwrites whatever was there. An attacker carefully designs that spill so it contains their own instructions, and the computer then runs them.
@@ -404,8 +404,57 @@ Why is the time after a patch is released risky?
 
 Do they contact you, or wait for you? (Phishing vs. a trap.)
 If it’s a trap, is the site fake or real? (Typosquatting and impersonation vs. a watering hole.)
+=============================================================================================================================================================
+Topic 4. Malicious Updates
 
-Topic 4: Hardware 2.3
+Overview: The core idea. We’re always told to keep systems patched, and that’s still right. But every update is really new software being installed on your machine, usually with high privileges and often automatically. If an attacker can tamper with that update, they get their code run on your system with your full trust. It’s RCE delivered through the front door.
+
+Two main ways it happens:
+The fake update. You visit a dodgy website and a pop-up says “Your Flash/browser/video player is out of date, click to update.” It’s not a real update at all, just malware dressed up as one. This one is easy to fall for but also easy to avoid.
+The poisoned real update. Much scarier. The attacker breaks into the software company itself and slips malicious code into a genuine update. Everything checks out: it comes from the right server and carries the right digital signature. That’s SolarWinds (December 2020), which Messer uses as his example.
+
+2.3 #4 Malicious Updates
+
+We’re always told to keep our systems updated, and that’s still good advice. But every update is really new software being installed on your device, often automatically and with high-level permissions. If an attacker can tamper with an update, the device will happily run their code because it trusts the source.
+
+There are two main types.
+
+The fake update. A pop-up on a dodgy website or app tells you something is out of date, your phone needs “cleaning”, or you’re about to lose your data. It isn’t a real update at all, just malware dressed up as one. This is often called scareware, because it uses fear and urgency to rush you into clicking before you’ve had time to think.
+
+I’ve seen this first-hand. Someone I help look after got a new phone and kept seeing pop-ups warning that he needed to clean up his phone or he’d lose all his photos and contacts. The photos he was worried about were actually on Facebook, not on the phone, so there was nothing to lose. But the fear did its job and he clicked to download it. After that the phone got stuck in a loop: every few minutes it made a loud beeping noise and the same prompt came back up, over and over. Resolved by  fulll factory reset. It’s a good example of how scareware doesn’t need to be clever. It just needs to make you panic.
+
+The poisoned real update. This is the scary one. Attackers break into the software company itself and slip malicious code into a genuine update. The best-known example is SolarWinds (December 2020), where a backdoor was hidden in a legitimate, digitally signed update that went out to thousands of organisations, including US government agencies.
+
+Why it’s harder to defend against than phishing. A phishing email usually leaves clues: a misspelt domain, odd headers, a skewed logo, wording that doesn’t sound right. You can learn to spot those. A poisoned real update has no clues. It comes from the genuine server, with a valid digital signature, at the time you’d expect it, and sometimes you have no choice, because the app won’t work until you update. A digital signature proves who sent the update, not whether it’s safe. If the sender has been compromised, the signature means nothing. And one poisoned update reaches every customer at once, not one person at a time.
+
+Defences
+
+Only update from official sources (the developer’s own site or the built-in updater), never from a pop-up
+Check digital signatures and hashes where possible
+Test updates before rolling them out to everyone (staged rollouts, from 1.3 change management)
+Watch for unusual behaviour after an update, such as a trusted program suddenly contacting a strange server. This is where SOC monitoring comes in.
+Defences to listen for:
+
+Get updates only from the official source (the developer’s own site or the built-in updater), never from a pop-up on some other website
+Check digital signatures (most modern operating systems require signed software before installing)
+Test before rolling out to everyone (your staged rollouts from 1.3 change management)
+Watch for odd behaviour after an update, because a poisoned signed update can only be caught by what it does
+
+The thing to think about while watching: a digital signature proves who sent the update, not whether it’s safe. If the sender has been compromised, the signature means nothing.
+Why a malicious update is harder to defend against than a phishing email.
+Because you can check an email, there is heaps of ways to see if this email is dodgy but an update is software that needs to run to keep your pc secure upto date and you trust it because you have run it before. Its harder to detect than a phishing email because its seen to be from a trusted source.   
+a phishing email usually leaves clues, and you’ve learned to spot them (sender headers, misspelt domains, skewed logos, odd wording). Now push it one step further, because this is the bit that makes SolarWinds so scary:
+
+A poisoned real update has no clues at all. It comes from the genuine server and the genuine domain, with a valid digital signature, at the time you’d expect an update. Every check you learned in those TryHackMe rooms passes. So it’s not just harder to detect. For the person on the receiving end, it’s basically impossible to detect.
+
+That changes who does the defending:
+
+Phishing: the user is a real line of defence. Training works, because people can learn the red flags.
+Poisoned updates: the user can’t help, so defence has to happen elsewhere. The software company has to secure its build systems. The organisation tests updates before rolling them out widely. Security teams watch for unusual behaviour afterwards, like a trusted program suddenly contacting a strange server. That last one is SOC work: SolarWinds was eventually caught by a security company noticing odd activity, not by anyone inspecting the update.
+
+There’s also the scale problem. A phishing email tricks one person at a time. One poisoned update goes to every customer at once, which is how SolarWinds reached thousands of organisations.
+==============================================================================================================================================================
+Topic 8: Hardware 2.3
 Software problems can usually be fixed with an update. Hardware problems are harder, because the flaw is built into the physical device or the low-level code that runs it, and sometimes the manufacturer has stopped caring about it altogether.
 
 The analogy: your house
@@ -415,7 +464,6 @@ Legacy is the old house still standing that nobody wants to renovate.
 1. Firmware
 
 Firmware is the software built into hardware: the code that tells a router, printer, BIOS, hard drive or smart device how to work. It sits below the operating system.
-
 The problems:
 
 It’s often forgotten. People patch Windows but never update the router or printer firmware.
@@ -611,7 +659,7 @@ Imagine a hotel that's overbooked. There are only 4 beds, but 6 guests each thin
 
 The problem: the manager never makes the bed between guests.
 
-Guest #1 falls asleep, gets moved to a different bed. Guest #2 is put in that bed and wakes up to find Guest #1's diary, phone, and half-eaten sandwich still on the pillow.
+Guest 1 falls asleep, gets moved to a different bed. Guest #2 is put in that bed and wakes up to find Guest #1's diary, phone, and half-eaten sandwich still on the pillow.
 
 That's resource reuse. The hypervisor reuses the same physical memory/storage between VMs without clearing it first, so one VM can read data that belonged to a different VM. 
 Resource reuse is when the hypervisor reassigns memory or storage from one VM to another without wiping it, so the new VM can find data the last one left behind. The fix is for the hypervisor to clear it before reassigning.
@@ -730,7 +778,6 @@ I’ll never post IP addresses, usernames, hostnames, passwords, keys or details
 I’ll check every screenshot before posting, because details hide in the corners: terminal prompts, browser tabs, file paths
 
 Sharing what I’m learning is the whole point of this blog. But just like a hotel room, it’s my job to make sure I’m not leaving my access card out the front.
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
 What the shared responsibility model is
 The landlord analogy:
@@ -857,8 +904,8 @@ Cloud attacks are mostly the same attacks we already know, aimed at cloud
 services that face the internet:
 
 - Denial of service (DoS): flooding a service until it can't respond
-- Misconfiguration**: settings left open, too much access, public storage
-- Injection and XSS**: same attacks as anywhere else, on cloud-hosted apps
+- Misconfiguration: settings left open, too much access, public storage
+- Injection and XSS: same attacks as anywhere else, on cloud-hosted apps
 - Directory traversal, remote code execution (RCE), authentication bypass
   and out-of-bounds writes also make the list
 
@@ -874,7 +921,7 @@ it, because Git keeps history and anyone who copied the repo already has it.
 Fix
 - Use a `.gitignore` file so secret files never get uploaded
 - Keep secrets out of the code entirely
-- If a key does leak, **revoke or rotate it** (cancel it and issue a new one).
+- If a key does leak,*revoke or rotate it (cancel it and issue a new one).
   If you lose your house key, you don't go looking for it. You change the lock.
 
  Server-Side Request Forgery (SSRF): the HVAC dude
@@ -898,7 +945,7 @@ In tech terms:
 - The HVAC dude = the server, which fetches whatever it's told to
 - The rooms = internal systems the attacker can't reach from outside
 
-Why it's a big deal in the cloud:** cloud servers have an internal "front desk"
+Why it's a big deal in the cloud: cloud servers have an internal "front desk"
 called the metadata service. Only internal machines can talk to it, and it can
 hand out things like temporary access keys. An outsider can't reach it, but a
 tricked server can. That's how the Capital One breach in 2019 happened.
@@ -1000,12 +1047,68 @@ FIX
 - Least privilege**: even if the kitchen is tricked, it doesn't know the safe
   combination. Note that the directory can either hold the important stuff at the end or towards the root directory (or in any directory for that matter)
 
-In one line: RCE is when an attacker's input gets treated as commands,
+In one line: RCE Remote Code Execution is when an attacker's input gets treated as commands,
 letting them run their own code on the server from anywhere.
-Directory traversal tricks a server into reading its own files that it shouldn’t, by giving it directions that walk out of the allowed folder.
 
-)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
-++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+BYPASS a bypass isn’t only “no lock at all”. It’s also when the lock exists but can be tricked or walked around. Some examples:
+
+The forgotten back door. The login page protects /dashboard, but someone types /admin straight into the address bar and the page loads, because nobody put a check on it.
+The lock that trusts the wrong thing. After login, the site stores a cookie saying admin=false. The attacker edits it to admin=true, and the site believes it.
+The cloud storage left open. A company stores customer files in a cloud bucket set to public by mistake. No login is needed at all. This has caused plenty of real breaches and is very much a cloud-specific issue.
+The weak reset process. The password is strong, but “forgot password” only asks for your mother’s maiden name, which is on Facebook. The attacker goes round the lock via the reset.
+authentication bypass is getting in without passing the identity check, either because the check is missing or because it can be fooled.
+
+Step 1: Directory Traversal (find the keys)
+You hit a file download endpoint and traverse to the config:
+
+/download.php?file=../../../../etc/app/config.yml
+
+It hands back:
+
+admin_password: Superman
+db_host: 10.0.1.5
+internal_api: http://10.0.1.5:8080/admin
+
+You now know the admin password, and you know there's an internal admin API that's not exposed to the internet.
+
+You're still outside. But you've got the keys.
+
+Step 2: Authentication Bypass (walk through the back door)
+You can't reach 10.0.1.5:8080/admin directly — it's internal. But remember the SSRF concept? Or maybe the app has a "fetch report from URL" feature that does reach internal addresses.
+
+Or simpler: you now know the admin password is "Superman." You go to the public login page, type in the admin username you found in the config, and the password you traversed to. You're in.
+
+You're inside the building. You've got the admin badge.
+
+Step 3: RCE (take over the server room)
+Now you're in the admin panel. And admin panels almost always have a feature that's dangerous if you're an attacker:
+
+File upload — "upload your logo" → you upload a webshell instead
+Command injection — "run a backup script" → you inject ; whoami into the parameter
+Template injection — "customise the email template" → you inject {{ config.__class__ }} (Jinja2/SSTI)
+You get a shell. You're in. Full control.
+
+chain looks like this:
+Directory traversal → reads a config file with credentials, IPs and API keys
+Stolen credentials (or a bypass) → gets past the front door
+RCE → uses an admin feature to run their own code, then installs a backdoor, encrypts files, and so on
+
+Directory traversal tricks a server into reading its own files that it shouldn’t, by giving it directions that walk out of the allowed folder.
+authentication bypass is getting in without passing the identity check, either because the check is missing or because it can be fooled.
+
+Why RCE is considered so much worse than something like directory traversal.
+Because directory traversal is reading. RCE is doing.
+
+Directory Traversal	RCE
+What you get	A file. Maybe credentials, maybe source code.	A shell. You can do anything the server can do.
+What you can do next	Read stuff, maybe pivot if you find a key	Install a backdoor, delete the database, pivot to every other system on the network, mine crypto, encrypt everything for ransom
+The server after	Still running, still "normal" — you just peeked at a file	Yours. It's doing what you say.
+Analogy	I walked into the back office and read a file off the desk	I walked into the back office and took over the building
+
+Directory traversal is a step toward RCE. If you traverse to a config file and find database credentials, you can now log in as the database admin. If you traverse to source code and find an RCE vulnerability, you now have RCE. But traversal alone is just espionage. RCE is full control.
+
+Exam line: Traversal leaks information. RCE gives you a foothold. Information can be rotated; a foothold means you're in.
+=====================================================================================================================================================
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
 
 The big idea: The software itself might be fine. The problem is how someone set it up. Messer describes these as the vulnerabilities we create ourselves. Think of it like buying a top-quality deadlock and leaving the key in it.
