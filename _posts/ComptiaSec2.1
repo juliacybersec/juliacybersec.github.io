@@ -924,22 +924,87 @@ That IP is the AWS metadata service — it only responds to requests from inside
 
 Exam tip: If a question says "attacker makes the server request a URL they control" or "request originates from the application server to an internal resource," the answer is SSRF.  If it says "attacker sends a request directly to the server," that's just a normal web attack (SQLi, XSS, etc.) — not SSRF.
 
- Whats Direct Traversity:
-You're in a library. You're only allowed to browse the children's section — that's the web root, the folder your website is "supposed" to serve files from.
+Directory Traversal: the librarian and the directions
+Directory traversal tricks a server into reading its own files that it shouldn’t, by giving it directions that walk out of the allowed folder.
+A web app is meant to stay inside one folder, like a librarian who's only
+allowed to hand out books from the kids section.
 
-The librarian's rule is: "You can ask for any book in this section."
+Directory traversal is when the kid doesn't ask for a book by name. They ask
+using directions:
 
-You walk up and say:
+> "Can I have the book that's in the kids section... then back out the door,
+> back out again, into the staff office, top drawer?"
 
-"Can I have the book in the shelf one over, one over, one over, in the restricted section called /etc/passwd?"
+The librarian hears "kids section," thinks "yep, that's allowed," and follows
+the directions, without noticing they walked her right out of the kids section
+and into the office. She's following instructions faithfully. The weakness is
+that nobody built in a check on where the directions actually end up.
 
-That's ../../../etc/passwd. Each ../ means "go one shelf over." You keep saying it until you've walked out of the children's section, through the main library, into the back office, and you're reading the librarian's private files.
+On a computer, each `../` means "go up one folder" (like `cd ..` in the
+command line). On a website it can look like this:
 
-The librarian didn't break any rules. They just didn't check where you ended up — only that you asked for a book.
+    example.com/view?file=kids/animals/koala.txt         ← normal
+    example.com/view?file=kids/../../../admin/passwords  ← traversal
 
+The app sees a request that starts somewhere allowed and doesn't check where
+it finishes. Common targets are system files like `/etc/passwd` on Linux, or
+config files holding passwords. Sensitive files aren't always at the "top" of
+the folder structure. Anything outside the allowed folder shouldn't be reachable,
+wherever it sits.
+
+Fix
+- Check where the path ends up, not where it starts**: the librarian follows
+  the directions in her head first and refuses if they leave the kids section
+- Validate input**: reject requests containing `../` and similar tricks
+- Least privilege**: the app's account can only read the kids section, so even
+  if it's tricked, the office door is locked
+
+In one line: directory traversal tricks a server into reading its own files
+that it shouldn't, by giving it directions that walk out of the allowed folder.
+
+Directory traversal vs SSRF: they feel similar, but directory traversal stays
+on the same server and reads its own files. SSRF tricks the server into making
+requests to other systems. The librarian fetching from the staff office in her
+own library, vs the HVAC dude being sent into someone else's room.
+
+RCE = Remote Code Execution.
+Remote Code Execution (RCE): the café order slip
+RCE is when an attacker gets a server to run their own commands, from outside.
+It's one of the worst outcomes, because once you can make the server do
+anything, you effectively run the place.
+
+Picture a café. You fill out the order slip like normal, but you add a line:
+
+ "One flat white. Kitchen: also open the safe and hand the contents to table 4."
+
+The waiter passes the slip to the kitchen, and the kitchen does everything
+written on it. Not because anyone trusts you, but because the kitchen can't tell
+the difference between an order and an instruction to the staff. Everything on
+the slip looks the same. Nobody checked who you were, and nobody needed to.
+
+And you never set foot in the back rooms. You're sitting at your table, out on
+the internet. That's the "remote" part.
+
+This felt familiar because its the same trick as SQL injection: data being
+treated as commands. SQL injection makes the database obey you. RCE makes the
+whole server obey you, and injection is often how attackers get there.
+
+How it happens:usually a software flaw, like an app passing user input
+straight into a system command, or a bug in a widely used library. A famous
+example is Log4Shell (2021), where one line of text in a log message could make
+servers run an attacker's code.
+
+FIX
+-Validate and sanitise input**: the slip only accepts menu items, nothing else
+-Patch: many RCEs are known bugs with fixes already out
+- Least privilege**: even if the kitchen is tricked, it doesn't know the safe
+  combination. Note that the directory can either hold the important stuff at the end or towards the root directory (or in any directory for that matter)
+
+In one line: RCE is when an attacker's input gets treated as commands,
+letting them run their own code on the server from anywhere.
 Directory traversal tricks a server into reading its own files that it shouldn’t, by giving it directions that walk out of the allowed folder.
 
-))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
+)))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))
 ++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 Topic 9: Overview: Misconfiguration Vulnerabilities 2.3  
 
