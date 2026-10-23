@@ -1,11 +1,9 @@
 CompTIA Security 2.4 
-
-2.3 (vulnerabilities). 2.4 is about the attacks that use them, and the signs that tell you an attack is happening.
+Topic 1 An Overview of Malware
+Malware is about the attacks that use them, and the signs that tell you an attack is happening.
 This is the most SOC-analyst part of the whole exam, because spotting those signs is what a SOC analyst does all day.
 
 Analogy: if 2.3 was knowing a patient’s risk factors, 2.4 is reading the symptoms and working out what’s actually wrong.
-
-It’s a big objective with a lot of videos, but they fall into a few groups:
 
 Malware: viruses, worms, ransomware, trojans, spyware, bloatware, keyloggers, logic bombs and rootkits. Each type behaves differently.
 Physical attacks: brute force (literally breaking in), RFID cloning (copying building access cards), and environmental attacks (like targeting power or cooling).
@@ -13,3 +11,90 @@ Network attacks: denial of service, DNS attacks, wireless attacks, on-path (man-
 Application attacks: injection, buffer overflows, privilege escalation, request forgery and directory traversal. You’ll recognise some of these from 2.3. This time the focus is on what the attack looks like in action.
 Cryptographic and password attacks: downgrade attacks, collisions, birthday attacks, password spraying and brute force.
 Indicators of compromise (IOCs): the warning signs, such as account lockouts, impossible travel (logging in from Ballarat and then Brazil ten minutes later), missing logs, resource spikes and blocked content.
+Web page popups are seen where someone keeps seeing these windows saying something like "you need to clean up your device. click to download"
+Drive by download - It may download without clicking usually from a dodgy site you land on. 
+
+What malware is.
+Malware is short for malicious software: any software built to do something bad to your system or data. It’s the umbrella term, and viruses, worms, ransomware and the rest are all types of malware.
+Analogy: malware is like “infection” in a hospital. It’s the general category. Viruses, bacteria and fungi are different types that spread differently and need different treatment, but they’re all infections.
+
+What malware does:
+Steals information, such as passwords, banking details or company data
+Spies on you, by recording keystrokes or watching what you do
+Takes control of your computer, for example to add it to a botnet (an army of infected machines the attacker controls)
+Damages or locks up your data, which is ransomware
+
+How it gets in:
+Malware usually gets in because of something we did, or didn’t do:
+Clicking a link or opening an attachment (phishing)
+Visiting an infected website
+Unpatched software: a known vulnerability that was never fixed (like back to 2.3)
+Worm: Spreads by itself across the network with no clicks needed
+
+Malware as the umbrella term for harmful software, with ransomware, trojans, viruses and spyware as types.
+The ways in: email links and attachments, pop-ups, worms spreading by themselves, and unpatched software. Drive-by downloads are a great addition. Simply visiting an infected page can be enough.
+Ransomware, and the defence of offline or separate backups plus patching. Backing up to the cloud and somewhere separate from the network is exactly right.
+How to protect against ransomware? Backups: the number one defence. Backing up operating systems and applications as well as data, and having spare machines ready to go, is real business-continuity thinking. Just remember the key exam word: backups should be offline or separate, so the ransomware can’t encrypt them too.
+
+Analogy: someone breaks into your house, puts all your belongings in a locked cage, and leaves a note: pay up and we’ll send the key. Your things are still there, you just can’t use them, and paying doesn’t guarantee you’ll get the key. Keep them offline or separate, otherwise the ransomware encrypts your backups too.
+Keep everything updated: operating system, applications and antivirus. Anti-malware software: keep it running and up to date.
+
+ATT&CK is public and its like a playbook of past attacks great for cyber security, anyone can read it, including attackers. Most of what’s in it is already known in criminal circles, since it’s built from real attacks, so defenders tend to get more out of it than attackers do. But “public knowledge cuts both ways”. What is not in this video for ransomware is that there is no guarentee that an attacker will give back the data after payment. It's a catch 22 if you pay they may decrypt your locked data and give it back or they may then ask for more money, even then they may leak it in the end. Hypothetically I think it would be better to get a security team to try to get it back if its encrypted and still on your system rather than pay the ransom.
+
+Exam tip: if a question describes files suddenly locked or encrypted with a payment demand, the answer is ransomware. If it asks for the best recovery, the answer is usually restore from an offline backup.
+====================================================================================================================================================================
+Topic 2 2.4 #2: Viruses and Worms (overview)
+
+Virus: malware that attaches itself to a legitimate file or program and needs a person to run it before it can spread. It hides inside something normal and spreads when that file is opened or shared.
+Analogy: like a cold passed on a shared cup. It only spreads when someone picks the cup up and uses it.
+
+Messer covers a few virus types:
+
+Program viruses: hide inside an application
+Boot sector viruses: load when the computer starts, before the operating system
+Script viruses: run in scripts, such as in a browser or the operating system
+Macro viruses: hide in documents, like a Word or Excel file with macros
+Fileless viruses: run only in memory, never saved to disk (linking back to memory injection)
+
+Worm: malware that spreads by itself across a network, with no click or human action needed. It finds a vulnerable machine, infects it, then uses that machine to find the next one.
+Analogy: an airborne infection spreading through a ward. Nobody has to touch anything, and it moves from bed to bed on its own.
+
+Key exam difference: a virus needs a human to run it; a worm spreads by itself.
+======================================================================================================================================================================
+Topic 3. 2.4 Spyware and Bloatware
+
+Topic 4 Other Malware Types
+logic bomb - A 2013 email attachment was actually a bomb and when onpened a week later it deleted the system inc the OS, then all ATMs effected.
+It doesn't have any way to see if its going to do in the future so constant monitoring, 
+Rootkit = Hides in the OS Kernel part of the OS so its hard to find. Look for unusable anti malware scans. Invisible to antivirus but could be discovered after its             infected then find/build software to pick it up. Secure boot with UEFI (secure in the BIOS)
+      Hiding in the kernel and being invisible to normal antivirus is exactly right. Think of it as malware that has disguised itself as part of the building’s foundations.
+Ransomware: the main focus. Ransomware encrypts your files so you can’t open them, then demands payment, usually in cryptocurrency, to unlock them.
+
+Keylogger: It records everything typed: passwords, messages, bank details. 
+It captures what you type before it gets encrypted, so even a secure HTTPS site doesn’t protect you. The keylogger already has it.
+It sends the captured data back to the attacker, so a firewall watching for unusual outbound traffic can help catch it, along with anti-malware. MFA also limits the damage, because a stolen password alone isn’t enough.
+
+logic bomb: Can be triggered by a time OR an event. Time bomb: goes off at a set date and time, like your example.
+Event trigger: goes off when something happens. The classic exam scenario is a disgruntled IT employee who plants code to wipe the servers if their name is ever removed from payroll. Logic bombs are hard to detect because there’s often no known signature to match. Messer’s defences are formal change control processes (so no one can quietly add code) and monitoring for unexpected changes. 2013 example. It was the attack on South Korean banks and broadcasters, where machines were wiped and ATMs went down.
+
+Rootkit: once a rootkit is identified, specialised rootkit removal tools can be built to find and remove that particular one. And yes, Secure Boot with UEFI is the big defence. It checks that the operating system hasn’t been tampered with before it’s allowed to start, so a modified kernel won’t load.
+
+
+How to protect against ransomware? Backups: the number one defence. Backing up operating systems and applications as well as data, and having spare machines ready to go, is real business-continuity thinking. Just remember the key exam word: backups should be offline or separate, so the ransomware can’t encrypt them too.
+Analogy: someone breaks into your house, puts all your belongings in a locked cage, and leaves a note: pay up and we’ll send the key. Your things are still there, you just can’t use them, and paying doesn’t guarantee you’ll get the key. Keep them offline or separate, otherwise the ransomware encrypts your backups too.
+Keep everything updated: operating system, applications and antivirus. Anti-malware software: keep it running and up to date.
+
+
+========================================================================================================================================================================
+Topic 5  Physical Attacks
+======================================================================================================================================================================
+Topic 6  Denial of Service
+==========================================================================================================================================================================
+Topic 7 DNS Attacks
+===========================================================================================================================================================================
+Topic 8 DNS Attacks
+======================================================================================================================================================================
+Topic 9 Wireless Attacks
+
+============================================================================================================================================================================
+ 
