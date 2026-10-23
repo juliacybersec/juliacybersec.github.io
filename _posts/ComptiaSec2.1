@@ -166,7 +166,7 @@ These scams work through urgency (“pay now or get fined”) and small amounts 
 What makes a watering hole attack different from phishing?
 Phishing is direct contact via text, email or phone vishing and a watering hole attack is getting into a real site that many people trust, attachers set this trap and wait. Everyone will get thirsty (in my case for learning so I will login to tryhackme like I've done before) and drink from this site with out knowing. Tech savy people will usually pick the phishing but the watering hole attack not so much. Think of the watering hole attack as an attackers trap they hacked in, now they just wait. 
 
-2.3  1. Memory Injections
+2.3  Topic 1. Memory Injections
 
 Overview: memory is a set of labelled boxes
 
@@ -186,18 +186,17 @@ The root cause is no input/bounds checking by the developer.
 It’s hard to do reliably. Attackers often spend ages getting it right, but once it works, it’s powerful.
 Defences include input validation, safer programming languages, and OS protections like ASLR, which shuffles where things sit in memory so the attacker can’t predict where to aim. It’s like the pharmacy rearranging its shelves every day.
 
-Topic  Memory injection 2.3
-
 This is the broader idea: getting malicious code into a running program’s memory, so it executes with that program’s permissions. A buffer overflow is one way to do it. Another is DLL injection on Windows, where a program is tricked into loading a malicious library file (DLL) as if it were a legitimate one.
 
 Picture slipping a fake drug into a trusted patient’s dosette box. It gets administered because it’s in a trusted container, not because anyone checked it.
 
 Why it’s sneaky: the malware hides inside a legitimate process, so it doesn’t show up as a suspicious new program. This links back to fileless malware from 2.4, which you’ll meet soon.
 
-In your own words, what is a buffer overflow, and why does it happen? Who’s at fault?
+what is a buffer overflow, and why does it happen? Who’s at fault?
+
 The source of the RAM/disk confusion: the scale is much, much smaller. A buffer overflow isn’t about whether the computer has enough RAM or disk space overall. The program has already reserved its memory. The problem is one tiny box inside that memory, often just a few bytes, set aside for one piece of input.
 
-Think of a 10 ml medicine cup on a tray of cups lined up for different patients. The cup is a fixed size, and nobody’s asking whether the ward has enough medicine. The question is whether anyone checks the dose fits the cup before pouring. Pour 50 ml in, and it overflows into the next patient’s cup and contaminates it.
+Think of a 10 ml medicine cup on a tray of cups lined up for different patients. The cup is a fixed size, and nobody’s asking whether the ward has enough medicine. The question is whether anyone checks the dose fits the cup before pouring. Pour 50 ml in, and it overflows into the next patient’s cup and contaminates it. In pharmacy terms: the overflow is the medication spilling into the next slot, and the injection is someone deliberately using that spill to slip in a drug that was never prescribed. The pharmacist then hands it over thinking it’s legitimate.
 
 In code, that looks like this: a login form has a username box the developer sized for 20 characters. The attacker types in 500. If the program never asks “is this longer than 20?”, the extra 480 characters overwrite whatever sits next door in memory.
 
@@ -209,8 +208,27 @@ Older languages like C and C++ don’t check for you. The developer has to write
 The developer doesn’t control the input. They know how big the box is, but they can’t know what a user (or attacker) will type in. That’s why you never trust input.
 Speed. Checks cost a tiny bit of performance, and older code often skipped them.
 
+Memory injection. When a program runs, the computer gives it its own space in memory (RAM) to hold its instructions and data. Memory injection is when an attacker sneaks their own malicious code into that space, so the trusted program ends up running it.
+
+Analogy: a nurse following a patient’s medication chart. The nurse trusts the chart and does what it says. If someone slips an extra line onto the chart, the nurse gives that medication too. Nobody broke in through the door, and the nurse was “authorised” the whole time. The trusted process carried out the bad instruction.
+
+Why attackers like it:
+
+The malicious code runs inside a legitimate process, such as a browser or a Windows system process, so it looks normal to the user and to some security tools.
+It inherits that process’s permissions. If the process runs with admin rights, so does the attacker’s code.
+It often never touches the disk. That’s why it’s linked to fileless malware, which is harder for antivirus to catch.
 How is memory injection different from just running a malicious program?
 In short: injection hides behind a trusted process's identity and avoids the file system entirely, so traditional signature-based and file-based defenses have nothing to latch onto.  The attacker must instead be caught by behavioral signals (e.g. WriteProcessMemory + CreateRemoteThread sequences) or memory scanning. 
+
+Buffer overflow is one way in. It’s the spill that lets the attacker overwrite memory they shouldn’t touch.
+Memory injection is the broader result: the attacker’s code ends up running inside a trusted process.
+It inherits the trusted process’s permissions. If the hijacked program runs with admin rights, the attacker’s code gets admin rights too. In your analogy, it’s like the extra line being on a script signed by the head doctor.
+It often lives only in memory, never written to disk, which is why it’s tied to fileless malware and why signature-based antivirus can miss it.
+
+Race condition: a program does two things in sequence, usually “check something” and then “use it”, and there’s a tiny gap between the two steps. 
+If an attacker changes things in that gap, the program acts on information that’s no longer true. The Security+ name for this is TOCTOU: Time-of-Check to Time-of-Use.
+Analogy: a nurse checks a patient’s ID band at the door, then walks to the bed to give the medication. In the few seconds between, someone swaps which patient is in the bed. The check was correct when it happened, but by the time of use it’s wrong.
+
 
 Why does ASLR make an attacker’s job harder?
 
@@ -256,7 +274,13 @@ Memory injection vs. running a malicious program
 The core difference is where the code lives and whose identity it wears:
 
 If the attacker can rewrite the “go back here” note, they can point it at their own code instead, and the program follows it without question. That’s the whole trick.
+ASLR. Attackers rely on knowing exactly where things sit in memory, for example the address they want to redirect a buffer overflow to. ASLR shuffles those locations each time the program or system starts, so the map they brought is wrong.
 
+DEP (Data Execution Prevention) doesn’t stop the attacker reaching the jar or even putting things in it. It marks certain areas of memory as data only, not for running code. So the attacker can stuff their malicious code into the jar via an overflow, but it won’t execute.
+
+Muttley version: he doesn’t stop anyone opening the jar. Mutley is not going to bite but he just won’t let anyone eat what’s inside. 🐶
+
+Using them together is defence in depth, layered security where one control covers the other’s gaps. ASLR makes the attacker’s target hard to find, and DEP makes their code useless even if they find it
 Say the programmer writes the code if it already puts the characters in the slot then go and do this code. This is where the attackers want their code to run from. The return address isn’t an if/else the developer wrote to handle overflows. The program has no idea an overflow happened at all. That’s the problem. The return address is more like an automatic bookmark. Whenever a program jumps off to do a sub-task (say, “go check this username”), the computer quietly writes down “come back to line X when you’re done.” When the sub-task finishes, it reads the bookmark and goes back. It’s routine and happens constantly, and nothing checks whether the bookmark has been tampered with.
 
 So the attacker’s oversized input is cleverly packed with two things:
@@ -267,7 +291,7 @@ A fake bookmark, positioned exactly where the real one sits, pointing back at th
 The sub-task finishes, the computer reads the bookmark, and it jumps straight into the attacker’s code. Picture swapping the patient’s “return to Ward 4” note for “return to the attacker’s room.” The orderly just follows the note.
 
 This is also why it’s hard to pull off. The attacker has to know exactly how far the overflow needs to reach to land on the bookmark. Get it wrong by a little and the program just crashes. That crash is a clue for the next question about ASLR.
-
+============================================================================================================================================================
 Topic 3. - 2.3 SQL INJECTIONS
 
 What is SQL INJECTIONS? The kiddie version.
@@ -374,9 +398,6 @@ So * is “all the details,” not “all the people.” The WHERE condition dec
 
 Also, since anyone can try it, but keep in mind that doing this on a site you don’t have permission to test is illegal, even just to see if it works.
 
-Topic 3. Cross-site Scripting comes after sql injections
-
-Topic 2.Batch 1 overview: Application and OS vulnerabilities
 ==========================================================================================================================================================
 Topic 1. Memory injections (including buffer overflows) 2.3
 
@@ -572,7 +593,7 @@ Isolate legacy systems by taking them off the network or segmenting them, with f
 Limit who uses them. Fewer users means a smaller attack surface.
 Build in redundancy and continuity plans, so critical work like payroll can continue on another system if the old one fails.
 Replace the system when possible.
-
+========================================================================================================================================================
 Topic.5:  2.3 Virtualization. 
 The setup: a hypervisor is the software that lets one physical machine run lots of virtual machines. Think of it as an hotel building. Each VM is a separate room with its own lock. The hypervisor is the building itself: the walls, plumbing and the manager with master keys.
 
@@ -684,7 +705,7 @@ One thing you’d do to protect your own Kali/laptop setup?
 key exam sentence: A VM escape invalidates the isolation guarantee that makes virtualization safe.  Once the attacker is at the hypervisor level, all guest-level security controls are meaningless because the attacker controls the layer that enforces them. 
 Securing a Kali VM on a Windows Host
 
-Here's a practical checklist, ordered from most important to least:
+Here's a checklist, ordered from most important to least:
 
 1. Network isolation -the best thing to do first
 Don't use Bridged mode. That puts Kali on your real LAN as if it were a physical machine — your router, your phone, your NAS are all reachable. 
@@ -862,6 +883,7 @@ if it's a multiple choice, the answer they're looking for is almost always secre
 
 The most common key leak is accidental commit to version control.  The primary prevention is secrets management + pre-commit scanning; the primary detection is automated secret scanning on repositories; the primary response is immediate rotation.
 )))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))UPTO HERE))))))))))))))))))))))))))))))))))))))))))))))))))))))
+
 Topic 6.  2.3 Overview: cloud-specific vulnerabilities continued 
 
 Cloud is a big, attractive target. More and more of the world’s data lives there, so attackers put real effort into it. The attacks aren’t magic new cloud-only tricks; mostly they’re the same vulnerabilities you’ve already studied, now aimed at internet-facing cloud services.
@@ -1156,7 +1178,7 @@ Open ports and services. Every open port is another door into the house. The ris
 
 The Real World Security Breech - The Owner of this membership education platform was setup by a third party. No password was added on the discord so someone found it and had some fun posting gay photos. 
 You can outsource the work, but not the responsibility. If you hire someone else to build your system, the security failure is still yours. That links to supply chain and third-party risk. Your point about security only being taken seriously after a breach is also a big theme in this course.
-
+==============================================================================================================================================================
 Topic 10: Overview: Mobile Device Vulnerabilities 2.3
 
 The big idea: Phones come with built-in guard rails. The official app store checks apps before you can install them, and the operating system keeps each app in its own “room” so it can’t interfere with other apps or the system. Most mobile vulnerabilities come from removing those guard rails.
@@ -1194,7 +1216,7 @@ Many guest networks also have client isolation, which stops guest devices from e
 Jailbreaking (iPhone) and rooting (Android) are different. They’re deliberate. The owner breaks the phone’s built-in restrictions to get full control, so they can install anything and change system settings. But this also removes the protections that keep malware contained. It’s like taking out every internal door and lock in your house because they’re inconvenient. Installing updates often undoes a jailbreak, so people avoid updating, which leaves the phone unpatched and exposed. This is different from turning on Android’s Developer options, which are built in and don’t remove the phone’s security protections (though it’s wise to switch off USB debugging when you’re not using it).
 
 Why businesses care. If an employee’s jailbroken or rooted phone has work email, files or apps on it, the risk spreads to the whole company, because an attacker could use that phone as a way back into the network. That’s why companies use MDM to detect and block these phones. I apply the same thinking at home: I don’t want a possibly compromised phone sharing my Wi-Fi with my own devices. Putting untrusted devices on a separate guest network is a simple form of network segmentation. My own modem is 8 to 10 years old and may not support it, which is a reminder that old hardware is a vulnerability too. Once a device stops receiving firmware updates, it’s end-of-life, and any new flaws will never be fixed.
-
+================================================================================================================================================================
 Topic: 10 Zero-day 2.3 
 What “zero day” actually counts. It’s not quite “zero days since anyone knew about it.” It means the vendor has had zero days to fix it. An attacker might have known about the flaw and used it for months. It’s still a zero-day as long as the vendor doesn’t know, or knows but hasn’t released a patch yet.
 
@@ -1213,9 +1235,6 @@ Behaviour-based detection (EDR): looks for suspicious activity rather than known
 Least privilege and segmentation: limit how far an attacker can get once inside (your guest Wi-Fi thinking again)
 Patch quickly once a fix is released
 The sandbox examples Messer mentioned. A sandbox is a contained area where a browser or app runs code so that it can’t reach the rest of the system. Some of the most valuable zero-days are sandbox escapes: flaws that let malicious code break out of that container. It’s the same idea as VM escape, which you’ll see in the virtualisation video. A famous real-world example of zero-days in action is Stuxnet, which used several zero-days at once to sabotage Iran’s nuclear program. That’s nation-state work, which links back to 2.1.
-
-
-
 CompTIA Security+ 2.3: Zero-day Vulnerabilities
 
 A zero-day vulnerability is a hidden flaw in software that the vendor doesn’t know about yet, or knows about but hasn’t fixed. The name means the vendor has had zero days to fix it. An attacker might have known about the flaw and been using it for months, but as long as there’s no patch, it’s still a zero-day. Using the flaw before a fix exists is called a zero-day exploit or zero-day attack.
@@ -1227,8 +1246,8 @@ Why are zero-days so dangerous? You can’t protect against something nobody kno
 How do you defend against an unknown flaw? You use layers. Behaviour-based detection (EDR) looks for suspicious activity instead of known malware. Least privilege and network segmentation limit how far an attacker can get once inside. And when a patch is finally released, you install it quickly, because attackers study patches to work out what was broken.
 
 Sandboxes. A sandbox is a contained space where code runs separately from the rest of the system, so if something goes wrong, the damage stays inside. Some of the most valuable zero-days are sandbox escapes, flaws that let malicious code break out of that container. I use this idea myself: I run Kali Linux in a virtual machine, so if anything goes wrong, I can delete the VM and my laptop is unaffected. Windows also includes Windows Sandbox (on Pro and Enterprise editions), a disposable copy of Windows running inside Windows. You can open a suspicious attachment there instead of on your main computer, and everything is wiped when you close it. One important point: a VM or sandbox protects your computer’s files, but it can still reach your network if networking is switched on. When testing something suspicious, switch networking off so malware can’t reach other devices on your Wi-Fi.
-
-Operating System 2.3 
+=================================================================================================================================================================
+Topic Operating System 2.3 
 Overview: Operating System Vulnerabilities
 
 The big idea: An operating system like Windows, macOS or Linux is enormous, with tens of millions of lines of code written by thousands of people. With that much code, mistakes are guaranteed. Some of those mistakes become security holes. And because the OS sits underneath everything on the computer, a flaw there can give an attacker control of the whole machine.
@@ -1321,19 +1340,17 @@ Many OS will only approve updates from
 Automatic updates are usually trustworthy as it checks the digital signature.
 
 BACKUP BACKUP and then after you backup, backup again and have a image or be ready to full factory reset just in case. At least this way it wont hurt as bad as losing a photo of your first motor bike ride on Philip island. 
-
-Supply Chain 2.3
-
-Overview: Supply Chain Vulnerabilities
+================================================================================================================================================================
+Topic 11. Supply Chain 2.3                    Overview: Supply Chain Vulnerabilities
 
 The big idea: No organisation builds everything itself. It relies on other companies for services, hardware and software. Every one of those suppliers is a potential way in. Your security is only as strong as the weakest company you trust.
 
 Think of your house again. You might have excellent locks, but you’ve given a key to the cleaner, the plumber and the alarm company. If any of them is careless with that key, or one of their staff is dishonest, your locks don’t matter.
 
-Messer breaks it into three types:
+Messer video breaks it into three types:
 
 1. Service providers
-Companies with access to your systems: IT support (MSPs), cloud providers, contractors, maintenance companies. Attackers target them because one breach can open doors into all their clients.
+Companies with access to your systems: IT support (MSPs), cloud providers, contractors, maintenance companies. Attackers target them because one breach can open doors into all their clients. like Target’s HVAC contractor, or an IT support company with remote access.
 
 Example: you already know this one. In the Target breach (2013), attackers got in using login details stolen from Target’s air-conditioning contractor, then moved from there into the payment systems.
 Australian example: the Medibank breach (2022) reportedly began with stolen login details belonging to a worker at a third-party IT provider.
@@ -1346,18 +1363,17 @@ Defence: buy from the manufacturer or authorised resellers, not the cheapest lis
 
 3. Software providers
 Every app and library you install is code someone else wrote.
+Software providers: a trusted vendor’s software or update gets compromised. SolarWinds is the big example: attackers poisoned a legitimate update, which then went out to thousands of organisations. This is where malicious updates topic connects.
 
 Example: SolarWinds, which you just covered. A malicious update is a software supply chain attack.
 Modern software is built from open-source libraries, so one flaw in a widely used library can affect thousands of products at once.
 
 How organisations defend against it:
-
 Vet suppliers before signing. Check their security practices, and write security requirements into the contract.
 Least privilege for vendors. Give suppliers access only to what they need, only when they need it. Target’s air-conditioning contractor never needed a path to payment systems.
 Segmentation. Keep vendor access in its own section of the network.
 
 Monitor vendor activity, and remove access as soon as a contract ends. That’s what I did at Orica everyday.
-
 
 Why do attackers target a supplier instead of going straight for the company they want?
 Attckers try to get to the supplier because it may be a way of getting straight into the company they really want. There are a few reasons I can think of: maybe the supplier is a smaller buisness that handles the office cleaning and they have weaker security. The target company will have some amount of trust with the supplier and may not see it as a risk or it's underated. This also applies to the cleaning company may be working for the target company for many years without incident. Also suppliers if they are a small family buisness may not be a financial, tech or health may have less investment in security possibility.
@@ -1386,5 +1402,13 @@ Vetting suppliers: often done with security questionnaires, or by checking for c
 Contract terms: a right-to-audit clause lets you check their security, and an SLA (service level agreement) sets what they must deliver. Rather than rewriting the contract every quarter, the usual approach is regular reviews of the supplier, with the contract updated when needed.
 HVAC access: That’s least privilege and segmentation.
 Reputable hardware vendors: correct. Buying from authorised resellers reduces the risk of counterfeit equipment.
-Supervising cleaners in the server room: a physical control called an escort, which links to physical security in 1.2. Locking down sensitive areas is right too.
+Supervising cleaners in the server room: a physical control called an escort, which links to physical security in 1.2.
+Locking down sensitive areas is right too.
+Setup up a quarterly review to check variables like have they changed owners or managers. Recheck the access level and written contract of terms like SLA ect
+Three technical controls to add (these would have stopped Target)
 
+MFA on supplier accounts. Target’s HVAC contractor only needed a stolen username and password. With MFA, those stolen credentials alone wouldn’t have been enough.
+Network segmentation. Even after the attackers got in through the vendor portal, they shouldn’t have been able to reach the checkout systems. Separating the network into zones keeps a supplier’s area walled off from payments. Think of it as a separate ward with its own locked doors.
+Monitoring supplier access. Log and watch what vendor accounts do. An HVAC login poking around payment systems should raise an alarm
+===============================================================================================================================================================
+=================================================================================================================================================================
