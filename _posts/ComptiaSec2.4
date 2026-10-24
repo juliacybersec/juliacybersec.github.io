@@ -43,7 +43,7 @@ ATT&CK is public and its like a playbook of past attacks great for cyber securit
 
 Exam tip: if a question describes files suddenly locked or encrypted with a payment demand, the answer is ransomware. If it asks for the best recovery, the answer is usually restore from an offline backup.
 =================================================================================================================================================================
-Topic 2 2.4 #2: Viruses and Worms (overview)
+Topic 2 2.4 #2: Viruses and Worms 
 
 Virus: malware that attaches itself to a legitimate file or program and needs a person to run it before it can spread. It hides inside something normal and spreads when that file is opened or shared.
 Analogy: like a cold passed on a shared cup. It only spreads when someone picks the cup up and uses it.
@@ -116,12 +116,11 @@ The key exam difference: a virus needs user action; a worm is self-propagating o
 ======================================================================================================================================================================
 Topic 3. 2.4 Spyware and Bloatware
 
-Spyware — the hidden camera. Spyware sits quietly on a device and watches what you do, then sends it back to someone else. Think of a hidden camera in a rental property: you go about your day normally with no idea anyone is watching. It can collect:
-
-Browsing history and searches. Keystrokes (overlapping with the keyloggers you saw earlier)
+Spyware — the hidden camera. Spyware sits quietly on a device and watches what you do, then sends it back to someone else. Think of a hidden camera in a rental property: you go about your day normally with no idea anyone is watching. It can collect: 
+Browsing history and searches. Keystrokes (overlapping with the keyloggers 
 Login details, banking info, location, even screenshots or camera/mic access
 
-How it gets in: usually bundled with something you chose to install, like a “free” app, a fake toolbar or a dodgy browser extension, or delivered through phishing. It’s often hidden in the fine print of terms and conditions nobody reads. This ties back to your point about critical thinking going out the window when something’s free.
+How it gets in: usually bundled with something you chose to install, like a “free” app, a fake toolbar or a dodgy browser extension, or delivered through phishing. It’s often hidden in the fine print of terms and conditions nobody reads. This is the "free couch" on the side walk(infected with flees or who knows what) all critical thinking goes out the window when something’s free.
 
 Bloatware — the junk mail that came with the house
 Bloatware is software that’s pre-installed on a new device by the manufacturer or phone carrier: trial antivirus, games, “helper” apps you never asked for. Imagine buying a house and finding the previous owner left furniture in every room. It’s not necessarily harmful, but it takes up space, and some of it might have problems you don’t know about.
@@ -129,7 +128,7 @@ Bloatware is software that’s pre-installed on a new device by the manufacturer
 Why bloatware is a security issue:
 It expands the attack surface (remember 2.2): more software means more possible vulnerabilities
 It’s often not updated or patched, because nobody uses it or knows it’s there
-Some has had genuine security holes or quietly collected data
+Some have genuine security holes or quietly collected data
 It wastes storage, memory and performance
 
 Defences:
@@ -139,17 +138,39 @@ Remove bloatware you don’t need, and build devices from a clean, standard imag
 Keep everything patched
 
 What spyware is and how it usually ends up on a device?
-
+What it collects: keystrokes, screenshots, camera and mic. All correct.
+How it gets in: bundled with free apps, malicious apps even in official stores, email attachments, and drive-by downloads, where just visiting a compromised website can infect you with no click. 
+The security concept that applies is least privilege: an app should only have the permissions it actually needs. A torch app asking for your contacts and microphone is a red flag. Reviewing app permissions regularly is a solid defence against both spyware and over-collecting legitimate apps.
 Why bloatware is a security risk even if it’s not malicious?
 
 How you’d protect against each one?
+Attack surface: every extra app is another door.
+Unpatched: nobody maintains it, so vulnerabilities never get fixed.
+Unknown permissions: it may have access to things you’d never knowingly grant.
+Wasted resources: storage, memory, performance.
+It’s trusted by default: because it came with the device, people assume it’s fine.
+
+The issue “you can’t defend against something you don’t even know about” is the key idea, and it’s a real security principle: asset inventory. Organisations keep a list of every device and piece of software they have, because unknown software can’t be patched, monitored or secured. 
+Regularly reviewing apps and permissions and removing what you don’t use. To round it out:
+
+Bloatware - Junk Mail the game that came with your phone that you forgot about(forgot its using memory, cant patch it, has permission to your camera)
+Uninstall or disable what you don’t need
+In business: build devices from a clean, standard image instead of using the manufacturer’s setup, and use MDM (mobile device management) to control which apps are allowed
+Most places I worked have na iso OSI image, if any machine just had too many issues like the older ones it was sometimes quicker to install a new image. 
+
+Spyware
+Anti-malware and EDR
+Only install from trusted sources, and check reviews and the developer
+Review permissions (least privilege)
+Keep the OS and apps patched
+Be careful with email attachments and links
 
 ======================================================================================================================================================================
 Topic 4 Other Malware Types
 logic bomb - A 2013 email attachment was actually a bomb and when onpened a week later it deleted the system inc the OS, then all ATMs effected.
 It doesn't have any way to see if its going to do in the future so constant monitoring, 
-Rootkit = Hides in the OS Kernel part of the OS so its hard to find. Look for unusable anti malware scans. Invisible to antivirus but could be discovered after its             infected then find/build software to pick it up. Secure boot with UEFI (secure in the BIOS)
-      Hiding in the kernel and being invisible to normal antivirus is exactly right. Think of it as malware that has disguised itself as part of the building’s foundations.
+Rootkit = Hides in the OS Kernel part of the OS so its hard to find. Look for unusable anti malware scans. Invisible to antivirus but could be discovered after its                   infected then find/build software to pick it up. Secure boot with UEFI (secure in the BIOS)
+          Hiding in the kernel and being invisible to normal antivirus is exactly right. Think of it as malware that has disguised itself as part of the building’s                   foundations.
 Ransomware: the main focus. Ransomware encrypts your files so you can’t open them, then demands payment, usually in cryptocurrency, to unlock them.
 
 Keylogger: It records everything typed: passwords, messages, bank details. 
@@ -161,11 +182,9 @@ Event trigger: goes off when something happens. The classic exam scenario is a d
 
 Rootkit: once a rootkit is identified, specialised rootkit removal tools can be built to find and remove that particular one. And yes, Secure Boot with UEFI is the big defence. It checks that the operating system hasn’t been tampered with before it’s allowed to start, so a modified kernel won’t load.
 
-
 How to protect against ransomware? Backups: the number one defence. Backing up operating systems and applications as well as data, and having spare machines ready to go, is real business-continuity thinking. Just remember the key exam word: backups should be offline or separate, so the ransomware can’t encrypt them too.
 Analogy: someone breaks into your house, puts all your belongings in a locked cage, and leaves a note: pay up and we’ll send the key. Your things are still there, you just can’t use them, and paying doesn’t guarantee you’ll get the key. Keep them offline or separate, otherwise the ransomware encrypts your backups too.
 Keep everything updated: operating system, applications and antivirus. Anti-malware software: keep it running and up to date.
-
 
 ========================================================================================================================================================================
 Topic 5  Physical Attacks
