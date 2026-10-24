@@ -42,13 +42,11 @@ Keep everything updated: operating system, applications and antivirus. Anti-malw
 ATT&CK is public and its like a playbook of past attacks great for cyber security, anyone can read it, including attackers. Most of what’s in it is already known in criminal circles, since it’s built from real attacks, so defenders tend to get more out of it than attackers do. But “public knowledge cuts both ways”. What is not in this video for ransomware is that there is no guarentee that an attacker will give back the data after payment. It's a catch 22 if you pay they may decrypt your locked data and give it back or they may then ask for more money, even then they may leak it in the end. Hypothetically I think it would be better to get a security team to try to get it back if its encrypted and still on your system rather than pay the ransom.
 
 Exam tip: if a question describes files suddenly locked or encrypted with a payment demand, the answer is ransomware. If it asks for the best recovery, the answer is usually restore from an offline backup.
-====================================================================================================================================================================
+=================================================================================================================================================================
 Topic 2 2.4 #2: Viruses and Worms (overview)
 
 Virus: malware that attaches itself to a legitimate file or program and needs a person to run it before it can spread. It hides inside something normal and spreads when that file is opened or shared.
 Analogy: like a cold passed on a shared cup. It only spreads when someone picks the cup up and uses it.
-
-Messer covers a few virus types:
 
 Program viruses: hide inside an application
 Boot sector viruses: load when the computer starts, before the operating system
@@ -58,11 +56,95 @@ Fileless viruses: run only in memory, never saved to disk (linking back to memor
 
 Worm: malware that spreads by itself across a network, with no click or human action needed. It finds a vulnerable machine, infects it, then uses that machine to find the next one.
 Analogy: an airborne infection spreading through a ward. Nobody has to touch anything, and it moves from bed to bed on its own.
+Virus — the hitchhiker
+A virus can’t move on its own. It attaches itself to something legitimate (a program, a document, a boot sector) and only runs when a person runs that thing. Think of a cold passed on a shared coffee cup: nothing happens until someone picks the cup up and drinks. Once it runs, it copies itself into other files on that machine, and it spreads further when people share those files.
 
-Key exam difference: a virus needs a human to run it; a worm spreads by itself.
+Worm — the self-driving version
+A worm doesn’t need anyone to click anything. It finds a vulnerable service on the network, exploits it, copies itself across, and then that new machine starts scanning for the next victim. If a virus is a cold on a coffee cup, a worm is a fire jumping from house to house along a street: no help needed, and it spreads very fast. WannaCry (2017) is the classic example. It used the EternalBlue SMB exploit to rip through unpatched Windows networks and dropped ransomware as it went. Worms tent to spread quickly move anytime
+
+On “non-click” infections. Not everything needs a click. But when malware gets in with no user action at all, the exam usually calls it a worm or a zero-click exploit, not a virus. By definition, a virus needs the user to run its host: open the file, launch the program, enable the macro. So if you see “no user interaction” in a question, think worm. On clicks and links. Clicking a link or visiting a dodgy site is really how the virus gets delivered. It actually takes hold when the infected file is executed. That’s a small distinction, but it’s the one examiners like to test: delivery vs execution.
+
+Worms can go unnoticed  at first. But because worms scan and spread so aggressively, they often show up as a sudden spike in network traffic or a slowdown. That’s one of the indicators of malicious activity.
+
+Defences to keep in mind: antivirus/EDR for viruses; patching, firewalls and network segmentation for worms, since worms move through the network itself.
+
+Why is fileless malware harder to detect?
+No file to scan. Traditional antivirus and EDR tools are built around a simple assumption: malicious software leaves files on disk.  Fileless malware executes entirely in RAM and never writes an executable to the file system, so there's nothing for signature-based scanning, hash matching, or file-reputation checks to flag. It hides in legitimate tools. Attackers abuse native OS utilities like PowerShell, WMI, and msiexec — tools that are whitelisted, digitally signed, and used for routine administration.  Because the malicious activity runs under the identity of a trusted process, it blends seamlessly with normal system operations, making it extremely difficult to distinguish from legitimate activity. Volatile evidence. Memory is volatile — the malicious code disappears on reboot or when the process is terminated.  This means forensic evidence can vanish before it's captured, and investigators must rely on memory dumps and log analysis rather than simply inspecting a file. 
+
+Detection requires behavioral analysis instead. Defenders must shift from "what files are on disk?" to "what is this process actually doing?" — monitoring command-line arguments, process lineage, script content, and network behavior in real time. This is slower, more resource-intensive, and harder to scale across large environments than a simple file scan. It’s the reason EDR (endpoint detection and response) exists. EDR asks “is this process doing something odd?” rather than “is this file known to be bad?” Living off the land. Fileless malware usually abuses tools that are already trusted on Windows, like PowerShell or WMI. Since those are legitimate, signed Microsoft tools, they don’t look suspicious on their own. It’s like a burglar wearing the staff uniform: nobody stops them because they look like they belong.
+It lives in memory. Because it runs in RAM, it can vanish on reboot, which also wipes the evidence. That makes forensics harder. Attackers often add a persistence trick, like a registry entry, so it reloads at startup.
+
+In short, fileless malware defeats detection by removing the very artifact (a file) that most security tooling is designed to find, while simultaneously hiding inside tools that are trusted by default. Summing up: No static artifacts for analysis. Without a file, there's no hash to look up in threat-intelligence databases, no binary to sandbox or detonate, and no disk artifact to quarantine.  This eliminates the entire pipeline that most security tooling is built around.
+
+Why patching and segmentation matter so much against worms?
+Worms are self-propagating — they don't need a user to click anything. Once one system is infected, the worm scans the network for other vulnerable hosts and exploits the same vulnerability to replicate. That single property makes patching and segmentation the two most effective controls:
+
+Patching removes the fuel. Most major worms (WannaCry, Blaster, Conficker, Code Red) exploit a known, already-patched vulnerability. The window between patch release and worm exploitation is often just days. If every system is patched, the worm has nothing to exploit — it can't enter, can't spread, and the chain stops at zero. A single unpatched host is enough to start the cascade, which is why patch coverage matters as much as patch speed. 
+
+Segmentation limits the blast radius. Even if patching fails or is too slow, a flat network lets a worm scan and reach every host in minutes. Segmentation breaks that flat topology into isolated zones with controlled inter-zone traffic.  A worm confined to one VLAN or subnet can't pivot to the next segment, turning a network-wide outbreak into a contained incident you can investigate and remediate.
+
+Control	What it does against worms
+Patching	Eliminates the vulnerability the worm exploits — stops it before it starts
+Segmentation	If the worm gets in anyway, confines it to one zone — limits damage
+
+They work as complementary layers: patching is prevention, segmentation is containment.  You need both because patching will never be 100% (zero-days, missed endpoints, legacy systems), and segmentation alone doesn't stop the initial infection.
+
+viruses and worms do have signatures. Antivirus keeps a database of known bad files and their hashes, and checks files against it. Fileless malware is the one that slips past, because there’s no file to compare. And EDR isn’t really signature-based; it watches behaviour, which is why it can catch things antivirus misses.
+Keeping signature databases up to date helps against known threats, but against a worm exploiting a zero-day, patching and segmentation are your real safety net.
+antivirus/EDR tools use signatures (hashes, byte patterns) to detect known malware. The virus/worm itself doesn't "use" the signature; it's what defenders use to find it. That's precisely why fileless and polymorphic malware are hard to catch: they either have no file to hash or they mutate to avoid matching a known signature. 
+### Defending against worms
+
+A worm doesn't need anyone to click anything. It relies on a **vulnerability in a network service**, such as an unpatched file-sharing service, to get in. Once it's on one machine, it scans the network for the next vulnerable device and copies itself across, again and again. WannaCry (2017) is the classic example: it used the EternalBlue exploit against SMB (port 445) to spread through unpatched Windows networks around the world.
+
+Because a worm needs that vulnerability and a network path to the next machine, the defences target both.
+Patching: prevention
+Patching removes the vulnerability the worm depends on. No vulnerability, no way in. Disabling services you don't need and blocking unused ports at the firewall does the same job, and protects machines that haven't been patched yet.
+Segmentation: containment: Airport Analogy 
+Segmentation splits a network into separate zones (VLANs, subnets, separate Wi-Fi networks) so that if a worm does get in, it's stuck in one zone.
+Think of an airport. Staff systems, the VIP lounge Wi-Fi and the public passenger Wi-Fi should all be on separate segments. If a passenger's laptop is infected, the worm can't reach the systems that actually run the airport. Good guest Wi-Fi also uses **client isolation**, so devices on the same network can't talk to each other at all. That's segmentation at the smallest level.
+
+Limiting the blast radius
+Realistically, you can't stop every attack. The aim is to limit the **blast radius**: how far the damage spreads when something does get through. Patching stops many worms before they start; segmentation keeps the ones that get in contained. This ties back to zero trust and the idea of "assume breach".
+
+Detection and recovery
+- Antivirus compares files against a database of known malware signatures, so keep it updated. It struggles with fileless malware, because there's no file to check.
+- EDR watches behaviour (what processes are doing), so it can catch threats antivirus misses.
+- Monitoring helps spot a worm early, often as a sudden spike in network traffic.
+- Backups and the backups - mean that if the worst happens, you can recover.
+Key exam difference: a virus needs a human to run it; a worm spreads by itself. 
+The key exam difference: a virus needs user action; a worm is self-propagating over the network.
 ======================================================================================================================================================================
 Topic 3. 2.4 Spyware and Bloatware
 
+Spyware — the hidden camera. Spyware sits quietly on a device and watches what you do, then sends it back to someone else. Think of a hidden camera in a rental property: you go about your day normally with no idea anyone is watching. It can collect:
+
+Browsing history and searches. Keystrokes (overlapping with the keyloggers you saw earlier)
+Login details, banking info, location, even screenshots or camera/mic access
+
+How it gets in: usually bundled with something you chose to install, like a “free” app, a fake toolbar or a dodgy browser extension, or delivered through phishing. It’s often hidden in the fine print of terms and conditions nobody reads. This ties back to your point about critical thinking going out the window when something’s free.
+
+Bloatware — the junk mail that came with the house
+Bloatware is software that’s pre-installed on a new device by the manufacturer or phone carrier: trial antivirus, games, “helper” apps you never asked for. Imagine buying a house and finding the previous owner left furniture in every room. It’s not necessarily harmful, but it takes up space, and some of it might have problems you don’t know about.
+
+Why bloatware is a security issue:
+It expands the attack surface (remember 2.2): more software means more possible vulnerabilities
+It’s often not updated or patched, because nobody uses it or knows it’s there
+Some has had genuine security holes or quietly collected data
+It wastes storage, memory and performance
+
+Defences:
+Antivirus/anti-malware and EDR (spyware)
+Be careful what you install; read permissions and check where downloads come from
+Remove bloatware you don’t need, and build devices from a clean, standard image in business settings
+Keep everything patched
+
+What spyware is and how it usually ends up on a device?
+
+Why bloatware is a security risk even if it’s not malicious?
+
+How you’d protect against each one?
+
+======================================================================================================================================================================
 Topic 4 Other Malware Types
 logic bomb - A 2013 email attachment was actually a bomb and when onpened a week later it deleted the system inc the OS, then all ATMs effected.
 It doesn't have any way to see if its going to do in the future so constant monitoring, 
