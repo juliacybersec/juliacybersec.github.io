@@ -1,9 +1,6 @@
 CompTIA Security 2.4 
-Topic 1 An Overview of Malware
-Malware is about the attacks that use them, and the signs that tell you an attack is happening.
-This is the most SOC-analyst part of the whole exam, because spotting those signs is what a SOC analyst does all day.
-
-Analogy: if 2.3 was knowing a patient’s risk factors, 2.4 is reading the symptoms and working out what’s actually wrong.
+Topic 1 An Overview of Malware: Malware is about the attacks, and the signs that tell you an attack is happening.
+This is the most SOC-analyst part of the whole exam, spotting the signs is what a SOC analyst does all day.
 
 Malware: viruses, worms, ransomware, trojans, spyware, bloatware, keyloggers, logic bombs and rootkits. Each type behaves differently.
 Physical attacks: brute force (literally breaking in), RFID cloning (copying building access cards), and environmental attacks (like targeting power or cooling).
@@ -43,7 +40,7 @@ ATT&CK is public and its like a playbook of past attacks great for cyber securit
 
 Exam tip: if a question describes files suddenly locked or encrypted with a payment demand, the answer is ransomware. If it asks for the best recovery, the answer is usually restore from an offline backup.
 =================================================================================================================================================================
-Topic 2 2.4 #2: Viruses and Worms 
+Topic 2. 2.4 #2: Viruses and Worms 
 
 Virus: malware that attaches itself to a legitimate file or program and needs a person to run it before it can spread. It hides inside something normal and spreads when that file is opened or shared.
 Analogy: like a cold passed on a shared cup. It only spreads when someone picks the cup up and uses it.
@@ -59,8 +56,7 @@ Analogy: an airborne infection spreading through a ward. Nobody has to touch any
 Virus — the hitchhiker
 A virus can’t move on its own. It attaches itself to something legitimate (a program, a document, a boot sector) and only runs when a person runs that thing. Think of a cold passed on a shared coffee cup: nothing happens until someone picks the cup up and drinks. Once it runs, it copies itself into other files on that machine, and it spreads further when people share those files.
 
-Worm — the self-driving version
-A worm doesn’t need anyone to click anything. It finds a vulnerable service on the network, exploits it, copies itself across, and then that new machine starts scanning for the next victim. If a virus is a cold on a coffee cup, a worm is a fire jumping from house to house along a street: no help needed, and it spreads very fast. WannaCry (2017) is the classic example. It used the EternalBlue SMB exploit to rip through unpatched Windows networks and dropped ransomware as it went. Worms tent to spread quickly move anytime
+Worm — the self-driving version. A worm doesn’t need anyone to click anything. It finds a vulnerable service on the network, exploits it, copies itself across, and then that new machine starts scanning for the next victim. If a virus is a cold on a coffee cup, a worm is a fire jumping from house to house along a street: no help needed, and it spreads very fast. WannaCry (2017) is the classic example. It used the EternalBlue SMB exploit to rip through unpatched Windows networks and dropped ransomware as it went. Worms tent to spread quickly move anytime
 
 On “non-click” infections. Not everything needs a click. But when malware gets in with no user action at all, the exam usually calls it a worm or a zero-click exploit, not a virus. By definition, a virus needs the user to run its host: open the file, launch the program, enable the macro. So if you see “no user interaction” in a question, think worm. On clicks and links. Clicking a link or visiting a dodgy site is really how the virus gets delivered. It actually takes hold when the infected file is executed. That’s a small distinction, but it’s the one examiners like to test: delivery vs execution.
 
@@ -86,25 +82,22 @@ Segmentation limits the blast radius. Even if patching fails or is too slow, a f
 Control	What it does against worms
 Patching	Eliminates the vulnerability the worm exploits — stops it before it starts
 Segmentation	If the worm gets in anyway, confines it to one zone — limits damage
-
 They work as complementary layers: patching is prevention, segmentation is containment.  You need both because patching will never be 100% (zero-days, missed endpoints, legacy systems), and segmentation alone doesn't stop the initial infection.
 
-viruses and worms do have signatures. Antivirus keeps a database of known bad files and their hashes, and checks files against it. Fileless malware is the one that slips past, because there’s no file to compare. And EDR isn’t really signature-based; it watches behaviour, which is why it can catch things antivirus misses.
+Viruses and worms do have signatures. Antivirus keeps a database of known bad files and their hashes, and checks files against it. Fileless malware is the one that slips past, because there’s no file to compare. And EDR isn’t really signature-based; it watches behaviour, which is why it can catch things antivirus misses.
 Keeping signature databases up to date helps against known threats, but against a worm exploiting a zero-day, patching and segmentation are your real safety net.
 antivirus/EDR tools use signatures (hashes, byte patterns) to detect known malware. The virus/worm itself doesn't "use" the signature; it's what defenders use to find it. That's precisely why fileless and polymorphic malware are hard to catch: they either have no file to hash or they mutate to avoid matching a known signature. 
 ### Defending against worms
-
 A worm doesn't need anyone to click anything. It relies on a **vulnerability in a network service**, such as an unpatched file-sharing service, to get in. Once it's on one machine, it scans the network for the next vulnerable device and copies itself across, again and again. WannaCry (2017) is the classic example: it used the EternalBlue exploit against SMB (port 445) to spread through unpatched Windows networks around the world.
 
 Because a worm needs that vulnerability and a network path to the next machine, the defences target both.
-Patching: prevention
-Patching removes the vulnerability the worm depends on. No vulnerability, no way in. Disabling services you don't need and blocking unused ports at the firewall does the same job, and protects machines that haven't been patched yet.
+Patching: Patching removes the vulnerability the worm depends on. No vulnerability, no way in. Disabling services you don't need and blocking unused ports at the firewall does the same job, and protects machines that haven't been patched yet.
 Segmentation: containment: Airport Analogy 
 Segmentation splits a network into separate zones (VLANs, subnets, separate Wi-Fi networks) so that if a worm does get in, it's stuck in one zone.
 Think of an airport. Staff systems, the VIP lounge Wi-Fi and the public passenger Wi-Fi should all be on separate segments. If a passenger's laptop is infected, the worm can't reach the systems that actually run the airport. Good guest Wi-Fi also uses **client isolation**, so devices on the same network can't talk to each other at all. That's segmentation at the smallest level.
 
 Limiting the blast radius
-Realistically, you can't stop every attack. The aim is to limit the **blast radius**: how far the damage spreads when something does get through. Patching stops many worms before they start; segmentation keeps the ones that get in contained. This ties back to zero trust and the idea of "assume breach".
+Realistically, you can't stop every attack. The aim is to limit the blast radius: how far the damage spreads when something does get through. Patching stops many worms before they start; segmentation keeps the ones that get in contained. This ties back to zero trust and the idea of "assume breach".
 
 Detection and recovery
 - Antivirus compares files against a database of known malware signatures, so keep it updated. It struggles with fileless malware, because there's no file to check.
@@ -113,7 +106,7 @@ Detection and recovery
 - Backups and the backups - mean that if the worst happens, you can recover.
 Key exam difference: a virus needs a human to run it; a worm spreads by itself. 
 The key exam difference: a virus needs user action; a worm is self-propagating over the network.
-======================================================================================================================================================================
+==================================================================================================================================================================
 Topic 3. 2.4 Spyware and Bloatware
 
 Spyware — the hidden camera. Spyware sits quietly on a device and watches what you do, then sends it back to someone else. Think of a hidden camera in a rental property: you go about your day normally with no idea anyone is watching. It can collect: 
@@ -165,7 +158,7 @@ Review permissions (least privilege)
 Keep the OS and apps patched
 Be careful with email attachments and links
 
-======================================================================================================================================================================
+==================================================================================================================================================================
 Topic 4 Other Malware Types
 logic bomb - A 2013 email attachment was actually a bomb and when onpened a week later it deleted the system inc the OS, then all ATMs effected.
 It doesn't have any way to see if its going to do in the future so constant monitoring, 
@@ -186,18 +179,26 @@ How to protect against ransomware? Backups: the number one defence. Backing up o
 Analogy: someone breaks into your house, puts all your belongings in a locked cage, and leaves a note: pay up and we’ll send the key. Your things are still there, you just can’t use them, and paying doesn’t guarantee you’ll get the key. Keep them offline or separate, otherwise the ransomware encrypts your backups too.
 Keep everything updated: operating system, applications and antivirus. Anti-malware software: keep it running and up to date.
 
-========================================================================================================================================================================
+==================================================================================================================================================================
 Topic 5  Physical Attacks 2.4 #5: Physical Attacks. 
 The big idea: All the digital security in the world doesn’t help if someone can just walk in and grab the server. Physical security is the lock on the front door: if that fails, everything inside is exposed. 
 
-1. Brute force (physical): Not the password kind. This is literally forcing your way in: kicking a door, smashing a window, prying open a cabinet, or just pushing hard enough on a cheap lock. A burglar who doesn’t bother picking the lock and just breaks the door off its hinges.
-Defences: solid doors and frames, good locks, reinforced server rooms, alarms, CCTV, and testing how well your physical barriers actually hold up.
+Think of your house. Malware is someone tricking you into opening the door. A physical attack is someone belting down the door or climbing through a window, copying your key, or cutting the power.
 
-2. RFID cloning: Many access badges and key fobs use RFID: you tap the card and the door opens. An attacker with a cheap reader can get close to you (in a lift, a queue, a café) and copy your badge’s signal without touching it, then make their own copy. It’s like someone secretly copying your house key while it hangs off your belt loop.
-Defences: badges that use encryption or challenge-response rather than a simple ID number, RFID-blocking sleeves, adding a second factor like a PIN, and watching for tailgating (someone following you through a door).
+-Brute force (physical). This isn’t password guessing. It means forcing your way in: kicking a door, smashing a window, prying open a server cabinet. It’s crude, but it works if the physical security is weak.
+-RFID cloning. Many work access cards and key fobs use RFID. An attacker with a cheap reader can stand near you, copy your badge’s signal, and make a duplicate. It’s like someone pressing your house key into a bar of soap and cutting a copy. You never know it happened, and the door can’t tell the copy from the real one.
+-Environmental attacks. These go after what keeps the systems running: power, heating and cooling, fire suppression. Kill the air conditioning in a server room and the servers overheat and shut down. Nobody had to touch a computer. It’s like breaking into your house by turning off the mains. That’s an availability attack, from the CIA triad.
 
-3. Environmental attacks: Instead of attacking the computers directly, attack what keeps them running: power, cooling (HVAC) or fire suppression. Overheat the server room or cut the power and systems go down, which can cause a denial of service. HVAC systems are often networked too, so they can be a way in. It’s like disabling a hospital’s generators instead of attacking the doctors.
-Defences: UPS and backup generators, environmental monitoring (temperature and humidity alerts), securing and segmenting building-management systems from the main network.
+Why physical access is often called “game over” for security
+"If a bad guy has unrestricted physical access to your computer, it's not your computer anymore." 
+Full disk encryption (BitLocker on Windows) is the big one. If they steal the laptop or pull the drive, they get scrambled data without the key. It’s like a thief taking your locked safe home: they have the box, but not what’s in it.
+BIOS/UEFI passwords and Secure Boot make it harder to boot from their own USB stick.
+Screen lock and auto-lock stop the “walk past an unlocked desk” attack.
+So physical access is very bad, but encryption limits how much damage it does.
+
+What helps against RFID cloning (think extra factors beyond the card)
+MFA for RFID cloning. If the door needs the card plus a PIN or fingerprint, a cloned card alone gets the attacker nothing. It’s like your house needing the key plus a code on the alarm panel.
+Foil and Faraday shielding. A shielded sleeve stops someone skimming your card while it’s in your pocket.
 
 Exam: physical attacks often lead into digital ones, such as cloning a badge to get into the building and then plugging a device into the network.
 
@@ -213,12 +214,14 @@ RFID cloning is the unauthorized duplication of data from a legitimate RFID cred
 
 The entire process for a 125 kHz card takes seconds and costs under $50 in equipment. Researchers have demonstrated remote cloning from ~2 m with a concealed reader and an automated writing station 30 m away.
 
-
 The security principle mirrors the earlier discussion on bloatware and fileless malware: the weakest link in the chain is what gets exploited. An organisation with strong cyber defences but a 1990s-era 125 kHz badge system has a front door that takes seconds to open.
 What an environmental attack targets and why it’s effective?
+An environmental attack targets the physical parts of a system — its power supply, sensors, electromagnetic environment — rather than its software or network. The goal is to manipulate, disrupt, or extract information by exploiting the physics of the hardware itself.
 
-======================================================================================================================================================================
-Topic 6  Denial of Service
+I could only find one example of a news article about Peter Mac MRI scanners fail(it wasn't an attack). Electromagnetic interference from the Metro Tunnel disrupted sensitive medical equipment, and MRI scanners at Peter Mac near the new Parkville station failed equipment tests. Peter Mac moved its MRI services to its another centre. This shows how vulnerable sensitive equipment is to electromagnetic interference, even by accident. An attacker could deliberately cause what the trains caused by accident.
+
+==================================================================================================================================================================
+Topic 6 2.4 #6, Denial of Service
 ==========================================================================================================================================================================
 Topic 7 DNS Attacks
 ===========================================================================================================================================================================
