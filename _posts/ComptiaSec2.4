@@ -187,7 +187,36 @@ Analogy: someone breaks into your house, puts all your belongings in a locked ca
 Keep everything updated: operating system, applications and antivirus. Anti-malware software: keep it running and up to date.
 
 ========================================================================================================================================================================
-Topic 5  Physical Attacks
+Topic 5  Physical Attacks 2.4 #5: Physical Attacks. 
+The big idea: All the digital security in the world doesn’t help if someone can just walk in and grab the server. Physical security is the lock on the front door: if that fails, everything inside is exposed. 
+
+1. Brute force (physical): Not the password kind. This is literally forcing your way in: kicking a door, smashing a window, prying open a cabinet, or just pushing hard enough on a cheap lock. A burglar who doesn’t bother picking the lock and just breaks the door off its hinges.
+Defences: solid doors and frames, good locks, reinforced server rooms, alarms, CCTV, and testing how well your physical barriers actually hold up.
+
+2. RFID cloning: Many access badges and key fobs use RFID: you tap the card and the door opens. An attacker with a cheap reader can get close to you (in a lift, a queue, a café) and copy your badge’s signal without touching it, then make their own copy. It’s like someone secretly copying your house key while it hangs off your belt loop.
+Defences: badges that use encryption or challenge-response rather than a simple ID number, RFID-blocking sleeves, adding a second factor like a PIN, and watching for tailgating (someone following you through a door).
+
+3. Environmental attacks: Instead of attacking the computers directly, attack what keeps them running: power, cooling (HVAC) or fire suppression. Overheat the server room or cut the power and systems go down, which can cause a denial of service. HVAC systems are often networked too, so they can be a way in. It’s like disabling a hospital’s generators instead of attacking the doctors.
+Defences: UPS and backup generators, environmental monitoring (temperature and humidity alerts), securing and segmenting building-management systems from the main network.
+
+Exam: physical attacks often lead into digital ones, such as cloning a badge to get into the building and then plugging a device into the network.
+
+What physical brute force means and how you’d defend against it? Physical brute force is protect your physical items. Secure doors, cameras and not letting anyone know there is something valuble here. Like ANZ the building with no signs, no uniform you would never know was the head IT building. 
+
+How RFID cloning works and why it’s dangerous?
+RFID cloning is the unauthorized duplication of data from a legitimate RFID credential (badge, key fob, tag) onto a blank or programmable card, creating a functional duplicate that the access system accepts as genuine. 
+1. Signal capture (skimming). The attacker uses a portable RFID reader — often concealed in a bag or under clothing — to read the data transmitted by a legitimate card.  For low-frequency (125 kHz) cards like EM4100 or HID Prox, this is trivial: the card broadcasts a fixed ID with no encryption, and the range can be extended to ~1 m with a boosted antenna. For 13.56 MHz cards (e.g., MIFARE Classic), the attacker may need to perform cryptographic key-recovery attacks (nested authentication, Darkside/MFCUK) to extract sector keys. 
+
+2. Data extraction and analysis. The captured signal is parsed to isolate the credential components: unique ID, facility code, access bits, and (for encrypted cards) sector keys.
+
+3. Replication. The extracted data is written to a blank writable card (e.g., a T5577 for 125 kHz, or a "Chinese magic" card for MIFARE Classic). The clone is now indistinguishable to the reader — when presented, it transmits the same credential and is granted the same access. 
+
+The entire process for a 125 kHz card takes seconds and costs under $50 in equipment. Researchers have demonstrated remote cloning from ~2 m with a concealed reader and an automated writing station 30 m away.
+
+
+The security principle mirrors the earlier discussion on bloatware and fileless malware: the weakest link in the chain is what gets exploited. An organisation with strong cyber defences but a 1990s-era 125 kHz badge system has a front door that takes seconds to open.
+What an environmental attack targets and why it’s effective?
+
 ======================================================================================================================================================================
 Topic 6  Denial of Service
 ==========================================================================================================================================================================
