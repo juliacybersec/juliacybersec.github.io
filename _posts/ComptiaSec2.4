@@ -218,13 +218,57 @@ The security principle mirrors the earlier discussion on bloatware and fileless 
 What an environmental attack targets and why it’s effective?
 An environmental attack targets the physical parts of a system — its power supply, sensors, electromagnetic environment — rather than its software or network. The goal is to manipulate, disrupt, or extract information by exploiting the physics of the hardware itself.
 
-I could only find one example of a news article about Peter Mac MRI scanners fail(it wasn't an attack). Electromagnetic interference from the Metro Tunnel disrupted sensitive medical equipment, and MRI scanners at Peter Mac near the new Parkville station failed equipment tests. Peter Mac moved its MRI services to its another centre. This shows how vulnerable sensitive equipment is to electromagnetic interference, even by accident. An attacker could deliberately cause what the trains caused by accident.
-
+I could only find one example of a news article about Peter Mac MRI scanners fail(it wasn't an attack). Electromagnetic interference from the Metro Tunnel disrupted sensitive medical equipment, and MRI scanners at Peter Mac near the new Parkville station failed equipment tests. Peter Mac moved its MRI services. This shows how vulnerable sensitive equipment is to electromagnetic interference, even by accident. An attacker could deliberately cause what the trains caused by accident.
 ==================================================================================================================================================================
 Topic 6 2.4 #6, Denial of Service
-==========================================================================================================================================================================
-Topic 7 DNS Attacks
-===========================================================================================================================================================================
+The analogy: Picture a small café with one front door and one person at the counter. A denial of service (DoS) attack is someone sending a crowd of fake customers who jam the doorway and keep asking pointless questions. Real customers can’t get served. Nothing is stolen or broken. The goal is simply to make the service unavailable, which is an attack on the “A” in the CIA triad.
+
+DoS vs DDoS: DoS comes from a single source. Distributed DoS comes from many sources at once, usually a botnet of infected devices, so you can’t just block one address.
+Amplification/reflection: The attacker sends small requests to a third-party server, such as DNS, while pretending to be the victim. The server sends much larger replies to the victim. It’s like ordering 500 pizzas to someone else’s address. Not always malicious: A DoS can be accidental, like a misconfiguration, or a sudden surge of genuine traffic. 
+What’s the difference between a DoS and a DDoS, and why is a DDoS harder to stop?
+DoS: the attack traffic comes from one source.
+DDoS: the attack traffic comes from many sources at once.
+
+One attacker usually controls the many computers. That’s a botnet, steered from a command-and-control (C2) server. But what matters is where the flood actually arrives from. One person giving orders to 10,000 infected machines is still a DDoS, because the victim gets hit from 10,000 directions. 
+
+With a DoS, you can block the one source address and it’s over.
+With a DDoS, the traffic comes from thousands of addresses all over the world. Many belong to ordinary people’s hacked routers and cameras, so blocking them all isn’t practical. The requests can also look like normal traffic, so it’s hard to separate the attackers from real customers.
+
+The PIZZA ATTACK DUN DUN DAHHH Amplification and Reflection Explained
+Let’s say there’s someone I don’t particularly like. We’ll call her Sandy (made up, I promise).
+
+I want to bury Sandy’s house in pizza. The problem is that I’ve only got a push bike, and I can’t realistically carry 12 pizzas at a time. Delivering thousands of pizzas myself would take forever. It’s far too much work, and it would be obvious it was me. So instead, I ring 1,000 pizza shops pretending to be Sandy. I give them her name and address, and each time I say, “I’d like 12 meat lovers pizzas, please.” Every shop thinks Sandy genuinely placed the order, so they all deliver. Within the hour, Sandy has 12,000 pizzas on her doorstep. She can’t get to her car, her bins are overflowing, and her driveway is blocked. When she rings the shops to complain, every one of them says, “But you called us.”
+
+Meanwhile, I’m sitting at home with my feet up. I made a few short phone calls, the pizza shops did all the heavy lifting, and nobody knows it was me.
+
+How this maps to a real attack:
+
+Pizza attack	Network attack
+My push bike	                              My own internet connection, with limited bandwidth
+Pretending to be Sandy on the phone	          Spoofing: forging the victim’s IP address as the source of the request
+The innocent pizza shops	                    Legitimate public servers, like DNS, NTP or memcached
+A short phone call becomes 12 pizzas	          Amplification: a small request triggers a much larger response
+Pizzas arriving from 1,000 shops, not me	Reflection: the traffic bounces off third parties, hiding the attacker
+Sandy’s blocked driveway	                    The victim’s network is saturated, so legitimate traffic can’t get through
+
+Why attackers love DNS for this:
+There are DNS servers everywhere, and many open resolvers will answer anyone. That’s plenty of pizza shops to call.
+DNS runs over UDP. UDP is built for speed and doesn’t use a handshake, so the server just replies to whatever address the request claims to come from. The pizza shop never rings back to check it was really Sandy. TCP uses a three-way handshake (SYN, SYN-ACK, ACK), which makes spoofing much harder.
+DNS replies are much bigger than the questions, which is where the amplification comes from.
+DNS is hard to block. Every network needs DNS, so the victim can’t just switch it off without breaking their own internet.
+
+How to stop the pizza shops being used:
+Don’t run open DNS resolvers that answer anyone on the internet. Only answer your own users.
+ISPs can filter out traffic with forged source addresses before it leaves their network.
+Use DDoS protection services, which absorb and filter the flood before it reaches the victim.
+
+CompTIA Network Stuff that everyone should know. TCP’s handshake makes it more reliable, and it makes spoofing harder. TCP is about reliability: it confirms the connection, numbers the packets, and resends anything that goes missing, so you get the full, correct data back. UDP skips all of that for speed. That’s why it suits video calls, live streaming, online gaming and DNS lookups, where a dropped packet matters less than a delay. It’s also why UDP is so easy to abuse in reflection attacks, because nobody checks who’s really asking.
+DIAGRAM TO PUT HERE  1,000 pizza shops, then a big pile of pizzas at Sandy’s house, with “spoofed caller ID” on the arrows.
+==================================================================================================================================================================
+Topic 7 DNS Attacks 2.4 #7 DNS attacks 
+
+
+==================================================================================================================================================================
 Topic 8 DNS Attacks
 ======================================================================================================================================================================
 Topic 9 Wireless Attacks
