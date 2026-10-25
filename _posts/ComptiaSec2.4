@@ -266,7 +266,15 @@ CompTIA Network Stuff that everyone should know. TCP’s handshake makes it more
 DIAGRAM TO PUT HERE  1,000 pizza shops, then a big pile of pizzas at Sandy’s house, with “spoofed caller ID” on the arrows.
 ==================================================================================================================================================================
 Topic 7 DNS Attacks 2.4 #7 DNS attacks 
+What DNS does - This is network foundations that everyone should know before doing cyber security. 
+DNS is the internet’s phone book. You type bank.com.au, and DNS looks up the IP address so your computer knows where to go. Almost everything you do online starts with a DNS lookup. That makes it a very attractive target: if an attacker can tamper with the phone book, they can send you somewhere else without you noticing.
 
+Think of a hospital switchboard. You ring and ask for “Cardiology,” and the operator looks up the extension and puts you through.
+DNS poisoning (cache poisoning): someone slips a false entry into the operator’s directory. Now everyone who asks for Cardiology gets put through to the attacker’s line. Nobody’s phone was touched; the directory itself is wrong. In DNS terms, a fake record ends up in a DNS server’s cache, and users get sent to a malicious IP. Changing the client’s host file: instead of the central directory, the attacker edits the sticky note on your phone that says “Cardiology = ext. 4321.” Your computer checks its local hosts file before asking DNS, so a changed entry redirects only you, but you’d never notice.
+Domain hijacking: the attacker takes control of the domain registration itself, as if someone took over the hospital’s actual phone account and pointed every number wherever they liked. This usually happens through stolen registrar logins or an expired domain.
+URL hijacking / typosquatting: you’ve met this in 2.2. It means registering bankk.com.au and waiting for people to mistype the address. Messer usually mentions it here too.
+
+The key idea to hold onto: in a DNS attack, the user does everything right. They type the correct name, and the system that’s supposed to translate it lies to them. That’s what makes these attacks sneaky and why things like DNSSEC (digitally signed DNS records, which links back to your 1.4 digital signature work) exist.
 
 ==================================================================================================================================================================
 Topic 8 DNS Attacks
