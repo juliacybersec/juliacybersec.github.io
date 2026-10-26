@@ -304,13 +304,26 @@ Deauthentication attack. Imagine you’re on the hospital phone, and someone kee
 
 RF jamming. Here the attacker doesn’t trick anything. They just drown it out, like someone standing in the ward with a megaphone so nobody can hear the call bells. They flood the radio frequency with noise so legitimate signals can’t get through. It’s a DoS at the physical/radio level, and it can be constant, random, or reactive (only jamming when it hears someone transmit). Finding it means fox hunting: walking around with a directional antenna, getting “warmer” as the signal gets stronger, until you find the source.
 
-Analogy: Your at a wedding and there is free lemon lime bitters, you order but now here's the problem: anyone can walk up to you and shout "You're not allowed to drink leave!" — and you just... leave. Because there's no way to tell if it's the bouncer or some drunk uncle having a laugh.
+Deauth attack	RF jamming
+How	          Lies: spoofs a “you’re disconnected” message	          Shouts: floods the frequency with noise
+Who’s hit	          Can target one specific device	                    Everyone in range
+Layer	          A protocol trick (management frames)	                    Physical, the radio signal itself
+Fix	          802.11w / PMF	                                        No setting fixes it: find and remove the source
 
-That's a deauth attack. The "you're kicked out" message (the deauth frame) has no signature on it. The Wi-Fi card just hears "kicked out" and disconnects. No password, no ID check, no "prove you're the reception bouncer." An attacker just stands outside the club and keeps yelling "You're kicked out! You're kicked out! You're kicked out!" at the top of their lungs. You never get to dance.
+Analogy: Your at a wedding and there is free lemon lime bitters, you order but now here's the problem: anyone can walk up to you and shout "You're not allowed to drink leave!" — and you just... leave. Because there's no way to tell if it's the bouncer or some drunk uncle having a laugh. That's a deauth attack. The "you're kicked out" (it repeats you cant get back in)message (the deauth frame) has no signature on it. The Wi-Fi card just hears "kicked out" and disconnects. No password, no ID check, no "prove you're the reception bouncer." An attacker just stands outside the club and keeps yelling "You're kicked out! You're kicked out! You're kicked out!" at the top of their lungs. You never get to drink vodka.
 
+THE FIX - What 802.11w changes.why does a deauth attack work at all, and what does 802.11w change?
+The club introduces a secret code word. Every time the bouncer tells you something important (like "you're kicked out"), they say the code word too.
+Now when someone yells "You're kicked out!" at you, you ask: "What's the code word?"
+Real bouncer → knows the code → you leave (legitimately).
+Random stranger → can't say the code → you ignore them and keep dancing.
+The code word is the MIC (Message Integrity Code) — a little cryptographic tag that only the real AP and your device can produce, because they share a secret key. The attacker doesn't have the key, so they can't forge the code word.
+802.11w was optional under WPA2. WPA3 (2018) makes PMF mandatory — a WPA3 network won't complete the association if either side doesn't support PMF. This is why WPA3 is considered deauth-proof by design. The whole fix is: add a signature to the "you're kicked out" note so you can check it actually came from the boss.
 
-Key idea to hold onto: deauth is pretending to be the network (spoofing), while jamming is overpowering the network (noise). One is a lie, the other is a shout. 
-why does a deauth attack work at all, and what does 802.11w change?
+How to stop RF Jamming?
+802.11w checks messages, and jamming isn’t a message. It’s just noise. There’s no seal to check, no sender to verify, nothing to accept or reject. The bouncer’s ID badge doesn’t help when the band is so loud nobody can hear anyone.
+
+Finding the source is fox hunting. You use a directional antenna (one that picks up signal from one direction at a time) and an attenuator, and you walk around watching the signal strength. It’s like trying to find the doof-doof house: you walk down the street, and it gets louder in one direction and quieter in the other, until you’re standing at the right front door. Key idea to hold onto: deauth is pretending to be the network (spoofing), while jamming is overpowering the network (noise). One is a lie, the other is a shout. 
 ==================================================================================================================================================================
 Topic 9 Wireless Attacks
 
