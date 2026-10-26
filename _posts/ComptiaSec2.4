@@ -271,15 +271,51 @@ DNS is the internet’s phone book. You type bank.com.au, and DNS looks up the I
 
 Think of a hospital switchboard. You ring and ask for “Cardiology,” and the operator looks up the extension and puts you through.
 DNS poisoning (cache poisoning): someone slips a false entry into the operator’s directory. Now everyone who asks for Cardiology gets put through to the attacker’s line. Nobody’s phone was touched; the directory itself is wrong. In DNS terms, a fake record ends up in a DNS server’s cache, and users get sent to a malicious IP. Changing the client’s host file: instead of the central directory, the attacker edits the sticky note on your phone that says “Cardiology = ext. 4321.” Your computer checks its local hosts file before asking DNS, so a changed entry redirects only you, but you’d never notice.
-Domain hijacking: the attacker takes control of the domain registration itself, as if someone took over the hospital’s actual phone account and pointed every number wherever they liked. This usually happens through stolen registrar logins or an expired domain.
-URL hijacking / typosquatting: you’ve met this in 2.2. It means registering bankk.com.au and waiting for people to mistype the address. Messer usually mentions it here too.
+Domain hijacking: the attacker takes control of the domain registration itself, as if someone took over the hospital’s actual phone account and pointed every number wherever they liked. This usually happens through stolen registrar logins or an expired domain. URL hijacking / typosquatting: It means registering bankk.com.au and waiting for people to mistype the address.
+The key idea: in a DNS attack, the user does everything right. They type the correct name, and the system that’s supposed to translate it lies to them. That’s what makes these attacks sneaky and why things like DNSSEC (digitally signed DNS records, which links back to 1.4 digital signature) exist. If an attacker had access to a local machine that could change the DNS client host file and could use this instead of going to the DNS server to do the query. . 
 
-The key idea to hold onto: in a DNS attack, the user does everything right. They type the correct name, and the system that’s supposed to translate it lies to them. That’s what makes these attacks sneaky and why things like DNSSEC (digitally signed DNS records, which links back to your 1.4 digital signature work) exist.
+INSERT DIAGRAM FROM NOTES HERE 
 
+What’s the difference between DNS poisoning and domain hijacking? Who or what is actually being tampered with in each?
+
+DNS poisoning = someone scribbles a wrong number on your personal copy of the phone book. The official directory at the city hall is still correct. When you tear out that page and get a fresh copy, or the TTL runs out the problem is gone. What's tampered: the resolver's in-memory cache entry. A temporary, local copy.
+DNS cache: temporary, remembered answers. Your computer (and DNS servers) keep recent lookups for a while. These do expire when the TTL runs out, or you can flush them (ipconfig /flushdns). Hosts file: a plain text file sitting on the computer (C:\Windows\System32\drivers\etc\hosts). It’s checked before DNS, and it doesn’t expire. Flushing the cache won’t touch it. If an attacker edits it, the redirect stays until someone notices and fixes the file. Changing the client’s hosts file (affects one computer) an on-path attacker sitting in the middle and answering DNS queries with fake replies
+poisoning the DNS server’s cache, which is the big one. Every user who asks that server gets the bad answer until the TTL expires.
+
+Domain hijacking = is when the attacker makes a change to the registry on the DNS server. Someone breaks into the phone book and changes the contacts. Every copy of the phone book in the city is now wrong. You have to get into phone book fixed. 
+Poisoning isn’t only on the client’s machine. Domain hijacking: One small terminology note: attackers usually break into the registrar account, meaning the company the domain was bought from, often with stolen login details. From there they can repoint the domain’s name servers or records. Because they’re changing the authoritative source, it affects everyone in the world, and it lasts until the real owner gets control back. No TTL will save you there.
+Changing the client’s hosts file (affects one computer) an on-path attacker sitting in the middle and answering DNS queries with fake replies
+poisoning the DNS server’s cache, which is the big one. Every user who asks that server gets the bad answer until the TTL expires.
+
+Why is an attack on the DNS cache Server worse than just one computer? The blast radius for the Server is bigger, more than one computer is going to these web sites. A server’s cache still has TTLs. A cache is a cache, wherever it lives. DNS servers cache answers with a TTL just like your computer does, so a poisoned entry on a server will expire when its TTL runs out. (Attackers try to set a very long TTL on their fake record, and they can re-poison it, but it’s still temporary.) The server’s admins can also flush its cache once they spot the problem.
+                              Reach (blast radius)         	          How long it lasts
+Hosts file edit	          One computer	                    Persistent: no TTL, stays until someone finds and fixes the file
+Server cache poisoning	Everyone using that server	          Temporary: expires with TTL or when admins flush it
+Domain hijacking	          Everyone, worldwide                    	Until the real owner regains control of the registrar account
+
+The last row is where it “lasts until they figure out it’s compromised” idea really belongs.
+Memory Point:Poisoning corrupts a copy of the answer (on your machine, in transit, or in a server’s cache); hijacking takes over the original.
+DNSSEC stops: forged answers in transit and poisoned server caches
+DNSSEC doesn’t stop: hosts file edits (DNS is never asked) or domain hijacking (the attacker controls the real keys)
 ==================================================================================================================================================================
-Topic 8 DNS Attacks
-======================================================================================================================================================================
+Topic 8. 2.4 #8, Wireless attacks
+
+Deauthentication attack. Imagine you’re on the hospital phone, and someone keeps cutting in with a fake “please hang up now” message in the switchboard’s voice. Your phone obeys and drops the call. On Wi-Fi, devices send “deauth” management messages to disconnect, and on older setups those messages aren’t authenticated. An attacker can spoof them and keep kicking you off the network. Attackers use it as a DoS, or to force you to reconnect so they can capture the handshake (or lure you onto their fake access point). The fix is 802.11w, which protects management frames so fake “hang up” messages get ignored. This is built into WPA3.
+
+RF jamming. Here the attacker doesn’t trick anything. They just drown it out, like someone standing in the ward with a megaphone so nobody can hear the call bells. They flood the radio frequency with noise so legitimate signals can’t get through. It’s a DoS at the physical/radio level, and it can be constant, random, or reactive (only jamming when it hears someone transmit). Finding it means fox hunting: walking around with a directional antenna, getting “warmer” as the signal gets stronger, until you find the source.
+
+Analogy: Your at a wedding and there is free lemon lime bitters, you order but now here's the problem: anyone can walk up to you and shout "You're not allowed to drink leave!" — and you just... leave. Because there's no way to tell if it's the bouncer or some drunk uncle having a laugh.
+
+That's a deauth attack. The "you're kicked out" message (the deauth frame) has no signature on it. The Wi-Fi card just hears "kicked out" and disconnects. No password, no ID check, no "prove you're the reception bouncer." An attacker just stands outside the club and keeps yelling "You're kicked out! You're kicked out! You're kicked out!" at the top of their lungs. You never get to dance.
+
+
+Key idea to hold onto: deauth is pretending to be the network (spoofing), while jamming is overpowering the network (noise). One is a lie, the other is a shout. 
+why does a deauth attack work at all, and what does 802.11w change?
+==================================================================================================================================================================
 Topic 9 Wireless Attacks
 
-============================================================================================================================================================================
+
+
+
+==================================================================================================================================================================
  
