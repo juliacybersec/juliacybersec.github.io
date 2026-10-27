@@ -1,14 +1,12 @@
-What is an API — the waiter 
+What is an API — Application Programming Interface - The waiter 
 You're in a restaurant. You don't walk into the kitchen and grab the coffee yourself. 
 You tell the waiter what you want, they take it to the kitchen, and bring back what the kitchen made.
 
-That's an API.
-
-Restaurant	Tech
-You (the customer)	Your app / your code
-The waiter	The API
-The kitchen	The actual server / database / service
-The menu	The API's documentation (what you can order)
+Restaurant = Tech
+You (the customer) =	Your app / your code
+The waiter	=The API
+The kitchen	= The actual server / database / service
+The menu = The API's documentation (what you can order)
 "Sorry, we don't do that"	An error response
 
 An API (Application Programming Interface) is just a set of rules that lets one program talk to another. 
@@ -20,15 +18,67 @@ So what's an "API key" then?
 The cafe lets you order, but they need to know who you are so they can write it on your cup and put on your tab(i ordered a latte not too hot).
 You give them your name and it's a take away coffee. That's your API key — it's how the service knows which account is making the request, 
 and it decides what you're allowed to order(as long as you pay your tab too.
-
 Lose that name (leak your key), and anyone at the restaurant can order food on your tab.
 
 What is IAM = Identity and Access Management. 
 
 It's the system that decides who you are (identity) and what you're allowed to do (access). 
 Its like the bouncer at a club: they check your ID (authentication) and then check the guest list to see if you're allowed in the VIP area (authorization). 
+====================================================================================================================================================
+Kerberos and NTLM
+NTLM = you prove who you are by answering a math question derived from your password hash, every single time, to every single server you talk to.
+Kerberos = you prove who you are once to a trusted middleman, get a time-limited ticket, and then show that ticket to any service. 
+Your password never crosses the network again. 
 
+How Kerberos Actually Works (the ticket flow)
 
+Think of it like a hotel key card system:
+You check in (log in). The front desk (the KDC — Key Distribution Center, which runs on your domain controller) verifies your ID and gives you a master key card 
+(the TGT — Ticket-Granting Ticket).  This card is encrypted, time-limited (default 10 hours), and only the front desk can issue it. You want to use the pool
+(access a file server, email, etc.). You don't go back to the front desk with your ID. You just show the master key card at the pool's kiosk 
+(the TGS — Ticket-Granting Service) and get a pool-specific key (a service ticket). You swipe the pool key at the pool door. The door checks it, lets you in.
+Done. You want to use the gym next. Same thing — show the master card at the gym kiosk, get a gym key, swipe in. You never show your ID again.
+The critical property: your password (or its hash) is only used in step 1, locally, to derive the key that encrypts the TGT request. After that,
+it's tickets all the way down. No password, no hash, ever crosses the network to a service.
 
+Why NTLM Is Weaker
+NTLM	Kerberos
+What crosses the network	A hash of your password (the NT hash) used in a challenge-response	An encrypted ticket — no password material at all
+Authentication model	Point-to-point: every client↔server pair does its own handshake	Centralised: one trusted third party (KDC) vouches for you
+Mutual authentication	No — the client can't verify the server is real	Yes — both sides prove identity to each other
+Delegation	No — a server can't say "I'm acting on behalf of this user" to a third server	Yes — the "double-hop" problem is solved natively
+Replay resistance	Weak — NTLMv1 is trivially replayable; NTLMv2 is better but still vulnerable to relay	Strong — tickets are time-stamped, service-specific, and single-use
+Encryption	MD4 (NTLMv1) / HMAC-MD5 (NTLMv2)	AES-128 / AES-256
+Credential exposure	The NT hash is a standing target: steal it once, use it forever (pass-the-hash)	Tickets expire in minutes-to-hours;
+a stolen TGT is useless after it lapses
+
+The Attacks That Make the Difference Concrete
+Pass-the-hash (NTLM). An attacker who dumps a local SAM database or LSASS memory gets the NT hash. They can now authenticate to any machine that accepts NTLM,
+indefinitely, without ever knowing the password. Kerberos doesn't have this problem because the TGT is a one-time encrypted blob tied to a session key — it's not
+a reusable password hash.
+
+NTLM relay. An attacker sits on the wire (ARP poisoning, rogue AP — the stuff we discussed earlier), captures the NTLM challenge-response, 
+and replays it to a different server. NTLM has no way to bind the response to the specific server that issued the challenge. 
+Kerberos tickets are encrypted with the target service's key — a ticket for the file server is useless at the database server.
+
+No mutual authentication (NTLM). In NTLM, the client proves itself to the server, but the server never proves itself to the client. 
+An attacker can impersonate the server (a rogue SMB share, a fake RDP endpoint) and harvest the client's NTLM response. 
+Kerberos requires the server to prove it holds the correct service key, closing that gap.
+
+Why Kerberos Isn't Perfect
+KDC is a single point of trust. If the domain controller is compromised, the attacker can issue valid tickets for anyone (the "Golden Ticket" attack — forge a
+TGT using the KRBTGT account's hash). Kerberoasting. Service tickets for accounts with static service keys can be requested and then cracked offline, 
+similar to pass-the-hash but targeting service accounts. Overpass-the-hash / AS-REP roasting. Pre-authentication attacks that target accounts without pre-auth 
+or with weak passwords. Complexity. Misconfigured SPNs, unconstrained delegation, and trust relationships between forests create lateral-movement paths that
+NTLM's simplicity at least makes easier to reason about. But those are Kerberos implementation weaknesses. The protocol itself is strictly stronger than NTLM 
+at every layer.
+
+Quick Version
+NTLM is "prove your password hash to every server, every time, with no way to verify the server is real."
+Kerberos is "prove your password once to a trusted middleman, get a time-limited ticket, and never send password material across the network again.
+" That's why it's the default in Active Directory and why Microsoft has been pushing to disable NTLM entirely (it's off by default for new domains in
+Windows Server 2025).
+
+===============================================================================================================================================================
 
 
