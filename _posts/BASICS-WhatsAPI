@@ -1,3 +1,12 @@
+Networking Protocols: A Security Deep Dive - CompTIA Network+ Basics In Depth
+
+This is a running reference of the networking fundamentals that keep coming up in security — the stuff from the CompTIA Network+ syllabus that you need a
+solid grip on before the security stuff actually makes sense. I did Comptia Network+ a while back, but I found myself wanting to go deeper on the protocols that
+actually show up in security work — not just "what port does SMB use" but why it matters when it's being abused. So this is a deeper pass over the networking 
+fundamentals. Having a more in depth understanding of networking including protocols are a good "why does this protocol matter" primer if you're
+coming at it from the security side. written for anyone coming into security who wants the "oh, that's why this attack works" layer, not just the exam-level 
+definitions.
+
 What is an API — Application Programming Interface - The waiter 
 You're in a restaurant. You don't walk into the kitchen and grab the coffee yourself. 
 You tell the waiter what you want, they take it to the kitchen, and bring back what the kitchen made.
@@ -80,5 +89,61 @@ Kerberos is "prove your password once to a trusted middleman, get a time-limited
 Windows Server 2025).
 
 ===============================================================================================================================================================
+What SMB Is
+SMB (Server Message Block) is the protocol that lets one computer access files, printers, and named pipes on another computer over a network.  
+When you open \\server\shared in Windows Explorer, that's SMB doing the work. It's an application-layer (Layer 7) protocol, typically running
+over TCP port 445 (modern) or TCP port 139 (legacy, via NetBIOS). 
+
+It's a request-response protocol: the client asks, the server answers.  The stateful session tracks open files, locks, and authentication tokens 
+for the lifetime of the connection. 
+
+The Connection Flow
+Negotiate — Client and server agree on a dialect (SMB 2.0.2 through 3.1.1).
+Authenticate — Client proves identity using Kerberos (preferred) or NTLM (fallback). This is the Kerberos/NTLM discussion from earlier, in action.
+Tree connect — Client connects to a specific share (a folder, a printer, a named pipe).
+File operations — Open, read, write, lock, close.  Each is a request-response pair. SMB includes file locking so two users editing the same file
+don't overwrite each other. 
+Disconnect — Session closes. 
+
+Versions at a Glance
+Version	    Year	            Transport                	Key Security features
+SMB 1.0     (CIFS)1992	      TCP 139 (NetBIOS)      	No signing, no encryption, no integrity. Disabled by default on all modern Windows.
+SMB 2.0    	2006(Vista/2008)	TCP 445	                Message signing, larger MTU, improved locking.
+SMB 2.1    	2009 (7/2008R2)	  TCP 445	                Multi-channel (RDMA), persistent handles.
+SMB 3.0	    2012 (2012)      	TCP 445              	  End-to-end encryption (AES-128-CBC), improved signing.
+SMB 3.0.2	  2012 R2	          TCP 445	AES-128-GCM,     encryption per-share.
+SMB 3.1.1	  2016 (2016)	      TCP 445	AES-256-GCM,     pre-auth integrity, multi-channel over TCP.
+
+The big jump was SMB 2.0 → 3.0: encryption went from "optional signing" to "mandatory-capable end-to-end." SMB 3.1.1 also added pre-auth integrity,
+meaning even unauthenticated packets are signed — which kills a whole class of relay and spoofing attacks that SMB 2.x was vulnerable to.
+
+Why SMB Is a Persistent Security Target? SMB is the lateral movement backbone of Windows networks. 
+An attacker who compromises one machine and can authenticate to others via SMB can:
+          Read and write files across the network
+          Execute code on remote machines (via named pipes / ADMIN$ / C$ shares)
+          Dump credentials (LSASS access over a remote session)
+          Deploy ransomware to every reachable host 
+          That's exactly what WannaCry did in 2017 — it exploited EternalBlue (CVE-2017-0144, an NSA-developed exploit for SMBv1) to self-propagate across unpatched
+         Windows machines without any user interaction.  ~230,000 machines in 150 countries in days.
+          NotPetya used the same exploit to spread through Ukrainian and global corporate networks. 
+
+SMB is the "how does one Windows machine talk to another" protocol — files, printers, remote execution. It's been around since 1992, it's the default lateral
+movement path in every Windows network, and its history of vulnerabilities (EternalBlue → WannaCry → SMBGhost) makes it the single most exploited protocol in 
+enterprise environments. The defence is the same playbook we've been building all along: patch, segment, enforce strong auth (Kerberos + signing + encryption),
+and monitor for anomalies. 
+====================================================================================================================================================================
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
