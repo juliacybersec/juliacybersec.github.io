@@ -386,7 +386,24 @@ Least privilege, so malware can’t install as easily
 MFA: it helps stop stolen passwords, but it doesn’t stop man-in-the-browser on its own. The malware just waits until you’ve logged in and rides along on your session. It’s the transaction confirmation that catches it.
 
 ===============================================================================================================================================================
+Topic 10. 2.4 #10: Replay attacks.
 
+A replay attack is when an attacker captures something valid that was sent across the network and sends it again later to get the same result. They don’t need to crack or understand it. They just reuse it.
+
+Analogy: You go to the Ballarat pool and the gate scans your entry pass. Someone behind you records the signal from your card with a cheap reader. Later they play that recording back at the gate, and it opens for them. They never learnt your PIN or made their own card. They just repeated what worked.
+
+Key points
+login credentials, session IDs, or hashes captured off the network. Usually it follows an on-path attack, which is why the topics sit together.
+
+Pass the hash: grabbing a password hash and sending that instead of the password. Some systems accept the hash, so the attacker never needs the real password.
+Where it actually happens: Pass the hash isn’t really a website or browser thing. You’re right that you can’t type a hash into a website’s password box. It’s mainly a Windows network problem. Older Windows sign-in methods (NTLM) prove who you are by sending the hash itself. So to that system, the hash is the password. Whoever holds it gets in.
+Analogy: It’s like an office where the door scanner only checks the code printed on the back of your ID card, not your face. If someone photocopies the back of your card, they’re in. They never needed to know anything about you.
+Real defences: Kerberos instead of NTLM, limiting admin accounts so one stolen hash doesn’t open everything, and Windows Credential Guard, which protects hashes in memory.
+
+Why HTTPS doesn’t save you: Attackers usually don’t sniff the hash off the wire. They pull it from the memory of a computer they’ve already broken into, often with a tool called Mimikatz. Then they use it to move to other machines on the network. Encryption in transit doesn’t help, because the hash was stolen from the machine, not the network.
+Session hijacking/sidejacking: stealing a session cookie so the website thinks the attacker is you, already logged in.
+
+Defences: encryption (HTTPS everywhere), and making each exchange unique and time-limited. Examples are timestamps, one-time codes (nonces), and session tokens that expire. A recording of yesterday’s code is useless today.
 
 
 
