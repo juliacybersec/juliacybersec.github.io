@@ -323,9 +323,77 @@ The code word is the MIC (Message Integrity Code) — a little cryptographic tag
 How to stop RF Jamming?
 802.11w checks messages, and jamming isn’t a message. It’s just noise. There’s no seal to check, no sender to verify, nothing to accept or reject. The bouncer’s ID badge doesn’t help when the band is so loud nobody can hear anyone.
 
-Finding the source is fox hunting. You use a directional antenna (one that picks up signal from one direction at a time) and an attenuator, and you walk around watching the signal strength. It’s like trying to find the doof-doof house: you walk down the street, and it gets louder in one direction and quieter in the other, until you’re standing at the right front door. Key idea to hold onto: deauth is pretending to be the network (spoofing), while jamming is overpowering the network (noise). One is a lie, the other is a shout. 
+FOX HUNTING: Finding the source is fox hunting. You use a directional antenna (one that picks up signal from one direction at a time) and an attenuator, and you walk around watching the signal strength. It’s like trying to find the doof-doof house: you walk down the street, and it gets louder in one direction and quieter in the other, until you’re standing at the right front door. Key idea to hold onto: deauth is pretending to be the network (spoofing), while jamming is overpowering the network (noise). One is a lie, the other is a shout. 
 ==================================================================================================================================================================
-Topic 9 Wireless Attacks
+Topic 9 Wireless Attacks 2.4 #9: On-path attacks
+The idea: an attacker places themselves between two parties who think they’re talking directly to each other. Every message passes through the attacker, who can read it, change it, or pass it along untouched so nobody notices. It used to be called “man-in-the-middle”; on-path is the newer, neutral term.
+Analogy: you and your bank post letters to each other, but someone has quietly redirected your mail to their own address first. They steam each envelope open, read it, maybe change “pay $50” to “pay $500”, reseal it and post it on. You and the bank both think the letters came straight from each other.
+
+How attackers get into the middle:
+ARP poisoning: on a local network, devices use ARP to match an IP address to a physical MAC address. ARP has no verification, so an attacker sends fake replies saying “the router’s IP is at my MAC address.” Your traffic to the router then goes to the attacker first. This only works on the same local network segment.
+On-path browser attack (man-in-the-browser): malware sits inside your browser, so it sees everything after decryption. HTTPS doesn’t help, because the attacker is already on your end of the encrypted tunnel. This is common with banking trojans.
+
+--------------------------------------INSERT MY TWO PC DIAGRAM HERE WITH THE MAN IN THE MIDDLE ---------------------------------------------------------------
+ARP Analogy: You and Mutley are in a picture cinema. You want to pass a note to Mutley, but you don't know his seat number — you only know his name (his IP address). So you shout: "Mutley, what's your seat number?"
+Mutley shouts back: "Seat 8!"
+You write that down on a sticky note: Mutley → Seat 8. Next time you need to send him a note, you just walk to Seat 8. No need to shout again.
+That sticky note is the ARP cache. The shouting is ARP.
+Theres a sneaky dog, Shella, is also in the room. She doesn't need to be at Seat 8. She doesn't need to know Mutley's password. She just stands up and shouts:
+"Hey everyone! Mutley is actually at Seat 7 now!"
+Everyone in the room hears her. They update their sticky notes: Mutley → Seat 7.
+But Mutley is still sitting in Seat 8. Seat 7 is where Shella is sitting.
+Now when you send a note to "Mutley," it goes to Seat 7. Shella picks it up. She reads it. Then she forwards it to Seat 8 so Mutley still gets the note, nobody notices. Same thing in reverse: Shella also shouts "Hey (the router) are actually at Seat 7 now!" So the router's replies come to her too.
+She's now in the middle of every note between you and the router. She can read them, change them, or delete them. And nobody knows, because the notes are still arriving on time. 
+The shout is the ARP request, a broadcast to everyone on the local network: “Who has this IP?”
+The sticky note is the ARP cache, a saved IP-to-MAC lookup so you don’t have to shout every time.
+Shella doesn’t need a password because ARP has no authentication. Anyone can claim to be anyone.
+
+Why it's easy	                    Explanation
+No ID check	                    When Mutley shouts "I'm at Seat 8," nobody asks for his doggy ID. Shella shouting "Mutley is at Seat 7" is                                                         just as valid. There's no signature, no paw or nose print, no password, no "prove you're Mutley."
+Last one wins	                   The sticky note doesn't say "I only update if I asked." It updates for anyone who shouts, even if                                                                 nobody asked. And if you already have "Mutley → Seat 8" written down, a new shout just overwrites it. 
+                                        No confirmation, no "hey, this is different from before, are you sure?"
+Stateless	ARP                           doesn't remember who asked what. There's no log. No handshake. No "I sent a request, I'm expecting one                                                            reply from one person." It's fire-and-forget.eir phone book based on whoever barks loudest and latest,                                                            with no ID check, no confirmation, and no memory of who they asked. Shella just has to shout thats all. 
+
+ARP IS SO EASY TO FOOL - This protocol is old when network was small, everyone knew everyone so they trusted them. -- This is not the case now. 
+Sheila doesn’t even wait to be asked. She can stand up and announce “Muttley’s at seat 7” when nobody shouted. Devices accept these unsolicited replies (called gratuitous ARP) and update their sticky notes. That’s what makes ARP so easy to fool.
+What’s different about an on-path browser attack, and why doesn’t HTTPS protect you from it?
+The difference is where the attacker sits relative to the encryption boundary
+Why HTTPS can't help?
+HTTPS has exactly one job: prove to the browser that the server is who it claims to be, and encrypt the transit. Once the browser has verified the certificate and decrypted the payload, its job is done. It has no mechanism to ask "is the code I'm about to hand this plaintext to actually the legitimate browser, or is there a malicious extension/binary also listening?"
+HTTPS draws the line at the process boundary. An on-path browser attacker is on the right side of that line, so the encryption is irrelevant — it's like locking your front door when the burglar is already in your kitchen. HTTPS (using TLS) that proves the server’s identity, not HTTP. The server shows a certificate, the browser checks it, and then the traffic is encrypted in transit. Once the data arrives, the browser decrypts it so it can show you the page.
+TLS is a locked room that the data passes through on its way to your browser.
+
+On-path browser attack (man-in-the-browser)
+HTTPS does a great job on the network. The server shows its certificate, my browser checks it’s genuine, and everything travelling between us is encrypted. Anyone sitting on the network in between just sees scrambled data. But once that data reaches my browser, it has to be decrypted so I can actually see the page. That’s where HTTPS’s job ends. I think of TLS as the lock on my front door. If a burglar is outside, the lock keeps them out. But with a man-in-the-browser attack, the burglar is already inside. They’re hiding in my pantry, eating my cookies, and listening to everything said at the kitchen table. Muttley doesn’t even bark. That’s what makes this attack so dangerous: nothing looks wrong. The padlock is still in the address bar, the certificate is real, and my bank’s website looks exactly the same as always. The malware sits inside the browser, so it sees everything in plain text: the page after it’s decrypted and everything I type before it’s encrypted and sent. It doesn’t just listen, either. It can swap the notes. I type “pay $50 to Bob,” the malware quietly changes it to “pay $5,000 to the attacker,” and my screen still shows $50.
+
+How the burglar gets in: banking trojans (Zeus is the classic example), malicious browser extensions, or malware picked up from a phishing email.
+INSERT MY HOUSE DIAGRAM HERE -----------------------------------------------------------------------------------------------------------------------------
+A small sketch of the house would suit this: the network traffic arriving at the locked front door, and the burglar in the pantry with a speech bubble over the kitchen table.
+The malware sees your data in plain text in both directions. It sees the page after decryption, and it sees what you type before it’s encrypted and sent. It can also change things. For example, you type “pay $50 to Bob,” and the malware sends “pay $5,000 to the attacker” while still showing you $50 on screen.
+
+Nobody can see the attacker. That’s what makes this attack dangerous. The padlock still shows, the certificate is genuine, and the bank site looks completely normal. 
+
+How it gets in: banking trojans (Zeus is the classic example), malicious browser extensions, or malware from phishing.
+Why it matters for defence: encryption (HTTPS/TLS) stops a network-level attacker from reading or altering traffic, which is why certificate warnings matter. The browser version gets around that, so endpoint protection matters there.
+Since HTTPS can’t stop it, what could defend against a man-in-the-browser attack, or at least catch it? This would be a layered approch. The problem is the end user wouldn't know if this is happening, how do you defend against something you cant see even Mutleys not barking and he barks at everything.
+
+NOTE ON BANK PAYMENT: Out-of-band verification. When you make a payment, the bank sends an SMS or app notification to your phone saying “Approve $5,000 to account 12345?” That message travels on a separate channel the browser malware can’t touch. So even if your screen shows $50, your phone shows the real amount, and you’d spot the swap. That’s basically Muttley barking from a different room.
+
+Endpoint protection/EDR to detect the trojan itself
+Patching the browser and OS
+Controlling extensions (in a workplace, only approved extensions allowed via policy)
+Least privilege, so malware can’t install as easily
+MFA: it helps stop stolen passwords, but it doesn’t stop man-in-the-browser on its own. The malware just waits until you’ve logged in and rides along on your session. It’s the transaction confirmation that catches it.
+
+===============================================================================================================================================================
+
+
+
+
+
+
+
+===========================================================================================================================================================
 
 
 
