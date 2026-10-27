@@ -449,14 +449,69 @@ Think of a commercial kitchen. Executable malware is a stranger walking in the b
 A script or macro is a forged note pinned to the recipe board. The chefs (your system) follow it without question because it looks like part of the normal instructions. Injected code on a website is someone adding one ingredient to the kitchen’s own sauce. Every dish that goes out the door is now poisoned, and nobody notices because the sauce still looks and tastes normal.
 
 Real-world examples
-WannaCry (2017): ransomware that spread on its own by exploiting an unpatched Windows file-sharing flaw (SMBv1, the “EternalBlue” exploit). It’s a good link back to your earlier work on worms.
+WannaCry (2017): ransomware that spread on its own by exploiting an unpatched Windows file-sharing flaw (SMBv1, the “EternalBlue” exploit). 
+
 British Airways (2018): attackers added a small piece of JavaScript to the payment page that quietly copied customers’ card details as they typed them. That’s the poisoned sauce.
 A national health database (Estonia): attackers used SQL injection to pull out data. You already covered SQL injection in 2.3, so this should feel familiar.
 
 Defences for
 Patching, anti-malware, firewalls, checking and sanitising inputs, and good user habits like not enabling macros from unknown files.
 
-For each example, notice two things: how the code got in (the vulnerability) and what it did once it was in. That pairing is what I’ll ask you about afterwards.
+How the code got in (the vulnerability) and what it did once it was in. 
+
+WannaCry - The port: WannaCry spread over TCP 445, which is SMB running directly over TCP. Port 139 is the older NetBIOS route. Both are worth knowing, but 445 is the one tied to WannaCry.
+The exploit: It used EternalBlue, an exploit originally developed by the US NSA. It was leaked publicly by a group called the Shadow Brokers.
+“Disabled by default” is true now. In 2017, SMBv1 was still switched on in many systems, and that’s partly why it spread so far.
+The painful part: Microsoft released the patch (MS17-010) about two months before the attack in May 2017. The organisations that got hit hadn’t patched. That’s why patching is the first defence.
+ What it did once it was in. It encrypted the files on each machine and showed a ransom note asking for about AU$400 in Bitcoin to unlock them. The UK’s NHS was one of the worst hit: hospitals cancelled appointments and turned away ambulances. It was eventually slowed by a researcher who found a hidden “kill switch” domain in the code and registered it.
+So the pairing is:
+How it got in: an unpatched SMBv1 flaw, exploited by EternalBlue
+What it did: encrypted files, demanded ransom, and spread itself to every reachable vulnerable machine, it was a disaster.
+
+British Airways (2018): 
+How it got in: The attacker used stolen credentials for an employee of Swissport, a third-party cargo handler that had remote access to BA's systems via a Citrix Access Gateway.  The account had no MFA. This is the same "trusted third party is the weakest link" pattern as the bloatware/supply-chain discussion.
+Privilege escalation. Once inside the Citrix environment, the attacker:
+
+Broke out of the Citrix sandbox (exploiting vulnerabilities in the gateway to run tools that should have been blocked).
+Conducted network reconnaissance — pinging, scanning, enumerating hosts.
+Found domain administrator credentials stored in plaintext in a file on a server.  No encryption, no vault, just sitting there.
+Used those creds to get virtually unrestricted access to the relevant domain. 
+Found database administrator credentials (also plaintext) and logged into three servers. 
+This is the "lateral movement" phase we discussed with SMB — one foothold, find the admin password, now you're everywhere.
+
+What it did once it was in.
+Two separate exfiltration methods, both running simultaneously:
+1. The Plaintext Log Files (the "oops" find)
+On 26 July 2018, the attacker found log files containing full payment card details (including CVVs) in plaintext.  These had been created when BA was testing a new checkout feature and forgot to remove a debugging script before going live.  The data had been accumulating since 2015 — three years of card numbers, sitting in a log file, unencrypted. 
+
+The attacker simply copied those files. No exploit needed. No encryption to break. Just... a file.
+2. The Magecart Skimmer (the "real" attack)
+This is the part that made the breach famous. The attacker modified a JavaScript file on BA's public website — specifically, an old (2012) version of the Modernizr library loaded by the payment page.  They injected 22 lines of malicious code that:
+
+                                  Activated when a customer reached the payment confirmation page
+                                  Read the form fields: name, address, card number, expiry, CVV
+                                  Silently sent that data over HTTPS to baways.com — a domain the attacker registered that looked like a BA subdomain (ba-                                                  ways.com)
+                                   Then let the normal booking process continue, so the customer saw a normal confirmation and had no idea 
+                                   The skimmer was active from 21 August to 5 September 2018 (~2 weeks). 
+                                   It also hit the Android app, because the app was built on the same web codebase as the compromised site. 
+                                   
+Estonian Central Health Database (2021). That one was purely an SQL injection:
+
+How it got in: a SQL injection flaw in the national health information system, so crafted input in a query let the attacker run their own database commands.
+What it did: pulled out a large amount of health data. It was a data breach, not a takedown. Nothing was crashed or flooded; the attacker quietly read and copied records.
+SYN flood: the attacker sends SYNs and never sends the final ACK of the handshake, so the server is left holding half-open connections. FIN is for closing a connection.
+The ICMP-to-broadcast trick with the victim’s IP as the source is called a Smurf attack,  that amplification. 
+
+How to stop a SQL Injection?
+Input validation: checking that input is what you expect (e.g. a date field only accepts a date) and rejecting anything else.
+Parameterised queries (prepared statements): the strongest fix. User input is always treated as data, never as part of the SQL command. Even if someone types SQL into the box, the database just treats it as text.
+
+Extras for layered security include:
+WAF Web App Firewall to catch known injection patterns
+Least privilege so the database account can only reach what it needs, which limits how much gets stolen
+Pen testing to find the flaw before an attacker does
+=================================================================================================================================================================
+Topic 12. 2.4 #12 Application Attacks.
 
 
 
@@ -467,16 +522,7 @@ For each example, notice two things: how the code got in (the vulnerability) and
 
 
 
-
-
-
-
-
-
-
-
-
-
+=================================================================================================================================================================
 
 
 
