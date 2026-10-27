@@ -442,6 +442,51 @@ How to stop replay attacks - Nonces and Timestamps together
 In practice nonces and timestamps are used together. A nonce on its own means the server would have to remember every nonce forever. Add a timestamp, and the server only needs to remember nonces from the last few minutes. Anything older is rejected by the timestamp anyway. Each covers the other’s gap.
 ===========================================================================================================================================================
 Topic 11. 2.4 #11 malicious code
+“Malicious code” is the umbrella term for any code written or slipped in to do harm. The format doesn’t matter. It can be a program (.exe), a script (PowerShell, Python, JavaScript), a macro in a Word or Excel file, or a few lines hidden inside a legitimate website. Attackers get it onto a system through some weakness: an unpatched service, an unchecked input box, or a person who clicks.
+
+Analogy: the kitchen
+Think of a commercial kitchen. Executable malware is a stranger walking in the back door with their own ingredients and cooking whatever they like.
+A script or macro is a forged note pinned to the recipe board. The chefs (your system) follow it without question because it looks like part of the normal instructions. Injected code on a website is someone adding one ingredient to the kitchen’s own sauce. Every dish that goes out the door is now poisoned, and nobody notices because the sauce still looks and tastes normal.
+
+Real-world examples
+WannaCry (2017): ransomware that spread on its own by exploiting an unpatched Windows file-sharing flaw (SMBv1, the “EternalBlue” exploit). It’s a good link back to your earlier work on worms.
+British Airways (2018): attackers added a small piece of JavaScript to the payment page that quietly copied customers’ card details as they typed them. That’s the poisoned sauce.
+A national health database (Estonia): attackers used SQL injection to pull out data. You already covered SQL injection in 2.3, so this should feel familiar.
+
+Defences for
+Patching, anti-malware, firewalls, checking and sanitising inputs, and good user habits like not enabling macros from unknown files.
+
+For each example, notice two things: how the code got in (the vulnerability) and what it did once it was in. That pairing is what I’ll ask you about afterwards.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+============================================================================================================================================================
 
 
 
