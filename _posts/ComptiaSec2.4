@@ -513,11 +513,27 @@ Pen testing to find the flaw before an attacker does
 =================================================================================================================================================================
 Topic 12. 2.4 #12 Application Attacks.
 
+Injection attacks. The attacker sneaks their own code into an application’s data so the app runs it. Related to SQL injection. Term used is code injection, which can also involve HTML, XML or LDAP. A DLL (Dynamic Link Library) is a file that contains code and data that multiple programs can share instead of each program carrying its own copy. DLL is a shared code file that Windows programs load. The attacker forces a running program to load a malicious DLL, so the bad code runs with that program’s permissions.
+Analogy: a recipe binder in a café kitchen. Someone slips in a fake page, and the cook follows it because it’s in the binder.
+
+Buffer overflows. (memory injection and buffer overflows). Data spills past the space set aside for it and overwrites memory next to it. If the attacker gets that right, it can redirect what the program runs. 
+
+Privilege escalation. The attacker gets more access than they’re meant to have.
+
+Vertical: normal user → admin/root. This is the big one.
+Horizontal: user A gets into user B’s account at the same level.
+Analogy: a hospital visitor’s pass. Vertical is getting hold of a surgeon’s swipe card. Horizontal is getting into another visitor’s locker.
+Defences include patching, ASLR and DEP (from 2.3), and least privilege.
+
+Cross-site request forgery (CSRF, “sea-surf”). You’re logged into a site, for example your bank. A malicious page makes your browser send a request to that site, and because you’re already logged in, the site trusts it.
+Analogy: someone forges a note in your handwriting asking the newsagent to put something on your account. The newsagent knows you, so they do it.
+The defence is an anti-forgery token: a secret value the real site puts in its own forms, which the attacker can’t know.
+
+Directory traversal. Covered in cloud vulnerabilities. The attacker uses ../ to climb out of the web folder into files they shouldn’t reach, such as system or password files.
 
 
 
-
-
+=================================================================================================================================================================
 
 
 
