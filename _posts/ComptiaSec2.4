@@ -367,17 +367,20 @@ On-path browser attack (man-in-the-browser)
 HTTPS does a great job on the network. The server shows its certificate, my browser checks it’s genuine, and everything travelling between us is encrypted. Anyone sitting on the network in between just sees scrambled data. But once that data reaches my browser, it has to be decrypted so I can actually see the page. That’s where HTTPS’s job ends. I think of TLS as the lock on my front door. If a burglar is outside, the lock keeps them out. But with a man-in-the-browser attack, the burglar is already inside. They’re hiding in my pantry, eating my cookies, and listening to everything said at the kitchen table. Muttley doesn’t even bark. That’s what makes this attack so dangerous: nothing looks wrong. The padlock is still in the address bar, the certificate is real, and my bank’s website looks exactly the same as always. The malware sits inside the browser, so it sees everything in plain text: the page after it’s decrypted and everything I type before it’s encrypted and sent. It doesn’t just listen, either. It can swap the notes. I type “pay $50 to Bob,” the malware quietly changes it to “pay $5,000 to the attacker,” and my screen still shows $50.
 
 How the burglar gets in: banking trojans (Zeus is the classic example), malicious browser extensions, or malware picked up from a phishing email.
-INSERT MY HOUSE DIAGRAM HERE -----------------------------------------------------------------------------------------------------------------------------
-A small sketch of the house would suit this: the network traffic arriving at the locked front door, and the burglar in the pantry with a speech bubble over the kitchen table.
+HOUSE DIAGRAM HERE ------------------------------------------------------------
+House -  The network traffic arriving at the locked front door, and the burglar in the pantry with a speech bubble over the kitchen table.
 The malware sees your data in plain text in both directions. It sees the page after decryption, and it sees what you type before it’s encrypted and sent. It can also change things. For example, you type “pay $50 to Bob,” and the malware sends “pay $5,000 to the attacker” while still showing you $50 on screen.
 
 Nobody can see the attacker. That’s what makes this attack dangerous. The padlock still shows, the certificate is genuine, and the bank site looks completely normal. 
+NOTE ON BANK PAYMENT: Out-of-band verification. When you make a payment, the bank sends an SMS or app notification to your phone saying “Approve $5,000 to account 12345?” That message travels on a separate channel the browser malware can’t touch. So even if your screen shows $50, your phone shows the real amount, and you’d spot the swap. That’s basically Muttley barking from a different room.
 
 How it gets in: banking trojans (Zeus is the classic example), malicious browser extensions, or malware from phishing.
 Why it matters for defence: encryption (HTTPS/TLS) stops a network-level attacker from reading or altering traffic, which is why certificate warnings matter. The browser version gets around that, so endpoint protection matters there.
-Since HTTPS can’t stop it, what could defend against a man-in-the-browser attack, or at least catch it? This would be a layered approch. The problem is the end user wouldn't know if this is happening, how do you defend against something you cant see even Mutleys not barking and he barks at everything.
 
-NOTE ON BANK PAYMENT: Out-of-band verification. When you make a payment, the bank sends an SMS or app notification to your phone saying “Approve $5,000 to account 12345?” That message travels on a separate channel the browser malware can’t touch. So even if your screen shows $50, your phone shows the real amount, and you’d spot the swap. That’s basically Muttley barking from a different room.
+How to stop on-path attacks
+The problem is the end user wouldn't know if this is happening, how do you defend against something you can't see even Mutleys not barking and he barks at everything.
+
+Since HTTPS can’t stop it, what could defend against a man-in-the-browser attack, or at least catch it? A layered security approch. 
 
 Endpoint protection/EDR to detect the trojan itself
 Patching the browser and OS
@@ -391,27 +394,54 @@ Topic 10. 2.4 #10: Replay attacks.
 A replay attack is when an attacker captures something valid that was sent across the network and sends it again later to get the same result. They don’t need to crack or understand it. They just reuse it.
 
 Analogy: You go to the Ballarat pool and the gate scans your entry pass. Someone behind you records the signal from your card with a cheap reader. Later they play that recording back at the gate, and it opens for them. They never learnt your PIN or made their own card. They just repeated what worked.
-
+DIAGRAM 1 HERE
 Key points
 login credentials, session IDs, or hashes captured off the network. Usually it follows an on-path attack, which is why the topics sit together.
 
 Pass the hash: grabbing a password hash and sending that instead of the password. Some systems accept the hash, so the attacker never needs the real password.
 Where it actually happens: Pass the hash isn’t really a website or browser thing. You’re right that you can’t type a hash into a website’s password box. It’s mainly a Windows network problem. Older Windows sign-in methods (NTLM) prove who you are by sending the hash itself. So to that system, the hash is the password. Whoever holds it gets in.
+DIAGRAM 2 HERE
 Analogy: It’s like an office where the door scanner only checks the code printed on the back of your ID card, not your face. If someone photocopies the back of your card, they’re in. They never needed to know anything about you.
 Real defences: Kerberos instead of NTLM, limiting admin accounts so one stolen hash doesn’t open everything, and Windows Credential Guard, which protects hashes in memory.
 
 Why HTTPS doesn’t save you: Attackers usually don’t sniff the hash off the wire. They pull it from the memory of a computer they’ve already broken into, often with a tool called Mimikatz. Then they use it to move to other machines on the network. Encryption in transit doesn’t help, because the hash was stolen from the machine, not the network.
+
 Session hijacking/sidejacking: stealing a session cookie so the website thinks the attacker is you, already logged in.
+Not your password. Your session cookie (or token) — the little "you're already checked in" pass the server gave you after you logged in.
+“Sidejacking” is the term for grabbing the cookie off the network, classically on open café wifi where traffic wasn’t encrypted. HTTPS everywhere has mostly killed that version.
+Today, cookies are usually stolen in other ways: XSS,(a malicious script reads the cookie and sends it off), or infostealer malware that copies cookies straight out of the browser.
+Defences: HTTPS, cookie flags like Secure (only sent over HTTPS) and HttpOnly (scripts can’t read it, which blunts XSS), short session timeouts, and sites that log you out if your location or device suddenly changes. When you log into a website, the server creates a session record ("user Julia, logged in at 14:02, can access her account") and hands your browser a session cookie — a random string like sid=a3f9c2e1.... Every subsequent request carries that cookie. The server says: "I see a valid session ID → Julia is already authenticated → let her in." The attacker steals that string. That's it. No password, no MFA prompt, no second factor.
+
+Can you explain session hijacking (sidejacking)? What does the attacker steal, and why does the website let them in? 
+A session cookie is a bearer token — the website treats "whoever presents this string" as the authenticated user, because it has no other way to tell. The attacker doesn't crack your password; they just have the key card. TLS protects the key card in transit, but if it's stolen from your browser (XSS, physical access) or from a network that isn't encrypted, the website has no way to know it's no longer you holding it.
+Analogy: It’s like a wristband at a festival. You show your ID and ticket once at the gate (password plus MFA) and get a wristband (cookie). After that, security just checks wristbands. If someone cuts yours off and puts it on, they walk straight past.
 
 Defences: encryption (HTTPS everywhere), and making each exchange unique and time-limited. Examples are timestamps, one-time codes (nonces), and session tokens that expire. A recording of yesterday’s code is useless today.
 
 
+How do things like timestamps and one-time codes (nonces) stop a replay attack?
+A replay attack works because the server has no concept of "already used." A valid message is valid forever — the server can't tell the difference between a fresh request and a retransmission of an old one.  Timestamps and nonces both solve this by adding a freshness marker that makes a captured message either stale or already consumed.
+Timestamps — "This message is only valid for a short window"
+The sender stamps each message with the current time. The receiver checks:
 
+Is the timestamp too old?  (e.g., more than 5 minutes ago) → Reject.
+Is it too far in the future? (clock skew attack) → Reject.
+Is it within the window? → Accept. 
+What it stops: An attacker who captures a message and tries to replay it 20 minutes later. The timestamp is outside the window, the server drops it. 
+What it can't stop: An attacker who replays the message within the window (e.g., 30 seconds later). The timestamp is still "fresh." This is the gap nonces fill.
 
-
-
+Nonces — "This message has been used before"
+A nonce (number used once) is a random or sequential value that the receiver records and never accepts again. 
+Sender generates a unique nonce, includes it in the message.
+Receiver checks: "Have I seen this nonce before?"
+No → accept, store the nonce.
+Yes → reject (replay detected).           
+What it stops: Even an immediate replay. The attacker captures the message and resends it 1 second later. The nonce is already in the receiver's cache. Rejected. 
+What it can't stop on its own: An attacker who captures the message and modifies the nonce before resending. That's why the nonce must be covered by a MAC or signature — if the attacker changes the nonce, the authentication tag no longer matches.
+How to stop replay attacks - Nonces and Timestamps together 
+In practice nonces and timestamps are used together. A nonce on its own means the server would have to remember every nonce forever. Add a timestamp, and the server only needs to remember nonces from the last few minutes. Anything older is rejected by the timestamp anyway. Each covers the other’s gap.
 ===========================================================================================================================================================
-
+Topic 11. 2.4 #11 malicious code
 
 
 
