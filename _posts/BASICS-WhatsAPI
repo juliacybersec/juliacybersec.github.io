@@ -132,6 +132,42 @@ movement path in every Windows network, and its history of vulnerabilities (Eter
 enterprise environments. The defence is the same playbook we've been building all along: patch, segment, enforce strong auth (Kerberos + signing + encryption),
 and monitor for anomalies. 
 ====================================================================================================================================================================
+A DLL (Dynamic Link Library) is a file that contains code and data that multiple programs can share instead of each program carrying its own copy. 
+
+The basic idea
+When you run a program (an .exe), it doesn't contain everything it needs. It calls out to DLLs for common functions — drawing to the screen,
+handling network connections, encrypting data, talking to hardware. The DLL is loaded into memory at runtime (hence "dynamic") rather than being baked into the
+executable at compile time. 
+
+Think of it like a shared tool shed in a workshop:
+
+Static linking = every carpenter carries their own hammer in their pocket. If the hammer breaks, you have to reissue the whole carpenter.
+Dynamic linking (DLL) = everyone goes to the shared tool shed for a hammer. If the hammer needs replacing, you swap one hammer in the shed and every carpenter gets the fix.
+On Windows, the OS itself is built from DLLs. kernel32.dll, ntdll.dll, ws2_32.dll (networking), crypt32.dll (crypto) — these are the building blocks that every 
+application links to.
+
+Why it matters for security
+This is the part that shows up in Security+ and in real-world attacks:
+
+DLL sideloading / hijacking. Windows searches for DLLs in a specific order when a program starts.  If the application doesn't pin the exact path, an attacker can:
+Copy a legitimate, signed .exe to a folder they control (e.g., C:\Users\dave\Documents\).
+Drop a malicious DLL with the same name as a system DLL in that same folder.
+When the victim runs the .exe, Windows finds the attacker's DLL first in the search order and loads it. 
+The malicious code now runs inside a trusted, signed process.  EDR sees "a legitimate Microsoft binary is running" and doesn't flag it. This is the same "hiding in
+legitimate tools" principle as fileless malware — the attacker is piggybacking on trust.
+
+Attack	                    What happens
+DLL search order hijacking	Malicious DLL placed in a directory checked before System32.  The app loads the wrong one.
+DLL side-loading	          Same idea, but the attacker copies the trusted EXE to their own directory and drops the malicious DLL next to it. 
+DLL proxying	          Attacker creates a DLL that mimics the exported functions of a legitimate DLL, so the app calls the attacker's code thinking it's the real thing. 
+
+Recent real-world examples: REvil ransomware dropped a malicious mpsvc.dll next to a signed copy of Microsoft Defender (MsMpEng.exe) to deliver its encryptor.  CatB ransomware exploited DLL sideloading in the Windows MSDTC service.  Black Cat (2026) used SEO-poisoned downloads to deliver DLL side-loading kits that steal browser data at scale. 
+The Basic Version
+A DLL is a shared code library that programs load at runtime. 
+It's efficient and modular, but it also means that whoever controls which DLL gets loaded controls what code runs — 
+and Windows' search order makes that "whoever controls" question exploitable. Same principle as everything else we've covered: the system trusts the file
+that's there, and the attacker just has to be the file that's there.
+
 
 
 
