@@ -514,14 +514,25 @@ Pen testing to find the flaw before an attacker does
 Topic 12. 2.4 #12 Application Attacks.
 
 Injection attacks. The attacker sneaks their own code into an application’s data so the app runs it. Related to SQL injection. Term used is code injection, which can also involve HTML, XML or LDAP. A DLL (Dynamic Link Library) is a file that contains code and data that multiple programs can share instead of each program carrying its own copy. DLL is a shared code file that Windows programs load. The attacker forces a running program to load a malicious DLL, so the bad code runs with that program’s permissions.
-Analogy: a recipe binder in a café kitchen. Someone slips in a fake page, and the cook follows it because it’s in the binder.
+DLL sideloading/hijacking — the attacker places a malicious DLL and tricks the app into loading it at startup.
+DLL injection is different: the target process is already running, and the attacker forces it to load the malicious DLL after the fact, while it's live.
 
+How It Works (the classic technique)
+The attacker's process does four things to the target process:
+
+OpenProcess — gets a handle to the target (e.g., explorer.exe, svchost.exe).
+VirtualAllocEx — allocates a chunk of memory inside the target's address space. 
+WriteProcessMemory — writes the file path of the malicious DLL into that memory. 
+CreateRemoteThread — creates a new thread inside the target process whose entry point is LoadLibraryA, pointing at the path just written. 
+The target process now has a new thread that calls its own LoadLibrary on the attacker's DLL. The DLL's DllMain fires, and the attacker's code is running inside the target process's memory space, under the target's identity and privileges. 
+Analogy: a recipe binder in a café kitchen. Someone slips in a fake page, and the cook follows it because it’s in the binder.
 Buffer overflows. (memory injection and buffer overflows). Data spills past the space set aside for it and overwrites memory next to it. If the attacker gets that right, it can redirect what the program runs. 
 
 Privilege escalation. The attacker gets more access than they’re meant to have.
-
 Vertical: normal user → admin/root. This is the big one.
+Where an attacker is going from seeing the picture directory to the win32 directory
 Horizontal: user A gets into user B’s account at the same level.
+Pure horizontal is staying at the same level but getting into someone else’s stuff. For example, logged in as Customer A, the attacker changes a number in the URL and can see Customer B’s invoices. They don’t get any extra power, just access to the wrong person’s data.
 Analogy: a hospital visitor’s pass. Vertical is getting hold of a surgeon’s swipe card. Horizontal is getting into another visitor’s locker.
 Defences include patching, ASLR and DEP (from 2.3), and least privilege.
 
@@ -529,10 +540,71 @@ Cross-site request forgery (CSRF, “sea-surf”). You’re logged into a site, 
 Analogy: someone forges a note in your handwriting asking the newsagent to put something on your account. The newsagent knows you, so they do it.
 The defence is an anti-forgery token: a secret value the real site puts in its own forms, which the attacker can’t know.
 
-Directory traversal. Covered in cloud vulnerabilities. The attacker uses ../ to climb out of the web folder into files they shouldn’t reach, such as system or password files.
+Cross-site request forgery (CSRF, "sea-surf")
+Cross-site request forgery is where an attacker tricks your own browser into sending a request to a site you're already logged into, like your bank, without you knowing.
 
+How it works:
 
+1. The victim logs into their banking website. The bank gives their browser a session cookie, which proves they're logged in.
+2. While still logged in, the victim visits a malicious page or clicks a link the attacker has sent them.
+3. That page makes the victim's browser send a request to the bank, for example "transfer money to this account."
+4. The browser automatically attaches the session cookie to the request, because that's what browsers do with every request to that site.
+5. The bank sees a valid cookie, assumes it's the real customer, and processes the transfer. The money goes to the attacker.
 
+The attacker knows exactly what's going on. The victim has no idea.
+
+![CSRF diagram](path-to-your-diagram)DIAGRAM HERE OF CROSS SITE REQUEST FORGERY OR XSRF
+
+Why it matters that the victim is already logged in
+The trust here runs from the bank to the browser. Once you're logged in, the bank trusts any request that arrives with your session cookie. The attacker never steals or even sees the cookie. They just get your browser to use it for them. So the forged request looks like it came from you, because technically it did.
+This is different from session hijacking, where the attacker actually takes over your session. With CSRF, the attacker stays outside and uses your browser as the messenger.
+
+Defences
+
+- Anti-CSRF tokens: the real bank page puts a secret, random value in its forms. The attacker's page can't know that value, so the forged request gets rejected.
+- SameSite cookies: a cookie setting that tells the browser not to send the cookie with requests started from other websites.
+- Logging out of banking and other sensitive sites when you're finished, so there's no active session to abuse.
+ 
+Directory traversal. Covered in cloud vulnerabilities. The attacker uses ../ to climb out of the web folder into files they shouldn’t reach, such as system or password files. Look out for /../ in a GET eg http:/www.example.com/show.asp?view=../../windows 
+
+What is DLL injection, and why does it help the attacker that the malicious code runs inside an existing program?
+The attacker forces an already-running program to load their DLL, and the bad code then runs inside that program. And yes, it’s hidden inside the legitimate software. That’s the heart of why attackers like it. The attacker puts the malicious DLL on the disk somewhere.
+They write that DLL’s file path into the target program’s memory and tell the program to load it.
+The program loads the DLL into its own memory space and runs it.
+
+So “write to the file path and into memory” was close. More precisely, the path gets written into the program’s memory.
+
+Why running inside the program helps the attacker:
+
+It inherits that program’s privileges. If the program runs as admin or SYSTEM, so does the malicious code. That links straight back to privilege escalation.
+It hides. In Task Manager or the logs it looks like the normal program, say explorer.exe, rather than a strange new process. That makes it harder for antivirus and for a SOC analyst to spot. It can reach that program’s data in memory, such as anything the program has open or decrypted.
+
+The café recipe binder analogy: the cook (the program) follows the fake page because it’s in their own binder, and nobody watching the kitchen sees a stranger cooking.
+what is cross-site request forgery (CSRF), and why does it matter that the victim is already logged in?
+
+An anti-CSRF token: a secret value the real bank page puts in its forms. The attacker’s page can’t know it, so the forged request fails.
+SameSite cookies, which tell the browser not to send the cookie with requests started from other sites.
+
+Directory Traversal What does the attacker do, and what are they trying to reach?
+
+.. means “go up one folder”, just like cd .. in CMD, and the attacker is chaining those together to break out of the folder they’re allowed in. That’s directory traversal.
+Whose machine is it? This attack is against the web server, not the victim’s own PC. The website is supposed to serve files only from its own web folder (for example C:\inetpub\wwwroot, or /var/www on Linux). The attacker sends a crafted request that climbs out of that folder into the rest of the server’s drive. So it’s not the browser getting access to someone’s pictures and downloads. It’s the web application being tricked into handing over the server’s files.
+
+2. Up, then sideways. .. only ever goes up. To get “sideways” into another folder, they go up to a common point and then back down. For example, ../../Windows/system.ini means go up two levels, then down into Windows. So your hunch about moving the other way was right; it’s just done as up-then-down.
+
+3. The slashes. In a URL it’s normally a forward slash, ../. Windows also accepts a backslash, ..\. Attackers often encode it as well, for example %2e%2e%2f, to sneak past filters that are looking for a plain ../.
+
+4. What they’re after. Mostly it’s reading files they shouldn’t see:
+
+Password or user files (on Linux, /etc/passwd)
+System files (Messer’s example is the Windows system.ini)
+The application’s own config files, which often hold database usernames and passwords. That’s the real jackpot.
+
+Cookies live in the victim’s browser, so they’re not usually the target here. Running malicious code can sometimes follow, but the main risk is information disclosure: the attacker reads secrets and then uses them for the next stage.
+
+Defences: validate and clean user input (reject ../ and its encoded versions), lock the web application to its own root folder, and run the web server with least privilege so that even if it gets tricked, it can’t read much.
+
+Analogy: a library lets you request books from the public shelves by call number. You put in a request that says “go back out of the public section, through the staff door, into the manager’s office, and fetch the filing cabinet.” If the librarian just follows the directions without checking, you get files you were never meant to see.
 =================================================================================================================================================================
 =================================================================================================================================================================
 ==================================================================================================================================================================
