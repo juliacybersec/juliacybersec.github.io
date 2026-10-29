@@ -519,7 +519,6 @@ DLL injection is different: the target process is already running, and the attac
 
 How It Works (the classic technique)
 The attacker's process does four things to the target process:
-
 OpenProcess — gets a handle to the target (e.g., explorer.exe, svchost.exe).
 VirtualAllocEx — allocates a chunk of memory inside the target's address space. 
 WriteProcessMemory — writes the file path of the malicious DLL into that memory. 
@@ -530,13 +529,12 @@ Buffer overflows. (memory injection and buffer overflows). Data spills past the 
 Sitting near that buffer is often the return address, which is the program’s note to itself saying “when you finish this task, go back to here.”
 The attacker carefully crafts the overflow so it overwrites that return address with one pointing to their own code. When the task finishes, the program jumps to the attacker’s code instead of going back where it should. The catch for attackers is that it’s hard to get right. Most overflows just crash the program, which can be useful as a denial of service. Building one that reliably runs code takes a lot of trial and error. That’s why a working one is so valuable.
 
-Defences (you met these in 2.3):
+Defences (also in 2.3):
 
 Bounds checking / input validation: don’t accept more data than the buffer holds.
 DEP (Data Execution Prevention): marks data areas of memory as “don’t run code from here.”
 ASLR: shuffles where things sit in memory, so the attacker can’t predict where to jump.
 Patching the vulnerable software.
-
 Privilege escalation. The attacker gets more access than they’re meant to have.
 Vertical: normal user → admin/root. This is the big one.
 Where an attacker is going from seeing the picture directory to the win32 directory
@@ -562,11 +560,9 @@ How it works:
 
 The attacker knows exactly what's going on. The victim has no idea.
 
-![CSRF diagram](path-to-your-diagram)DIAGRAM HERE OF CROSS SITE REQUEST FORGERY OR XSRF
+[CSRF diagram](path-to-your-diagram)DIAGRAM HERE OF CROSS SITE REQUEST FORGERY XSRF
 
-Why it matters that the victim is already logged in
-The trust here runs from the bank to the browser. Once you're logged in, the bank trusts any request that arrives with your session cookie. The attacker never steals or even sees the cookie. They just get your browser to use it for them. So the forged request looks like it came from you, because technically it did.
-This is different from session hijacking, where the attacker actually takes over your session. With CSRF, the attacker stays outside and uses your browser as the messenger.
+Why it matters that the victim is already logged in? The trust here runs from the bank to the browser. Once you're logged in, the bank trusts any request that arrives with your session cookie. The attacker never steals or even sees the cookie. They just get your browser to use it for them. So the forged request looks like it came from you, because technically it did. This is different from session hijacking, where the attacker actually takes over your session. With CSRF, the attacker stays outside and uses your browser as the messenger.
 
 Defences
 
@@ -576,11 +572,10 @@ Defences
  
 Directory traversal. Covered in cloud vulnerabilities. The attacker uses ../ to climb out of the web folder into files they shouldn’t reach, such as system or password files. Look out for /../ in a GET eg http:/www.example.com/show.asp?view=../../windows 
 
-What is DLL injection, and why does it help the attacker that the malicious code runs inside an existing program?
+What is DLL injection? Why does it help the attacker that the malicious code runs inside an existing program?
 The attacker forces an already-running program to load their DLL, and the bad code then runs inside that program. And yes, it’s hidden inside the legitimate software. That’s the heart of why attackers like it. The attacker puts the malicious DLL on the disk somewhere.
 They write that DLL’s file path into the target program’s memory and tell the program to load it.
 The program loads the DLL into its own memory space and runs it.
-
 So “write to the file path and into memory” was close. More precisely, the path gets written into the program’s memory.
 
 Why running inside the program helps the attacker:
@@ -590,7 +585,6 @@ It hides. In Task Manager or the logs it looks like the normal program, say expl
 
 The café recipe binder analogy: the cook (the program) follows the fake page because it’s in their own binder, and nobody watching the kitchen sees a stranger cooking.
 what is cross-site request forgery (CSRF), and why does it matter that the victim is already logged in?
-
 An anti-CSRF token: a secret value the real bank page puts in its forms. The attacker’s page can’t know it, so the forged request fails.
 SameSite cookies, which tell the browser not to send the cookie with requests started from other sites.
 
@@ -637,7 +631,7 @@ A hash collision is when two different inputs give the exact same hash, and that
 
 A collision is when two inputs that are different, often wildly different, land on the same hash. For example, a legitimate document and a malicious file with the same fingerprint. There doesn’t need to be anything similar about them at all. Passwords: correct. If two different passwords produce the same hash, the system compares hashes, sees a match, and lets in someone who typed the wrong password. Adding salt doesn’t fix a broken algorithm. Salt stops attackers using pre-computed lists of hashes. It doesn’t stop the algorithm itself from colliding.
 
-Blender Analogy: I like to think of hashing as a blender. You enter your plain text password, stick it in the blender press the button and out comes your hash. You blend a strawberry smoothie and someone else blends a bag of rocks and lemons, and both come out looking and tasting identical. That’s a collision, and it means the blender can’t be trusted to tell things apart.
+Blender Analogy: I like to think of hashing as a blender. You enter your plain text password, stick it in the blender press the button and out comes your hash. You blend a strawberry smoothie and someone else blends a bag of rocks and lemons, and both come out looking and tasting identical. That’s a collision, and it means something wrong with that blender(MD5) can’t be trusted to tell things apart. Use a SHA256
 
 3. MD5. Yes, collisions were found in MD5, and that’s exactly why it’s been retired for security use.
 
@@ -676,8 +670,86 @@ Small tweak on “the victim thinks they’re using HTTPS”: the browser actual
 
 For the exam:
 SSL stripping is the HTTP vs HTTPS example. A downgrade attack can also push a connection onto an older TLS/SSL version or a weaker cipher, which the attacker can then break. Defences: HSTS (the browser remembers “this site is HTTPS only” and refuses plain HTTP), and turning off old protocols on servers so there’s nothing weaker to fall back to.
-
-=================================================================================================================================================================
+===========================================================================================================================================================================
 Topic 14. 2.4 #14, password attacks.
+
+This one ties straight back to hashing from #13. Attackers want passwords because a valid login gets them in looking like a legitimate user, with no malware needed.
+1. How passwords should be stored
+Plain text: the password is saved exactly as typed. If the database is stolen, every password is instantly readable. This should never happen, but it still does.
+Hashed: the system stores only the hash. At login, it hashes what you typed and compares the two hashes. If the database is stolen, the attacker gets hashes, not passwords.
+Salted: a random value is added to each password before hashing, so two people with the same password end up with different hashes. You’ve met salt already. Messer may mention it again here.
+
+2. Brute force
+Trying every possible combination until one works: aaaa, aaab, aaac and so on. There are two flavours, and the difference matters for the exam:
+Online: guessing against the live login page. It’s slow, and it gets stopped by account lockouts after a few wrong tries.
+Offline: the attacker has stolen the hash file and guesses on their own computer, hashing each guess and comparing. No lockouts and no one watching, so they can try billions of guesses. This is why strong, long passwords and good hashing matter so much.
+Analogy: online is trying keys in someone’s front door while the neighbours watch. Offline is taking a copy of the lock home and trying keys all night at your kitchen table.
+
+3. Dictionary attack
+Instead of every combination, the attacker tries a list of common words and known leaked passwords, such as password123, Summer2026 or, yes, Superman1. It’s much faster than pure brute force because people pick predictable passwords.
+
+4. Password spraying
+The reverse of brute force. Instead of trying many passwords on one account (which triggers a lockout), the attacker tries one or two common passwords across many accounts. For example, “Welcome1” against every staff email address. Each account only sees one failed attempt, so no lockouts trigger, and in a big organisation someone usually has that password.
+Analogy: instead of trying every key on one door, you try the one most common key on every door down the street.
+
+Defences: long passphrases, salted hashes with a strong algorithm, account lockouts and rate limiting, MFA (a stolen password alone isn’t enough), and for SOC work, watching logs for patterns. Many failures on one account suggests brute force. One failure each across many accounts suggests spraying.
+
+what’s the difference between online and offline brute force attacks?
+1. Why offline has no limits. It’s not really about not being logged in. It’s that the attacker is working on a stolen copy of the hash file on their own computer. The real system isn’t involved at all, so there’s nothing to lock them out and no logs to catch them.
+2. What’s in the stolen file. It’s usernames and hashes, not a list of passwords. You said this correctly the second time. The “long list of passwords” is the attacker’s own wordlist, which they bring along (that’s the dictionary attack).
+3. “Calculate the password.” They can’t calculate a password from a hash, because hashing is one-way, as you said with the blender. Instead they hash each guess and compare it to the stolen hash. When the two hashes match, they know that guess was the password.
+4. Password spraying. One common password, every username, so no single account gets enough failures to lock. Attackers use it (to avoid getting noticed). A SOC Analyst tracking network traffic will see: lots of failures on one account could be brute force or just a forgetful user, while one failure across lots of accounts is a spraying pattern.
+why does it matter whether passwords are stored as plain text or as salted hashes, if the attacker steals the file?
+What actually gets stored on the server
+Plain text: the file literally says julia : Superman1. Steal the file and you have every password. Game over, with no work needed.
+Hashed only: the file says julia : 7f3a9c…. The attacker has to guess and hash (the offline brute force from before). But if two people both use Superman1, they get the same hash, so crack one and you’ve cracked both. Attackers can also use pre-computed lists of common passwords and their hashes to look them up instantly.
+Salted hash: when the account is created, the system generates a random salt, say x9Kq, and hashes Superman1 + x9Kq. The file stores julia : x9Kq : 4be21d….
+
+The salt isn’t a secret. It’s stored right next to the hash, in the same file, so the attacker gets it too. Its job isn’t to be hidden. Its job is to make every hash unique. Two people with Superman1 now have different salts, so they get completely different hashes. The attacker can’t crack them in one go and can’t use pre-computed lists. They have to brute force each account separately, which is slow and expensive. Salt only exists alongside hashing. You can’t salt a plain text password. Salt is something you add before hashing. So the choice is really plain text (terrible), hashed (better), or salted hash (best).
+
+Browser-saved passwords and cache are a separate issue. That’s about the user’s own computer, not the server’s stored password file.
+Analogy: hashing is the blender. Salt is a random pinch of a different spice added to each person’s drink before blending. Even if two people pick the same fruit, their smoothies come out different. And the spice label is stuck on the cup, which is fine, because knowing the spice doesn’t tell you the fruit.
+if two users both have the password Superman1, what does the attacker see in the stolen file with plain hashing, and what do they see with salted hashing?
+=================================================================================================================================================================
+2.4 #15: Indicators of compromise (IOCs)
+
+This one's relevant to SOC work. An IOC is evidence that an attack has happened or is happening, a clue left behind. A SOC analyst spends their day spotting these. The exam objectives list specific ones:
+
+Account lockout
+An account suddenly gets locked from too many failed logins, and the user says “it wasn’t me.” That links straight back to brute force from #14.
+
+Concurrent session usage
+The same account is logged in from two places at once, for example the user’s office PC and a laptop somewhere else. Normally one person means one session.
+
+Impossible travel
+A user logs in from Ballarat at 9:00am and from Germany at 9:15am. No one can travel that fast, so one of those logins isn’t them.
+Analogy: a patient signing in at a Ballarat clinic and a Perth clinic within the same 15 minutes. Someone’s using their Medicare card.
+
+Blocked content
+Security tools suddenly block access to known bad sites, or malware is trying to “phone home.” It can also go the other way: an attacker changes settings so security updates or antivirus sites get blocked, keeping the system unprotected.
+
+Resource consumption
+Unusual use of CPU, memory, network bandwidth or disk. For example, a server suddenly sending huge amounts of data out at 3am (data being stolen), or a PC running flat out for no reason (crypto-mining malware).
+
+Resource inaccessibility
+Files or systems suddenly can’t be opened. The classic case is ransomware encrypting everything (remember WannaCry from #11). 
+It can also be a server going down from a DoS.
+
+Out-of-cycle logging
+Activity happening at times it normally wouldn’t, such as software updates installing at 2am on a Sunday when updates only ever run on Tuesdays, or an admin account active in the middle of the night.
+
+
+Missing logs
+Gaps in the logs, or logs deleted entirely. Attackers often wipe logs to cover their tracks, so missing logs are a big red flag in themselves.
+Analogy: a page torn out of the patient notes. Even if you don’t know what was on it, the missing page tells you something happened.
+
+Published / documented
+Sometimes you find out you’ve been breached because someone else tells you: your company’s data turns up on a hacker forum, or a researcher or the news reports it. Not ideal, but it does happen a lot.
+
+For the exam, the skill is matching a scenario to the IOC name. For example, “logged in from Melbourne and London 20 minutes apart” = impossible travel.
+why are missing logs such a strong indicator of compromise? Deleting logs leaves its own trace. In Windows, clearing the security log creates a specific event (Event ID 1102, “audit log was cleared”). So an attacker who wipes logs often creates a new red flag in the process.
+That’s why logs get copied off the machine. Organisations send logs to a central SIEM or log server as they happen. Even if the attacker wipes the local copy, the central one still has the evidence. This ties into your plan to set up Wazuh in your home lab.
+It isn’t always an attack. Logs can go missing because a disk filled up, a logging service crashed, or someone misconfigured something. A good analyst treats missing logs as “investigate now”, not “definitely breached”.
+A user reports they can’t log in because their account is locked. They say they haven’t tried to log in since yesterday. Which IOC is this, and what attack from #14 might be behind it? 
 ==================================================================================================================================================================
  
