@@ -1,0 +1,172 @@
+Topic 1. 2.5: Mitigation techniques
+
+Domain 2 so far has been the attacker’s side: who attacks, how they get in, what’s vulnerable, and what the clues look like. 2.5 switches to defence. 
+It covers how organisations reduce the chance of an attack working, and limit the damage if it does.
+
+In Messer videos it splits 2.5 into three videos, roughly:
+Segmentation and access control
+Mitigation techniques (patching, encryption, monitoring, least privilege and so on)
+Hardening techniques (locking down individual devices)
+
+2.5 #1: Segmentation and access control
+Segmentation
+Splitting a network into separate sections instead of one big open space. If an attacker gets into one section, they can’t easily reach the rest. This links straight back 
+to lateral movement, which you met with privilege escalation. Segmentation is what stops it. Segmentation can be physical (separate hardware) or logical(VLANs, from Network+
+).Common examples:keeping guest Wi-Fi apart from staff systems, or medical devices on their own segment away from the general office network. Analogy: a hospital doesn’t 
+let anyone wander from the café into theatre or the pharmacy. Wards have locked doors between them, so a problem in one area doesn’t spread through the whole building.
+
+Access control
+Deciding who or what is allowed to reach what. ACLs (access control lists): a list of rules saying what’s allowed or denied. On a firewall or router, that might be 
+“allow traffic from this IP to this port, block everything else.” On a file or folder, it’s who can read, write or change it. Think of your Windows folder permissions 
+days. Least privilege fits here too: give people only the access they need for their job and nothing more.
+
+Application allow list / deny list
+Controlling which programs are allowed to run on a computer. Allow list: only approved programs can run, and everything else is blocked. This is very secure, but it
+takes work to maintain.  Deny list: everything can run except known bad programs. It’s easier to manage, but anything new or unknown slips through. (This is how traditional
+antivirus works.) Analogy: an allow list is a guest list at the door, so if you’re not on it, you’re not coming in. A deny list is a list of banned people, so anyone not 
+on it walks straight in, including strangers.
+
+Isolation
+Taking it one step further than segmentation: completely cutting something off. For example, moving an infected PC into a quarantine network so it can’t talk to
+anything else while it’s investigated. You’ll see this again in incident response.
+
+What is network segmentation, and how does it help stop an attacker who has already got in?
+The walls need rules. Segmentation only works if traffic between segments is controlled, by a firewall or ACLs. If you setup a guest wifi on most home routers’ this 
+guest Wi-Fi blocks access to your main network by default.
+Client isolation. Many routers also have an option, often called AP isolation, that stops devices on the guest network from seeing each other.
+Smart devices are a good fit for it too. Smart TVs, plugs and other IoT gadgets are often poorly secured, so plenty of people put those on the guest or separate network
+as well. Creating a guest wifi like a “second wall” is: defence in depth. It means multiple layers of protection, so if one fails, the next one still holds. 
+what’s the difference between an application allow list and a deny list, and which is more secure?
+you can never list every bad thing in existence, so a deny list always has gaps, especially for brand-new malware nobody has added yet. An allow list blocks anything unknown by default.
+The trade-off. An allow list is more secure but harder to manage. Every new program, and sometimes every update, has to be approved, or staff get stuck waiting. That’s why you mostly see strict allow lists on locked-down systems like kiosks, medical equipment or point-of-sale terminals, rather than on every staff laptop.
+
+How the bouncer recognises an app:
+Hash: the file’s fingerprint (back to #13). It’s very precise, but any update changes the hash, so the list needs updating too.
+Certificate / publisher: “allow anything digitally signed by Microsoft.” That’s easier to maintain.
+Path: “allow anything in C:\Program Files.” It’s simple, but weaker if an attacker can write to that folder.
+Network zone: allow apps depending on where they’re run from (for example, the internal network vs the internet).
+For Windows tools like AppLocker work well. 
+==========================================================================================================================================================================
+Topic 2. 2.5 #2: Mitigation techniques
+This covers the everyday defences that stop a lot of the attacks from 2.4 before they start. None of them are flashy, but together they prevent most real-world breaches.
+Patching
+Installing updates that fix known vulnerabilities. Most attacks use holes that already have a fix available; the organisation just hadn’t applied it yet. WannaCry from 
+#11 is the classic example: Microsoft had released the patch weeks before, and the machines that got hit simply hadn’t installed it. Organisations usually patch on a 
+schedule (like Microsoft’s monthly “Patch Tuesday”), test patches first so they don’t break anything, and rush through emergency patches for serious holes.
+Analogy: a recall notice for a faulty car part. The fix is free and available, but it only protects you if you actually get it fitted.
+
+Encryption
+Scrambling data so it’s useless to anyone without the key. It protects data at rest (stored on disks, like BitLocker on a laptop) and in transit (moving across a network, 
+like HTTPS). If a laptop is stolen or traffic is intercepted, the attacker gets gibberish.
+
+Monitoring
+Watching systems/logs for signs of trouble:the IOCs from #15.This is done with tools like a SIEM Splunk collecting logs from everywhere, plus alerts for unusual activity.
+It’s the SOC analyst’s core job.
+
+Least privilege
+Giving people and programs only the access they need for their role, and no more. It limits the damage if an account is compromised, and it makes privilege escalation (#12) harder. For example, everyday staff shouldn’t be local admins on their PCs, and admins should use a separate admin account only when needed.
+Analogy: a ward nurse has access to their own patients’ records and the ward’s medication room, not the whole hospital’s records and every pharmacy cupboard.
+
+Configuration enforcement
+Setting a standard secure configuration (a baseline) for devices, then regularly checking that every device still matches it. If a device drifts from the baseline 
+(antivirus turned off, or missing patches), it gets fixed, or it’s blocked from the network until it is. In Windows environments, this is often done with Group Policy.
+
+Decommissioning
+Retiring old equipment and systems safely. That means wiping or destroying the drives so data doesn’t walk out the door, and removing old servers or accounts that nobody’s
+patching any more. Forgotten old systems are a favourite way in for attackers.
+Analogy: when you sell an old phone, you factory reset it first. An organisation has to do the same thing for hundreds of devices, and properly.
+
+What is least privilege, and how does it limit damage if an account is compromised?
+If an attacker phishes the mortgage officer’s password, they only get what that account can do. They can’t install malware, can’t reach the servers, and can’t change
+settings, so the attack is boxed in from the start. They’d have to try privilege escalation (#12) to get further, and that’s harder and noisier.
+
+Role-based access control (RBAC). At the bank we had the highest privledges, full admin access accounts, including install/uninstall apps.
+Staff in morgages would only be given access required to their particular role. 
+
+Why do so many attacks succeed even when a patch for the vulnerability was already available?
+When a patch comes out, attackers study the patch to work out exactly what hole it fixes, then build an attack for everyone who hasn’t installed it yet.
+People in the industry joke about “Patch Tuesday, Exploit Wednesday.” Testing delays. Organisations test patches before rolling them out, because a bad patch 
+can break critical systems. That’s sensible, but it widens the gap. Uptime requirements. Some systems can’t easily be taken down to patch and reboot, like a hospital 
+system or a bank’s core servers. Patching waits for a maintenance window. Legacy / end-of-life systems. Old systems that the vendor no longer supports don’t get patches
+at all. Not knowing the device exists. You can’t patch what’s not on your inventory. Forgotten servers and “shadow IT” stay unpatched forever.
+What is configuration enforcement, and what happens to a device that doesn’t match the baseline?
+
+Configuration enforcement is the process of checking that every device on the network meets a defined security baseline — a documented set of "correct" settings 
+(patches applied, firewall on, encryption enabled, no unauthorized software, antivirus current, etc.) — and automatically acting on any device that doesn't match.
+The baseline is the "what should be true." Enforcement is the "check it's still true, and do something if it isn't."
+A baseline is the standard every device must meet, and enforcement means checking devices against it and dealing with any that don’t match.
+It’s usually automatic. Organisations don’t check devices by hand. When a device connects, a tool checks its “health” (patches, antivirus, firewall, encryption).
+This is often called a posture assessment, done by NAC (network access control). Settings are pushed out with tools like Group Policy (on-premises Windows) or 
+Intune / MDM (laptops and phones).
+Failing devices are often quarantined, not fully cut off. A non-compliant device is moved to a remediation network, a restricted segment where it can reach only
+the update servers. It gets fixed, often automatically, re-checked, and then let back onto the main network. That ties together segmentation and isolation from #1.
+
+What Happens to a Non-Compliant Device
+The standard answer (and the one CompTIA is looking for) is: it gets quarantined or blocked from the network until it's brought back into compliance.
+Legacy Machines: if a system can’t meet the baseline but the business still needs it, the usual answer is compensating controls. That means keeping it on its own 
+isolated segment, restricting who and what can talk to it, and monitoring it closely until it can be replaced. 
+“Compensating control” remember this term for the exam.
+Why does decommissioning matter for security? What could go wrong if an old laptop or server is just thrown out or left running?
+“Factory reset” isn’t always enough for business devices. A reset can leave data that recovery tools can still pull back, especially on some hard drives and SSDs.
+Organisations use proper data sanitisation (overwriting the drive with special tools) or physical destruction (drilling or shredding the drive), and often get a certificate
+of destruction from the disposal company as proof. 
+
+The “left running” side. The bigger risk is often not the device that gets thrown out but the one that never gets properly switched off. 
+An old server is left connected “just in case”, nobody patches it, nobody monitors it, and it still has old accounts and access. 
+That’s an ideal way in for an attacker, and it’s often how breaches start. So decommissioning also means:
+Taking it off the network
+Disabling its accounts, certificates and access rules
+Removing it from DNS and firewall rules
+Updating the asset inventory so everyone knows it’s gone
+
+Analogy: when a staff member leaves, you don’t just let them walk out. You collect their keys, cancel their swipe card and remove them from the roster.
+A retired server needs the same treatment.
+============================================================================================================================================================================
+Topic 3. 2.5 #3: Hardening techniques
+
+Hardening means locking down an individual device so it has as few weak spots as possible. Where segmentation protects the network, hardening protects each machine. 
+The goal is to shrink the attack surface (from 2.2): fewer ways in means fewer ways to be attacked.
+Analogy for the whole video: securing a house. You lock every window, change the locks the builder used, close up the doors you never use, and install an alarm.
+Each step on its own is simple, but together they make the house a much harder target.
+
+Encryption
+Encrypting the whole drive (full disk encryption, like BitLocker on Windows or FileVault on Mac), so a lost or stolen laptop gives up nothing without the key. 
+This is covered in #2; here it’s applied to the individual device.
+
+Endpoint protection / EDR
+An endpoint is any device at the “end” of the network: laptops, desktops, servers, phones. Traditional antivirus looks for known malware signatures (the deny list idea 
+from #1). EDR (endpoint detection and response) goes further. It watches behaviour, such as a Word document suddenly launching PowerShell, can spot new attacks 
+it’s never seen before, and can respond automatically by isolating the device or killing the process. EDR is a big part of SOC work.
+
+Host-based firewall
+A firewall running on the device itself, not just at the edge of the network. It controls which programs can send or receive traffic. Even if an attacker gets inside 
+the network, each device still has its own lock. That’s defence in depth again. Windows Defender Firewall is an example.
+
+HIPS (host-based intrusion prevention system)
+Software on the device that watches for attack patterns, like a buffer overflow attempt (#12) or changes to important system files, and blocks them as they happen. 
+Watch the letters: IDS = detects and alerts, IPS = prevents and blocks. The “H” means it’s on the host (the device), rather than on the network.
+
+Closing open ports and unnecessary services - Nmap
+Every open port or running service is a possible door in. If a device doesn’t need a service, turn it off and close the port. 
+Scanning tools like Nmap show what’s open, something I have looked at in my home lab.
+
+Changing default passwords
+Devices often ship with defaults like admin/admin or admin/password, and attackers have lists of them all. Changing them is one of the simplest and most
+important steps, especially for routers, printers, cameras and IoT gadgets. I saw this last week someone had setup with the SSID still the modems model name and I hope
+they changed the default password at least. 
+
+Removing unnecessary software
+Every program installed is something else that can have vulnerabilities and needs patching. If it’s not needed, uninstall it.
+That includes the trial software and bloatware (#3 in 2.4) that comes preinstalled on new computers.
+
+What is hardening, and why does closing unused ports and removing unnecessary software make a device safer?
+Hardening is the process of reducing a system's attack surface by removing or disabling everything that isn't strictly required for its intended function. 
+The goal: make the device as small, as closed, and as boring as possible so there's less for an attacker to grab onto.
+It's not one action — it's a set of actions:
+Every open port is a door. If a service is listening, an attacker can knock on it,
+try exploits against it, or brute force it. Close the port and that door simply doesn’t exist.
+Every program is code that can have bugs. More software means more vulnerabilities, more to patch, and more to monitor. Software you never use often gets 
+forgotten and never patched, which makes it a perfect target. If it’s gone, it can’t be exploited.
+Every open port is a door. If a service is listening, an attacker can knock on it, try exploits against it, or brute force it. 
+Close the port and that door simply doesn’t exist.
+===========================================================================================================================================================================
