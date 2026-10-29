@@ -526,7 +526,16 @@ WriteProcessMemory — writes the file path of the malicious DLL into that memor
 CreateRemoteThread — creates a new thread inside the target process whose entry point is LoadLibraryA, pointing at the path just written. 
 The target process now has a new thread that calls its own LoadLibrary on the attacker's DLL. The DLL's DllMain fires, and the attacker's code is running inside the target process's memory space, under the target's identity and privileges. 
 Analogy: a recipe binder in a café kitchen. Someone slips in a fake page, and the cook follows it because it’s in the binder.
-Buffer overflows. (memory injection and buffer overflows). Data spills past the space set aside for it and overwrites memory next to it. If the attacker gets that right, it can redirect what the program runs. 
+Buffer overflows. (memory injection and buffer overflows). Data spills past the space set aside for it and overwrites memory next to it. If the attacker gets that right, it can redirect what the program runs. The extra data doesn’t disappear. It spills into the memory next to the buffer and overwrites whatever was there.
+Sitting near that buffer is often the return address, which is the program’s note to itself saying “when you finish this task, go back to here.”
+The attacker carefully crafts the overflow so it overwrites that return address with one pointing to their own code. When the task finishes, the program jumps to the attacker’s code instead of going back where it should. The catch for attackers is that it’s hard to get right. Most overflows just crash the program, which can be useful as a denial of service. Building one that reliably runs code takes a lot of trial and error. That’s why a working one is so valuable.
+
+Defences (you met these in 2.3):
+
+Bounds checking / input validation: don’t accept more data than the buffer holds.
+DEP (Data Execution Prevention): marks data areas of memory as “don’t run code from here.”
+ASLR: shuffles where things sit in memory, so the attacker can’t predict where to jump.
+Patching the vulnerable software.
 
 Privilege escalation. The attacker gets more access than they’re meant to have.
 Vertical: normal user → admin/root. This is the big one.
@@ -606,6 +615,69 @@ Defences: validate and clean user input (reject ../ and its encoded versions), l
 
 Analogy: a library lets you request books from the public shelves by call number. You put in a request that says “go back out of the public section, through the staff door, into the manager’s office, and fetch the filing cabinet.” If the librarian just follows the directions without checking, you get files you were never meant to see.
 =================================================================================================================================================================
+Topic 13. 2.4 #13, cryptographic attacks.
+
+The big picture: attackers rarely “crack” good modern encryption head-on, because the maths is too strong. Instead, they look for weak spots around it, such as an old, weak algorithm or a way to trick the system into using one.
+
+1. Hash collisions
+Hashing from Domain 1: data goes in, a fixed-length fingerprint comes out. Each different input should give a different hash. A collision is when two different inputs produce the same hash. If that can happen, an attacker could swap a legitimate file or certificate for a malicious one with an identical fingerprint, and nothing would look wrong. MD5 is the classic example of an old algorithm where collisions were found, which is why it’s no longer trusted for security. There may be a case where malware used an MD5 collision to fake a legitimate-looking certificate.
+
+2. Birthday attack
+This is the maths behind why collisions are easier to find than you’d expect. It’s named after the birthday paradox: in a room of just 23 people, there’s about a 50% chance two share a birthday. That feels too low, but you’re comparing every pair, not just one person against everyone else.
+For hashes, an attacker doesn’t need to match one specific hash. They just need any two inputs that match each other, and that’s much quicker.
+Defence: use longer, stronger hash algorithms (such as SHA-256), so the “room” is so enormous a match is practically impossible.
+
+3. Downgrade attack
+The attacker, usually sitting on-path (from #9), interferes when two systems agree on how to encrypt their connection and pushes them to use an older, weaker method, or none at all. Then they break or read that weaker connection. The example to know is SSL stripping: the victim tries to reach a site over HTTPS, the attacker in the middle keeps the victim on plain HTTP, and the attacker reads everything.
+Analogy: two people about to talk through a secure intercom, and someone convinces them, “the intercom’s broken, just shout across the yard.” Now anyone nearby can hear.
+Defence: turn off old protocols on servers, and use HSTS, which tells browsers “only ever talk to me over HTTPS.”
+
+what is a hash collision, and why is it dangerous?
+A hash collision is when two different inputs give the exact same hash, and that shouldn’t happen. The blender analogy is great too: once it’s blended, you can’t un-blend it, so hashing is one-way.
+
+A collision is when two inputs that are different, often wildly different, land on the same hash. For example, a legitimate document and a malicious file with the same fingerprint. There doesn’t need to be anything similar about them at all. Passwords: correct. If two different passwords produce the same hash, the system compares hashes, sees a match, and lets in someone who typed the wrong password. Adding salt doesn’t fix a broken algorithm. Salt stops attackers using pre-computed lists of hashes. It doesn’t stop the algorithm itself from colliding.
+
+Blender Analogy: I like to think of hashing as a blender. You enter your plain text password, stick it in the blender press the button and out comes your hash. You blend a strawberry smoothie and someone else blends a bag of rocks and lemons, and both come out looking and tasting identical. That’s a collision, and it means the blender can’t be trusted to tell things apart.
+
+3. MD5. Yes, collisions were found in MD5, and that’s exactly why it’s been retired for security use.
+
+what is a downgrade attack, and how does SSL stripping work?
+Downgrade Attack (General)
+A downgrade attack forces two parties to use a weaker version of a protocol than they both actually support.  The attacker sits in the middle and manipulates the handshake so the client and server "agree" on an older, less secure option — one with known vulnerabilities the attacker can then exploit. 
+Downgrade Attack
+You and Mutley both have locked doors (strong encryption). You're about to shake paws and agree: "We're using the fancy lock, right?"
+Sandy is standing between you. She says to you: "Mutley only has a flimsy padlock. Use the padlock."
+You look at Mutley. Mutley's is growling (he's trying to say "no, thats not right I have a fancy lock!"), but Sand shoves Mutley away so you can't hear him.
+You think: "Oh, Mutley only has a padlock." You use the padlock.
+Sandy now has a padlock key (she knows how to pick padlocks). She can open the door and read your notes.
+That's a downgrade attack. Both of you had fancy locks. Sandy lied to you about what Mutley had, so you "agreed" to use the weaker one.
+
+SSL Stripping (the extreme version)
+This is even lazier. Sandy doesn't even bother with the padlock.
+
+You're about to walk up to Mutleys's house. Mutley is a smart dog his house has a locked front door (HTTPS). But you approach the garden gate (HTTP) first, because that's where the path starts.
+Mutley's rule is: "If someone walks up his garden gate, He barks 'hey, use the front door!' and they go around."
+Sandy is standing at the garden gate. When you walk up, she shoves you inside through the garden gate before Mutley can bark. Once you're in, she rips the sign off the wall that says "front door → this way." Now you can only see paths that go through the garden. Every time you try to walk toward the front door, Sandy
+physically blocks you and pushes you back to a garden path.
+You're now inside Mutley's house, talking to Mutley, but you're going through the garden the whole time. The garden has no lock. Sandy is standing in the garden, reading every note you pass to Mutley.
+And here's the sneaky part: Mutley never knows. He's inside, talking to you normally. He can see you're in the garden, but he can't force you to use the front door. He can only suggest it. And Sandy keeps blocking the suggestion.
+SSL STRIPPING DIAGRAM HERE
+
+That's SSL stripping. The site wants you to use HTTPS (the front door). But the attacker keeps you on HTTP (the garden) by swallowing the "hey, use the front door" message and blocking every path that leads there. Your browser never even tries to connect securely, so there's no warning, no missing padlock, nothing. Just a normal-looking page where your password goes out in the open.
+SSL stripping works, because it’s a common exam trap:
+
+The attacker doesn’t tell the web server to use HTTP. The server would usually refuse anyway. Instead, the attacker splits the connection in two:
+
+Attacker ↔ web server: proper HTTPS. As far as the server can tell, everything is secure and normal.
+Victim ↔ attacker: plain HTTP. The attacker quietly rewrites any HTTPS links and redirects so the victim never gets upgraded.
+
+So the attacker reads everything the victim sends in plain text, then passes it on to the real site over HTTPS.
+Small tweak on “the victim thinks they’re using HTTPS”: the browser actually shows http:// with no padlock. The victim could notice, but most people don’t check, which is why it works.
+
+For the exam:
+SSL stripping is the HTTP vs HTTPS example. A downgrade attack can also push a connection onto an older TLS/SSL version or a weaker cipher, which the attacker can then break. Defences: HSTS (the browser remembers “this site is HTTPS only” and refuses plain HTTP), and turning off old protocols on servers so there’s nothing weaker to fall back to.
+
 =================================================================================================================================================================
+Topic 14. 2.4 #14, password attacks.
 ==================================================================================================================================================================
  
