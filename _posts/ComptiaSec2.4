@@ -750,6 +750,16 @@ For the exam, the skill is matching a scenario to the IOC name. For example, “
 why are missing logs such a strong indicator of compromise? Deleting logs leaves its own trace. In Windows, clearing the security log creates a specific event (Event ID 1102, “audit log was cleared”). So an attacker who wipes logs often creates a new red flag in the process.
 That’s why logs get copied off the machine. Organisations send logs to a central SIEM or log server as they happen. Even if the attacker wipes the local copy, the central one still has the evidence. This ties into your plan to set up Wazuh in your home lab.
 It isn’t always an attack. Logs can go missing because a disk filled up, a logging service crashed, or someone misconfigured something. A good analyst treats missing logs as “investigate now”, not “definitely breached”.
-A user reports they can’t log in because their account is locked. They say they haven’t tried to log in since yesterday. Which IOC is this, and what attack from #14 might be behind it? 
-==================================================================================================================================================================
- 
+A user reports they can’t log in because their account is locked. They say they haven’t tried to log in since yesterday. Which IOC is this, and what attack from #14 might be behind it?This is locked out. 
+“Can’t log in because their account is locked”: the question tells you it’s locked, so there’s no need to guess.
+“They haven’t tried to log in since yesterday”: this is the key clue. It doesn’t mean they’ve been failing for two days. It means they didn’t make the attempts that locked the account.
+
+So who did? Someone else has been entering wrong passwords on that account until it locked. That points to an online brute force attack against that specific user (from #14).Why not password spraying? Spraying deliberately tries only one or two passwords per account to avoid lockouts. A locked account means lots of attempts on that one account, which is brute force.
+
+Why not the others:
+Concurrent session usage needs the account to be logged in from two places at once. Here, nobody’s getting in.
+Resource inaccessibility is about systems or files becoming unavailable, like ransomware or a server down. The scenario points clearly to a locked account.
+
+Exam tip: CompTIA scenarios usually hand you the key fact directly. Find the phrase that does the work (“account is locked”, “hasn’t tried since yesterday”) and don’t build a story past it. Overthinking costs more marks on Security+ than not knowing.
+============================================================================================================================================================================
+ ===========================================================================================================================================================================
