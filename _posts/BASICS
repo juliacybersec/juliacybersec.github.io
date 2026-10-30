@@ -167,8 +167,51 @@ A DLL is a shared code library that programs load at runtime.
 It's efficient and modular, but it also means that whoever controls which DLL gets loaded controls what code runs — 
 and Windows' search order makes that "whoever controls" question exploitable. Same principle as everything else we've covered: the system trusts the file
 that's there, and the attacker just has to be the file that's there.
+========================================================================================================================================================================
+What Security+ actually tests on SCADA/ICS
+It sits in Domain 3.1 (Security Architecture, 18% of the exam) as one of the "architecture models" you need to compare and contrast — alongside cloud, 
+serverless, microservices, IoT, RTOS, and embedded systems.
 
+OT (Operational Technology)
+ └── ICS (Industrial Control Systems)
+      ├── SCADA (Supervisory Control and Data Acquisition)
+      ├── DCS (Distributed Control Systems)
+      └── PLC-based systems
 
+OT is the broadest umbrella: any hardware or software that monitors or controls a physical process (not just data).  That includes ICS, but also building automation, 
+physical access control, transport systems. ICS is the middle box: systems that automate or control industrial processes — the ones where the output is a physical
+action (open a valve, start a motor, apply heat, release a chemical), not bytes on a screen. SCADA is one specific type of ICS. 
+Its defining trait: it monitors and controls geographically distributed assets from a central location.
+
+SCADA = "I'm in a control room in Sydney, and I need to see what's happening at 40 remote sites across NSW and send them new setpoints." 
+The fast, hard-real-time control happens locally at each site.  SCADA is the boss watching the dashboards.
+Why It Matters for Security
+
+The output is physical. A breach doesn't just leak data — it can open a valve, stop a pump, overheat a reactor, kill a power grid. The CIA triad shifts:
+availability and integrity matter more than confidentiality. They were designed for reliability, not security. Many ICS components are 20–40 years old, run embedded
+OSes that can't be patched, use protocols (Modbus, DNP3, IEC 60870) that have no authentication, no encryption, no integrity checks — the same "ARP is easy to fool"
+principle, but in the physical world. Air gaps are the standard defence (from our earlier discussion), because the consequence of a breach is people dying or infrastructure
+failing, and the operational cost of manual updates is trivial compared to that. STUXNET (2010) is the proof: it specifically targeted a SCADA/ICS environment
+(Iran's Natanz uranium enrichment facility), spread via USB (bypassing the air gap), and physically destroyed centrifuges by spinning them out of control while showing 
+operators a normal dashboard.
+The Nuts and Bolts Line
+ICS = the umbrella term for systems that control physical industrial processes.  
+SCADA = the specific type of ICS where a central control room supervises assets spread across a wide area.  Both are security-critical because their output is
+physical (valves, motors, power) rather than digital, and they were built for reliability decades before "cybersecurity" was a word.
+
+The specific things they want you to know:
+
+What to know	                                                                                Depth
+What SCADA/ICS is and what it controls (physical processes, not data)                              	Definition level
+Availability > Integrity > Confidentiality (opposite of IT)                                        	Must know this — it's a favourite exam question
+Why it's hard to secure:                                                                            legacy systems, can't patch, proprietary protocols, air gaps  
+Conceptual
+Famous attacks: Stuxnet (2010, destroyed centrifuges), Colonial Pipeline (2021, ransomware)	Know the name, what it did, why it mattered
+Hardening considerations (Domain 4.1): ICS is listed as a hardening target	                    Know it exists, not how to do it
+Air gap as a control (Domain 3.2, security principles)	                                        Already covered this in 3.2
+
+That's it. That's the whole SCADA footprint on the exam. This maybe be a little bit more depth than is required but it doesn't hurt.
+========================================================================================================================================================================
 
 
 
