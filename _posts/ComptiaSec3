@@ -1,4 +1,23 @@
-Domain 3, Security Architecture
+Domain 3, Security Architecture 3.1 #1 — Cloud Infrastructures
+
+The big picture for Domain 3: Domain 2 was about what attacks look like. Domain 3 is about how you build things so they’re harder to attack. 
+What are the different ways to set up IT infrastructure, and what security trade-offs does each one bring?
+
+This is like a set of choices about where you live:
+
+Shared responsibility model. Renting vs owning. If you rent (cloud), the landlord fixes the roof and the plumbing, but locking your door and protecting your valuables
+is still your job. The split changes with the cloud type. With IaaS you’re renting an empty house, so you handle more yourself. With SaaS it’s more like a serviced
+apartment, where the provider does most of the work and you just look after your own account and data. The key exam point is that your data is always your responsibility.
+Hybrid cloud. Living partly in your own house and partly in a rental. Now you have two sets of locks, two security setups, and the path between them to protect.
+More moving parts means more chances for a gap. Third-party vendors. Tradespeople you let into the house. You need to trust them, check them, and control what they
+can reach. ( back to the supply-chain attacks in 2.3.) Infrastructure as Code (IaC). Instead of building each house by hand, you use one master blueprint.
+Every house comes out the same, so there’s no “oh, we forgot the lock on that one.” Consistency is the security win here. Serverless. You don’t own or rent a house at all. 
+You just book a room for the exact minutes you need it. The provider handles everything underneath, and you only look after your bit of code.
+Monolithic vs microservices. A monolith is one giant building: if one part breaks or gets compromised, the whole thing can be affected.
+Microservices are a row of small separate units, each doing one job. If one is broken into, the others can stay standing. You get better isolation,
+but there are more doors to guard.
+
+
 
 
 
