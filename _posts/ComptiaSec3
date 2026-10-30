@@ -230,12 +230,66 @@ like a pacemaker or a smart meter. They’re often impossible to patch, so the s
 
 High availability:
 Keeping systems running even when something fails, using backup hardware that takes over automatically. Think of a hospital’s backup generator. The trade-off is cost,
-because you’re paying for spares you hope never to use.
+because you’re paying for spares you hope never to use. 
 
 
+What’s the difference between a virtual machine and a container, and why does sharing the operating system matter for security?
+Containers share the host’s kernel (the core of the operating system), so their isolation is weaker. If there’s a flaw in that shared kernel, or an attacker breaks out
+of one container (a container escape), every container on that host is exposed. Go back to the flats: they all share one set of foundations, so a crack in the foundations
+affects every flat.
 
+VMs have stronger isolation. Each one has its own complete operating system, so if your Kali VM gets compromised, the attacker still has to break through the hypervisor
+(VM escape, from 2.3) to reach your Windows host or other VMs. Separate houses on one block are harder to get between.
 
+So in short:
+VMs: more operating systems to manage, but stronger walls between them
+Containers: lighter and easier to manage, but they share the same foundations
 
+Why are IoT and embedded systems (like an MRI machine or a smart camera) so hard to secure?
+More devices means a bigger attack surface. Every doorbell and camera is another door.
+You rely on the manufacturer to patch it. If they stop releasing updates, you’re stuck with the flaws.
+Mixed manufacturers and ages make it hard to manage everything consistently.
+Keep only what you need. That’s a real security principle called minimising the attack surface. It’s the same thinking as decommissioning and hardening from 2.5.
+Three more points to add:
+
+Weak default passwords. Many devices ship with the same default login, and people never change it. The Mirai botnet took over hundreds of thousands of cameras and routers 
+this way and used them for huge DDoS attacks. Long lifespans. A camera or MRI machine may run for 10+ years, long after the manufacturer stops supporting it.
+Medical devices often can’t be patched freely. An MRI’s software is approved as part of the machine, so changing it can mean losing that approval. That’s why you see old
+Windows versions still running medical equipment.
+
+My smart doorbell lesson (IoT in real life)
+A few years ago I bought a Ring doorbell. This is when all these devices were just comming out on the market and still new. I could never get it working properly after
+I moved house with my newer iPhone, so I replaced it with a Google doorbell.  Then I found I couldn’t view it, so I bought a Google smart display to go with it, which was
+not cheap at the time. It worked well for a while, and then the problems started. I had trouble mounting it, it fell off, and the lens got scratched. The battery kept going
+flat, so I was constantly recharging it, and I think sitting in the sun is what finally killed the battery for good. Once the doorbell died, I stopped using the screen too, 
+I had just got beautifull old french bedside tables that were really small. It now sits in a draw unused. The screen was taking up space, electricity and because the doorbell
+was the main reason I had bought it. Looking back, it was nice to have, while it worked. One device led to another, and I ended up spending a lot on a door bell that my dog
+does for free.
+
+What I learned:
+Do the research first. When these doorbells first came out, the boxes said almost nothing about compatibility, and because they were new, there wasn’t much online either.
+I should have waited until other people had tried them. That’s what I do now. One device leads to another. IoT devices are often designed to work best inside one company’s
+ecosystem, so buying one can lock you into buying more. Hardware fails. Batteries, weather, mounting problems and physical damage are all part of the real cost.
+
+The security side (Security+ 3.1):
+My doorbell story is a small version of a big problem businesses face with IoT:
+Every device is another door. The more devices you add, the bigger your attack surface, and the more you have to secure, monitor and update.
+You rely on the manufacturer. IoT devices only get patched if the company keeps releasing updates. Many stop long before the device stops working.
+Limited power means limited security. Small batteries and processors often can’t run proper encryption, logging or security software.
+Mixed brands and ages make it hard to manage everything consistently.
+
+The question every business (and household) should ask is: do we actually need this device, or is it just convenient? Removing what you don’t need is one of the simplest
+security wins there is. In Security+ it’s called minimising the attack surface.
+
+THE BEST DOOR BELL IN THE WORLD. My other security system!!!
+My dog is my favourite security system. He hears someone at the door long before any doorbell would, and he lets me know about it. He never needs a firmware update,
+his battery never goes flat in the sun, there’s no app to stop working, and he’s never had a compatibility problem with my phone. He’s a security system, a companion, a foot
+warmer, personal training companion all in one. He has multiple settings too. If its a stranger its a loud continuous bark at the door. If its a sound like a car door opening its usually 
+one bark followed by quiet and then maybe a follow up bark. If it's some thing else that is unusual his hair stands up on the back of his back (like a rodesian ridgeback).
+If its someone he knows its a cry. If its a person he knows well its a sudden rush to the door a long continuous cry that wont stop for ages or untill the door is finally 
+opened.  
+
+Not every problem needs a tech solution. Sometimes the simplest option is the most reliable one. My dog has never let me down and the best security device I have ever owned. 
 ===========================================================================================================================================================================
 
 
