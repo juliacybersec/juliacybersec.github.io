@@ -129,15 +129,114 @@ Think of it as ways to divide up a building:
 
 Physical isolation (air gap). A completely separate building with no road connecting it. No cables, no wireless, nothing. It’s used for highly sensitive
 systems like power plant controls or military networks. It’s very secure but inconvenient, because moving data in or out means physically carrying it,
-often on a USB stick, which brings its own risks. Logical segmentation (VLANs). One building divided into separate locked flats.
-It’s the same physical switch and cabling, but software keeps the groups apart, for example Finance in one VLAN and Guest Wi-Fi in another.
-It’s cheaper and more flexible than separate hardware. 
-SDN (Software-Defined Networking). This splits the network into three layers, like a road system:
-Data plane: the cars actually moving on the road (traffic being forwarded).
-Control plane: the traffic lights and road rules deciding which way traffic goes (routing tables, decisions).
-Management plane: the council office where someone sets up and changes the rules (admin access and configuration).
+often on a USB stick, which brings its own risks.
 
-The security point is that the management plane is the crown jewels. Whoever controls the council office controls every road, so admin access there must be tightly locked down.
+Logical segmentation (VLANs). One building divided into separate locked flats. It’s the same physical switch and cabling, but software keeps the groups apart,
+for example Finance in one VLAN and Guest Wi-Fi in another. It’s cheaper and more flexible than separate hardware. 
+
+SDN (Software-Defined Networking). This splits the network into three layers, like a road system:
+Data plane: the cars on the road actually moving (traffic being forwarded).
+Control plane: the traffic lights and road rules deciding which way traffic goes (routing tables, decisions). Tells you when you can do a U turn or its 40kph. 
+Management plane: The BOSS. The council office where someone sets up and changes the rules(admin access and configuration). This is the control centre it tells
+us what we can do and decide if the pot holes get filled or not(council makes the decisions often waits till the damn potholes have potholes. 
+
+The security point is that the management plane is the crown jewels. Whoever controls the council office controls every road, so admin access there must be tightly
+locked down.
+NETWORK INFRASTRUCTURE DIAGRAM 1
+SDN DATA FLOWS DIAGRAM 2
+SDN DATA FLOWS DIAGRAM 3
+SDN SECURITY DIAGRAM 4
+What’s the difference between an air gap and a VLAN, and when would a company choose an air gap even though it’s less convenient?
+
+A VLAN is a logical separation.  Two VLANs live on the same physical switches, same cables, same rack. The switch is told: 
+"Don't let traffic from VLAN 10 reach VLAN 20." That's a software rule. It can be changed by anyone with admin access to the switch,
+or broken by a misconfiguration, a vulnerability in the switch firmware, or a compromised credential.
+
+An air gap is a physical separation.  There is no cable between the two networks. No switch. No wireless. No tunnel. No route. 
+The only way data crosses is a human walking in with a USB drive.  There's nothing to misconfigure, nothing to patch, nothing to exploit,
+because there's no path to exploit.
+The one-line distinction: a VLAN says "you're not allowed to cross." An air gap says "you can't cross."
+A VLAN is a policy. Policies are only as strong as the system enforcing them. If the switch is compromised, the VLAN boundary is gone.
+If the admin who configures the switch is phished, the VLAN boundary is gone. If there's a bug in the switch's forwarding logic, the VLAN boundary is gone.
+
+This is the same principle as everything else we've covered: logical controls can be defeated by any compromise in the system that enforces them. 
+A VLAN is only as secure as the switch, the admin, and the configuration.
+
+An air gap has no such dependency. There's no switch to compromise, no admin to phish, no configuration to get wrong. The boundary is the absence of a wire.
+
+When a Company Would Choose an Air Gap
+The decision model is simple: does the consequence of a breach justify the operational cost?
+
+Scenario	Why air gap
+Nuclear power plant control systems	A breach doesn't just leak data — it can cause a physical meltdown. The operational cost of manual updates is trivial compared
+                                    to the consequence.
+Military / classified systems        	Regulated by policy (e.g., NSA, ASD in Australia) to require physical isolation. No network path, full stop.
+SCADA / ICS for life-safety (water treatment, hospital ventilators, dam controls)	    A breach can kill people. The TRITON/STUXNET attacks showed that even "segmented"
+OT environments can be reached if the segmentation is logical, not physical.
+Financial market infrastructure (stock exchange matching engines)                    	A breach could crash a market. Physical isolation is required by regulation.
+Backup / disaster recovery (the "3-2-1" rule)	                                        Ransomware that encrypts your primary backups is a known scenario. An air-gapped backup
+(physical tape or disconnected drive) is the only backup that ransomware cannot reach, because there's no network path to it.
+Regulatory requirement	                Some jurisdictions (ASD in AU, CISA in US, NIST 800-82) require or strongly recommend physical isolation for critical OT systems.
+The July 2026 CI Fortify joint guidance (CISA, ASD, FBI, and partners) specifically tells critical infrastructure operators to prepare to physically isolate vital OT systems. 
+
+when the cost of a breach outweighs the inconvenience. Regulations requiring separation is one reason.
+
+Note. VLANs are separate by default, not connected. Devices on different VLANs share the same physical switch, but the switch keeps them apart.
+Finance can’t see Guest Wi-Fi unless traffic is deliberately sent through a router or firewall, where rules decide what’s allowed. In locked flats
+in one building: same building, but you need to go through the front office to get from one flat to another. 
+If someone sets those rules up wrong, the separation fails, and that’s exactly why an air gap is stronger: there’s nothing to misconfigure.
+If ransomware encrypts the whole network,it can’t reach a backup that isn’t connected to anything. That’s one of the main real-world uses of air gaps today.
+
+In SDN, what are the data plane, control plane and management plane, and why is the management plane the one attackers want most?
+The management plane sits above the control plane. It's the "boss's office."
+The management plane is where people log in. SSH, web GUI, REST API. That means:
+
+It's exposed to credential attacks (brute force, phishing, default credentials)
+It's exposed to web application attacks (command injection, file upload, XSS)
+It's exposed to supply chain attacks (a compromised update to the management software)
+It's the plane where default accounts (admin/admin, vmanage-admin) still exist in lazy deployments
+The data plane doesn't have a login screen. The control plane talks to switches via OpenFlow/NETCONF (machine-to-machine).
+The management plane is the only plane that talks to humans — and humans are the weakest link.
+the management plane is the admin account of the network. Compromise a user account and you get limited access. 
+Compromise the management plane and you can reroute traffic, switch off security rules or open doors anywhere. 
+It’s the same idea as vertical privilege escalation from 2.4.
+
+How companies protect it, briefly:
+
+A separate management network. Admin access goes through its own isolated path (often called out-of-band management), not the same network everyone else uses. 
+It’s segmentation again. Strong authentication. MFA and only a small number of admins. Logging everything. Every rule change is recorded, so a sneaky change can be spotted.
+
+Extra point: SDN is how cloud networks run behind the scenes. When you click to create a network in AWS or Azure, you’re using a management plane.
+That’s why stolen cloud admin credentials are so dangerous.
+==============================================================================================================================================================================
+Topic 3. 3.1 #3, Other Infrastructure Concepts
+Where things live and who’s in charge:
+On-premises. Everything is in your own building. You have full control, but you also have full responsibility: physical security, power, patching, the lot. It’s owning
+yoar car outright. Centralised vs decentralised. Centralised means one head office controls everything. It’s easy to manage and monitor, but 
+it’s a single point of failure. Decentralised spreads control across many locations, so it’s more resilient but harder to keep consistent. Think of one big hospital vs
+a network of local clinics.
+
+Ways to run software:
+Virtualisation. One physical computer runs several full virtual machines, each with its own complete operating system. Picture separate houses on one block of land. 
+Wrote up VM escape from 2.3. Containers. Lighter than VMs. Containers share the host’s operating system but keep each app in its own box. Picture flats in 
+one apartment building: they share the foundations and plumbing, so if the shared base has a flaw, every flat is exposed.
+
+Special devices that are hard to secure:
+IoT. Smart devices like cameras, smart TVs and fridges. They often ship with weak default passwords and rarely get updates. That’s why they belong on a separate network,
+like a guest Wi-Fi plan. SCADA / ICS. The systems that run power stations, water treatment and factories. Breaches here can cause physical harm, which is why they’re 
+the classic air-gap case. RTOS (Real-Time Operating System). Systems that must respond instantly, such as car braking systems or medical equipment. 
+You can’t pause them for a security scan or a reboot, so security must be built in from the start. Embedded systems. Computers built into a device to do one job,
+like a pacemaker or a smart meter. They’re often impossible to patch, so the security has to be right before they leave the factory.
+
+High availability:
+Keeping systems running even when something fails, using backup hardware that takes over automatically. Think of a hospital’s backup generator. The trade-off is cost,
+because you’re paying for spares you hope never to use.
+
+
+
+
+
+===========================================================================================================================================================================
 
 
 
