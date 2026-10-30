@@ -4,18 +4,140 @@ The big picture for Domain 3: Domain 2 was about what attacks look like. Domain 
 What are the different ways to set up IT infrastructure, and what security trade-offs does each one bring?
 
 This is like a set of choices about where you live:
-
 Shared responsibility model. Renting vs owning. If you rent (cloud), the landlord fixes the roof and the plumbing, but locking your door and protecting your valuables
-is still your job. The split changes with the cloud type. With IaaS you’re renting an empty house, so you handle more yourself. With SaaS it’s more like a serviced
+is still your job. The split changes with the cloud type.
+With IaaS you’re renting an empty house, so you handle more yourself.
+With SaaS it’s more like a serviced
 apartment, where the provider does most of the work and you just look after your own account and data. The key exam point is that your data is always your responsibility.
+
 Hybrid cloud. Living partly in your own house and partly in a rental. Now you have two sets of locks, two security setups, and the path between them to protect.
 More moving parts means more chances for a gap. Third-party vendors. Tradespeople you let into the house. You need to trust them, check them, and control what they
-can reach. ( back to the supply-chain attacks in 2.3.) Infrastructure as Code (IaC). Instead of building each house by hand, you use one master blueprint.
-Every house comes out the same, so there’s no “oh, we forgot the lock on that one.” Consistency is the security win here. Serverless. You don’t own or rent a house at all. 
-You just book a room for the exact minutes you need it. The provider handles everything underneath, and you only look after your bit of code.
+can reach. ( back to the supply-chain attacks in 2.3.)
+
+Infrastructure as Code (IaC). Instead of building each house by hand, you use one master blueprint.
+Every house comes out the same, so there’s no “oh, we forgot the lock on that one.” Consistency is the security win here.
+
+Serverless. You don’t own or rent a house at all. You just book a room for the exact minutes you need it. The provider handles everything underneath, and you only look after your bit of code.
+
 Monolithic vs microservices. A monolith is one giant building: if one part breaks or gets compromised, the whole thing can be affected.
-Microservices are a row of small separate units, each doing one job. If one is broken into, the others can stay standing. You get better isolation,
-but there are more doors to guard.
+Microservices are a row of small separate units, each doing one job. If one is broken into, the others can stay standing. You get better isolation, but there are
+more doors to guard.
+DIAGRAM MICROSERVICE ARCHITECHTURE WITH API 
+What’s the shared responsibility model? Who’s responsible for what?
+
+Shared responsibility is sort of like a car you own, lease, or rent that maps neatly onto the three types: owning is like doing it all yourself, leasing is like IaaS or PaaS, and renting is like SaaS.
+The agreement with the provider a contract that spells out the exact split and where the responsiblities lie. 
+If you are only needing data storage you’re responsible for more than your backups. You’re also responsible for who can get to that data: accounts, passwords, permissions,
+and whether it’s set to private or public. A lot of real cloud breaches come from a customer leaving a storage bucket open to the public. The provider’s security was fine, 
+and the customer left the door unlocked. That’s the one thing that never moves to the provider, whatever service type you pick: your data and who can access it.
+
+A company uses Microsoft 365 (that’s SaaS). An employee gets phished, the attacker logs in with her password and downloads company files. 
+Whose responsibility was that, Microsoft’s or the company’s, and why? The company is responsible the software cant gaurd against what an individual employee does. 
+The employee is part of the company, so it’s the company’s job to protect against this with things like:
+MFA, so a stolen password alone isn’t enough to log in
+Phishing awareness training
+Permissions, so one account can’t download everything
+So the employee clicked the link, but the company owns the risk. That links back to 2.5, where least privilege would have limited how much the attacker could take.
+
+What’s Infrastructure as Code, and why is it a security win?
+Infrastructure as Code (IaC) means you define your entire infrastructure — servers, firewalls, network rules, storage, security groups — as code files 
+(Terraform, Ansible, CloudFormation, Packer, etc.) instead of clicking through a GUI or SSHing in and typing commands.
+The infrastructure is a repository of files, not a collection of machines someone configured by hand.
+IaC turns infrastructure from "a bunch of machines someone configured by hand and nobody remembers" into "a version-controlled, peer-reviewed, automatically enforced set 
+of files." That means no drift, no forgotten open ports, no inconsistent baselines, and a full audit trail — which is every one of the "why did this happen" questions that
+come up after a breach, answered in advance.
+Every build comes out identical. Run the same code ten times and you get ten identical servers. Nobody forgets the firewall on server number seven. This is the
+blueprint idea from the overview. You can check it before it’s built. Because it’s just code, someone can review it, or a tool can scan it for mistakes like an open port,
+before anything goes live. It’s much easier than inspecting a server by hand and looking back later at what the hell is going on.
+Version control tracks every change. Stored in a repository (knowing GitHub is handy here), can see exactly who changed what and when. If a change breaks something or 
+opens a hole, you roll back to the last good version. The flip side is that a mistake in the code gets copied to every server too. Consistency works both ways.
+
+What’s the difference between a monolithic application and microservices, and which one is better for containing a breach?
+The Monolith Imagine a one-room school. The teacher is in there. The library books are in there. The science lab chemicals are in there. The school's cash box is in there. 
+The principal's secret files are in there. Everything is in one room.
+
+Now a kid breaks a window (a vulnerability). They crawl in. And what do they see? Everything. The cash box. The secret files. The library. 
+They don't need to break another window. They don't need to pick another lock. They're already in the room where all the stuff is.
+That's a monolith. One bug = everything's exposed.
+
+Microservices
+Now imagine a school with 20 separate rooms, each with its own locked door. The library is in Room 3. The cash box is in Room 12. 
+The principal's files are in Room 15.
+A kid breaks the window in Room 3 (the library). They crawl in. They can grab books. But:
+Room 12 (cash box) has a locked door. They can't get in.
+Room 15 (principal's files) has a locked door. They can't get in.
+They're stuck in Room 3. To get to the cash box, they'd need to break into Room 12 separately — find a different window, a different lock, a different way in.
+That's microservices. One bug = you're stuck in one room.
+
+The Catch (the "painted door" problem)
+Here's the stupid. What if Room 12's door has a lock on it... but the lock is broken? Or what if the key to Room 12 is taped to the inside of Room 3's door? 
+Or what if every room uses the same key?
+Then the kid in Room 3 just walks to Room 12, turns the handle, and walks in. The "20 rooms" were fake. It's still one big room with 19 painted doors.
+That's what happens when all your microservices share the same database password, or can call each other without authentication, or have over-permissioned accounts. 
+The architecture looks like 20 rooms. It acts like 1 room.
+
+Monolith = one room, all the stuff in it, one window to break. 
+Microservices=20 rooms, locked doors between them, break one window and you're stuck in one room. But only if the doors are actually locked and not all using the same key.
+
+Serverless removes the infrastructure layer from your security responsibility.  It does not remove the application layer. You still own your code, your permissions,
+your secrets, your data, and your input validation. The provider secures the building.  You still have to lock your office.
+serverless doesn’t mean there are no servers. The servers still exist. They’re just the provider’s, and you never see or touch them. 
+Your code runs only when it’s triggered, often for a few seconds, then stops.
+
+Customer still secures:
+Your code itself. If your function has an SQL injection flaw (see 2.3 ), serverless won’t save you. The provider runs whatever you give it, bugs included.
+Each function’s permissions. Every function should get only the access it needs. A function that resizes photos shouldn’t be able to read the customer database. 
+That’s least privilege again. Network configuration is mostly handled by the provider in serverless, so that one moves more to their side.
+
+A company runs some systems in its own building and some in the cloud (hybrid). Why is that harder to secure than having everything in one place?
+On-prem, you can (in theory) see every machine, scan every port, and track every patch. In the cloud, your "machines" are spinning up and down by the hour,
+across multiple regions, created by different teams, sometimes by scripts no one remembers. The moment you have both, you have two asset inventories that
+need to be merged into one picture. 
+That's two sets of alerts, two dashboards, two runbooks, two on-call rotations. The attacker only needs to find the side where the alerting is weaker, 
+the response is slower, or nobody's watching. The seam is the weakest point.
+
+The connection between on-prem and cloud — a VPN, a Direct Connect link, a site-to-site tunnel — is a network path that has to be secured, monitored,
+and patched like any other link. But it's often:
+Configured once, years ago, by someone who's left
+Over-permissioned ("let's just open the whole subnet for now")
+Not segmented (any on-prem host can reach any cloud resource, or vice versa)
+Invisible to both the on-prem team (it's "a cloud thing") and the cloud team (it's "a network thing")
+This is segmentation failure at the boundary — the same principle as the BA breach (Swissport's Citrix access wasn't actually limited) or the worm discussion 
+(a flat network lets the worm reach everything).
+
+Identity doesn't map cleanly. On-prem, you have Active Directory. In the cloud, you have IAM roles, service accounts, and possibly a second IdP.
+A user who's been terminated in AD might still have an active cloud role. 
+Different security models create gaps. On-prem, you own the perimeter — the firewall, the building, the rack. In the cloud, the provider owns the
+perimeter and you own the configuration (security groups, bucket policies, IAM). These are fundamentally different mental models. A team that thinks
+"the firewall at the front door protects us" applies that model to the cloud, where the "front door" is 500 security groups and 200 bucket policies
+that nobody has reviewed. The shared responsibility model (from the serverless discussion) means the provider secures the building, but you still have to lock the office. Doing that across two environments, with two different "building" definitions, doubles the surface.
+
+Configuration drift is worse, not better. In one environment, drift is a problem. In two, it's exponential — because the two environments drift relative to each other.
+Incident response is slower. When something goes wrong, the on-prem team has to coordinate with the cloud team, who has to coordinate with the network team
+(for the VPN), who has to coordinate with the identity team ... you get the picture. 
+
+One environment means one inventory, one toolset, one perimeter, one identity store, one patching process, one team. Hybrid means all of those in duplicate,
+plus a seam between them that nobody fully owns. Another few points to add. The two sides drift apart. The cloud side and the on-prem side often use
+different tools and settings, so the rules don’t match. For example, MFA is enforced in the cloud but not on the local servers. The SEAM here is a big gap and vunrability. 
+Attackers look for the weaker side. Your visibility is split. Logs end up in two places, so spotting an attack that moves from one side to the other is harder.
+This is a big reason companies use a SIEM to pull everything into one view.
+
+=============================================================================================================================================================================
+Topic 2. 3.1 #2 Network Infrastructure Concepts
+This one is about separating networks so that one problem can’t spread everywhere. 
+Think of it as ways to divide up a building:
+
+Physical isolation (air gap). A completely separate building with no road connecting it. No cables, no wireless, nothing. It’s used for highly sensitive
+systems like power plant controls or military networks. It’s very secure but inconvenient, because moving data in or out means physically carrying it,
+often on a USB stick, which brings its own risks. Logical segmentation (VLANs). One building divided into separate locked flats.
+It’s the same physical switch and cabling, but software keeps the groups apart, for example Finance in one VLAN and Guest Wi-Fi in another.
+It’s cheaper and more flexible than separate hardware. 
+SDN (Software-Defined Networking). This splits the network into three layers, like a road system:
+Data plane: the cars actually moving on the road (traffic being forwarded).
+Control plane: the traffic lights and road rules deciding which way traffic goes (routing tables, decisions).
+Management plane: the council office where someone sets up and changes the rules (admin access and configuration).
+
+The security point is that the management plane is the crown jewels. Whoever controls the council office controls every road, so admin access there must be tightly locked down.
 
 
 
@@ -34,6 +156,7 @@ but there are more doors to guard.
 
 
 
+============================================================================================================================================================================
 
 
 
