@@ -257,6 +257,62 @@ this way and used them for huge DDoS attacks. Long lifespans. A camera or MRI ma
 Medical devices often can’t be patched freely. An MRI’s software is approved as part of the machine, so changing it can mean losing that approval. That’s why you see old
 Windows versions still running medical equipment.
 
+What is SCADA/ICS? SCADA (Supervisory Control and Data Acquisition) is a type of ICS (Industrial Control System). It’s the central control room that monitors 
+and runs equipment spread over a wide area, like a water network, power grid or gas pipeline. ICS is the broader umbrella that also covers control systems inside a 
+single factory.
+Why would a breach of a SCADA system be more serious than a breach of a normal office network?  the output is physical, not digital.
+On an office network, the worst case is: data leaked, files encrypted, systems down for a few days. People are annoyed. Money is lost. The building still has power,
+the water still flows, the hospital still runs.
+On a SCADA system, the worst case is:
+A valve opens that shouldn't → chemical release, explosion, toxic spill
+A pump stops that shouldn't → hospital loses power, water treatment stops, city goes dark
+A reactor's cooling is disrupted → meltdown
+A centrifuge spins out of control → physical destruction (STUXNET, 2010)
+A dam gate opens → flooding downstream
+The CIA triad inverts. In an office, confidentiality is king — a data leak is the headline. In SCADA, availability and integrity are king.
+If the grid goes down, nobody cares whether your email was leaked — people lose power, surgeries stop, water stops being treated. If the integrity of a 
+control signal is broken (the system tells the valve to open when it should be closed), people die.
+The key difference is that an office breach loses data and money, while a SCADA breach can cause physical harm and cost lives.
+A hospital is a strong example of the knock-on effects: water or power goes down, and suddenly an operating theatre can’t function.
+
+Real examples worth knowing:
+Stuxnet (around 2010): malware that physically damaged Iran’s nuclear centrifuges by making them spin out of control while showing operators normal readings.
+Ukraine power grid (2015): attackers cut power to hundreds of thousands of people in winter.
+Oldsmar, Florida (2021): someone accessed a water treatment plant remotely and tried to raise a chemical to dangerous levels. An operator spotted the mouse
+moving on his screen and reversed it.
+
+Why SCADA is so hard to secure:
+It was designed for reliability, not security. Many systems are decades old and use protocols with no authentication.
+It can’t just be switched off to patch. You can’t reboot a water network on a Tuesday afternoon.
+That’s why it’s the classic case for air gaps and strict segmentation from 3.1 #2.
+
+An Australian angle for cyber roles: critical infrastructure here is covered by the SOCI Act (Security of Critical Infrastructure Act), which puts security 
+obligations on operators of things like energy, water and hospitals. As I have an interest in governance it would be good to look into. 
+What’s an RTOS? why can’t you treat it like a normal computer when it comes to security? RTOS (Real-Time Operating System) is an operating system designed to
+guarantee that a task completes within a strict, known deadline — not "as fast as possible," but by this specific time, every time, without exception.
+A normal OS (Windows, Linux, macOS) is non-deterministic: it schedules tasks based on priority and available resources, and a task might get its turn in 2 ms or 200 ms.
+That's fine for a web browser. It's unacceptable for:
+                An airbag controller that must deploy within 30 ms of impact
+                A car's anti-lock braking system that must modulate pressure every 10 ms
+                A SCADA controller that must read a sensor and adjust a valve within 5 ms
+                The RTOS scheduler is deterministic: it knows exactly which task runs when, and it guarantees that the highest-priority task always preempts everything
+else immediately. No garbage collection pauses. No page faults. No "the OS is updating itself in the background."
+How It Differs From a Normal OS?
+Anything that could delay the task, like antivirus scans, heavy encryption or a reboot for an update, risks missing the deadline, and missing the deadline is the failure. 
+For the exam: it’s not that RTOS devices have no security. It’s that security has to be handled differently:
+ Put in at design time, kept lightweight, so it never gets in the way of the deadline
+ Protected from the outside rather than from the inside: segment it from other networks, limit who can physically access it, and keep it off the internet where possible
+ Patched carefully and rarely, because changes have to be tested to prove they don’t affect timing, a bit like the Medical Imaging PC approval issue.
+What does high availability mean?
+High availability (HA) is a system's ability to stay up and accessible even when individual components fail. The goal: the user never notices (or barely notices) a failure.
+something fails and users never notice. How it’s actually done:
+Redundancy. Have more than one of everything that matters: servers, power supplies, network links, even whole data centres.
+Failover. When one fails, the backup takes over automatically. Think of the hospital generator kicking in when the mains power drops.
+“Five nines.” Availability is often measured as a percentage. 99.999% uptime works out to only about five minutes of downtime a year. Each extra nine costs a lot more money.
+The trade-off is cost. You’re paying for spare equipment you hope never to use, so companies weigh how much downtime would cost them against how much redundancy costs. 
+A hospital or bank will pay for it; a small café’s website probably won’t. This links back to the A in the CIA triad from Domain 1. High availability is how you protect 
+availability.
+
 My smart doorbell lesson (IoT in real life)
 A few years ago I bought a Ring doorbell. This is when all these devices were just comming out on the market and still new. I could never get it working properly after
 I moved house with my newer iPhone, so I replaced it with a Google doorbell.  Then I found I couldn’t view it, so I bought a Google smart display to go with it, which was
@@ -289,13 +345,81 @@ one bark followed by quiet and then maybe a follow up bark. If it's some thing e
 If its someone he knows its a cry. If its a person he knows well its a sudden rush to the door a long continuous cry that wont stop for ages or untill the door is finally 
 opened.  
 
-Not every problem needs a tech solution. Sometimes the simplest option is the most reliable one. My dog has never let me down and the best security device I have ever owned. 
+Not every problem needs a tech solution. Sometimes the simplest option is the most reliable one. My dog has never let me down and the best security device I have ever
+owned. 
+
 ===========================================================================================================================================================================
+Topic 4. 3.1 #4 Infrastructure Considerations.
+The factors a business weighs when choosing between them. There’s no single right answer, only trade-offs.
+choosing a car for a business:
+Keeping it running:
+Availability. Is it there when you need it? (You’ve just covered this.)
+Resilience. How well does it cope when something goes wrong, and how quickly does it bounce back? Availability is about staying up; resilience is about recovering.
+Ease of recovery. If it breaks down, how quickly can it be fixed? A common model gets parts the next day; a rare imported one might take weeks.
 
+Cost and growth:
+Cost. Not just the purchase price, but running costs, maintenance and staff time. My doorbell story is a perfect example of hidden costs.
+Scalability. Can it grow with you? Cloud scales easily, like hiring extra cars when needed. On-prem means buying more hardware.
+Responsiveness. How quickly it responds to users. Distance and load matter here.
+Ease of deployment. How quick and simple it is to set up. IaC helps a lot here.
 
+Security and risk: Risk transference. Shifting some risk to someone else, like buying insurance or using a cloud provider who takes on part of the responsibility. 
+The risk doesn’t vanish; it moves. Patch availability. Will the manufacturer keep releasing updates?
+Inability to patch. Some systems can’t be patched (embedded, RTOS, medical devices), so you need other protections like segmentation.
 
+Physical limits: Power. Data centres and devices need reliable power, and backup power for high availability.
+Compute. How much processing power is available. Small IoT devices have very little, which limits the security they can run.
 
+What’s the difference between availability and resilience?
+Availability is a state: is the system up right now, and for what percentage of the time? It's measured in nines, in uptime, in "the service responded."
+Resilience is a capability: when the system gets hit, does it degrade gracefully, adapt, and recover — or does it collapse entirely and take hours to come back?
+The difference in one sentence: availability asks "is it working?" Resilience asks "what happens when it's attacked, and how fast does it get back to working?"
+Availability asks “is it up right now, and how often is it up?” Resilience asks “when it breaks, how fast does it bounce back?”
+One term to add: MTTR (Mean Time To Repair), the average time it takes to get a system working again after a failure. Lower MTTR means more resilience.
 
+In car terms:
+Availability: the car is in the driveway and starts when you need it
+Resilience: you get a flat tyre, but there’s a spare in the boot and you’re back on the road in 15 minutes
+The two are connected, since a resilient system recovers quickly and so stays available more of the time.
+
+What does risk transference mean, and does transferring the risk make it disappear? 
+Risk transference is shifting the financial or operational impact of a risk to a third party.
+You don't eliminate the risk, you don't reduce it, you don't accept it — you make someone else pay the bill when it happens like cyber insurance.
+Risk transference is buying someone else to hold the bill when things go wrong. The risk doesn't disappear — the breach still happens, the outage still
+occurs, the data still leaks. You just don't carry the full financial weight of it. It's the only one of the four risk responses that doesn't change the risk itself;
+it only changes who pays. The risk doesn’t disappear; it just moves who pays and who helps fix it. Cyber insurance is the classic exam example.
+
+Two things the insurance doesn’t transfer, which is a good point to make in interviews:
+
+Reputation. Customers blame the company, not the insurer. Optus and Medibank both found that out in 2022.
+Legal responsibility. Under Australia’s Notifiable Data Breaches scheme, the company still has to notify affected people and the regulator, however much is insured.
+Also worth knowing: insurers now often require controls like MFA and tested backups before they’ll cover you. So transferring risk usually means reducing it as well.
+Other examples of risk transference: outsourcing to a cloud provider (part of the shared responsibility model) or hiring a managed security provider to monitor your network.
+The Notifiable Data Breaches scheme only requires companies to notify people when a breach is likely to result in serious harm, and the company makes that call itself.
+So plenty of breaches never reach individual customers. It also only requires notification, not compensation. I have checked haveibeenpwned.com shows which known breaches. 
+This is the reason I have a few different email addresses and use burner email addresses to avoid the junk mail.
+What does scalability mean, and why is it easier in the cloud than on-premises?
+Scalability is a system's ability to handle more load (more users, more data, more requests) without degrading, by adding more resources — and ideally, to handle
+less load by removing them. Two directions: Scale up or scale accross. Scalability is "handle more (or less) load without breaking." On-prem, it's a capital 
+project — order, ship, rack, install, configure, wait weeks. In the cloud, it's an API call — launch, configure, serve, terminate, pay per second. 
+The cloud doesn't make scaling possible (you can do it on-prem, it just takes months). It makes scaling fast, granular, and reversible — which is the difference 
+between "we planned for Black Friday six months ago" and "Black Friday just started, here are 500 more servers in 90 seconds."
+Two more points for the exam:
+Elasticity. The cloud also scales down automatically when demand drops, so you only pay for what you use. On-prem, you have to buy enough hardware for your busiest day, 
+and it sits idle the rest of the time. Security angle. If new servers spin up automatically, each one must come out already secured. That’s where IaC from 3.1 #1 comes
+back in: every new server is built from the same secure blueprint.
+Why would a company look at patch availability before choosing a system?
+Because a system that can't be patched is permanently vulnerable, and you'd rather not buy that problem in.
+
+When you're choosing a system, those are the questions to ask before you sign the contract, not after:
+Before choosing a system, ask:
+
+How long will the vendor support it? Check the end-of-life (EOL) date. Once a product reaches end of life, patches stop, however well the hardware still works.
+Windows 10 is a recent example. How often are patches released, and how quickly after a flaw is found? A vendor that takes months to fix known vulnerabilities leaves
+you exposed. How are patches delivered? Automatic updates are easier than manual ones, which tend to get forgotten (like your medical imaging payroll PC).
+Does patching need downtime? That links back to availability. And if a system can’t be patched at all, you need compensating controls, which are other protections 
+that make up for it, like segmentation. That’s the term for the exam.
+==========================================================================================================================================================================
 
 
 
