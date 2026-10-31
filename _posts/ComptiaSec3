@@ -420,23 +420,5 @@ you exposed. How are patches delivered? Automatic updates are easier than manual
 Does patching need downtime? That links back to availability. And if a system can’t be patched at all, you need compensating controls, which are other protections 
 that make up for it, like segmentation. That’s the term for the exam.
 ==========================================================================================================================================================================
-
-
-
-
-
-
-
-
-
-
-
-
-
 ============================================================================================================================================================================
-
-
-
-
-
 =============================================================================================================================================================================
