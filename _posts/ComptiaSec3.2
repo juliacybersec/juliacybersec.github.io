@@ -1,1 +1,30 @@
+Topic 1 3.2 #1 Secure Infrastructures
 
+3.1 was about what you build. 3.2 is about how you protect it: where you put security devices and how you divide the network up. This first video sets up the basics for the rest of 3.2.
+Think of it as securing a medical clinic building:
+
+Device placement
+Where you put firewalls, sensors and other security devices matters. You put a lock on the front door, not halfway down the hallway. Security devices usually go at the boundaries between areas, where traffic crosses from one zone to another.
+
+Security zones
+Divide the network into areas based on how much you trust them: untrusted (the internet, the street outside), trusted (internal staff systems, the private consulting rooms), and areas in between.
+Screened subnet (formerly called a DMZ): the waiting room. The public can come in, but they can’t wander into the consulting rooms. Public-facing servers, like a company website, live here, so if one is compromised, the attacker still hasn’t reached the internal network.
+
+Attack surface
+Every open door, port, app and user account is a way in. You’ve covered this already. The goal is to keep it as small as possible.
+
+Connectivity
+How the zones are linked together, and making sure those links are secured. It’s the seam idea from hybrid cloud.
+
+Failure modes (likely on the exam)
+Fail-open: if the security device fails, traffic keeps flowing unchecked. It’s like an electronic door that unlocks during a power cut, so people can get out in a fire. Availability wins.
+Fail-closed: if the device fails, everything stops. The door stays locked. Security wins, but nobody gets through.
+
+Device attributes
+Active vs passive: an active device can block traffic (a security guard who can stop someone). A passive device only watches and reports (CCTV).
+Inline vs tap/monitor: an inline device sits directly in the path, so all traffic goes through it, like the guard standing in the doorway. A tap or monitor gets a copy of the traffic to watch, like CCTV recording the doorway from the side.
+
+
+
+
+==========================================================================================================================================================================
