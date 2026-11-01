@@ -47,7 +47,18 @@ Skills shown
 
 Virtualisation, Windows 11 installation, boot troubleshooting, UEFI, snapshots and recovery
 
-Next steps
+Install Guest Additions and Windows updates, then start Lab 02 on Windows troubleshooting.
+
+Post-install setup
 
 Install Guest Additions and Windows updates, then start Lab 02 on Windows troubleshooting.
 
+I installed VirtualBox Guest Additions so the screen resizes properly and the mouse moves smoothly between the VM and my laptop.
+
+I then ran Windows Update and restarted until there were no updates left, so the lab is fully patched before I start breaking things.
+
+Once that was done I took a second snapshot called Updated. CleanInstall is my fresh install, and Updated is my patched, ready-to-use starting point for future labs.
+
+Next steps
+
+Lab 02: recreating a corrupted Windows user profile and fixing it, based on a fix I used regularly on the help desk at the bank.
