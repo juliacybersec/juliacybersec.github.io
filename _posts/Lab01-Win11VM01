@@ -1,0 +1,7 @@
+Home Lab #1: Setting Up a Windows 11 VM (and Fixing What Went Wrong)”
+Setup Windows 11 using VM Ware
+
+VirtualBox 7, Windows 11 Pro, 8 GB RAM, 3 CPUs, 64 GB dynamic disk, EFI + TPM 2.0 + Secure Boot
+Issue 1: “failed to boot”, ISO not attached (download incomplete) → rebuilt VM
+Issue 2: missed the boot prompt → UEFI menu → Boot Manager → CD-ROM
+Manual install: no product key, Pro edition, custom install
