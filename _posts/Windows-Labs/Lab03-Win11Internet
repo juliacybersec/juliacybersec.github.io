@@ -1,0 +1,99 @@
+Home Lab #3: The Internet's Down Part 1: DNS – Network Troubleshooting 
+
+2 November 2026
+
+Goal
+
+"I've got no internet" is one of the most common help desk tickets. In this lab I broke my Windows 11 VM's network on purpose and diagnosed it like a real ticket, working from the inside out: adapter, IP address, gateway, internet, then DNS.
+
+Environment
+
+Host: gaming laptop
+Hypervisor: VirtualBox 7, NAT networking
+Guest: Windows 11 Pro VM (Win11-Lab)
+
+Before starting: 
+
+I shut down the VM and took a snapshot called Pre-Lab03, so I could roll back if anything went wrong.
+
+Step 1: Baseline while everything works
+
+I opened Command Prompt in the VM and ran:
+
+ipconfig /all
+ping 127.0.0.1
+ping 8.8.8.8
+ping google.com
+nslookup google.com
+
+Everything passed. ipconfig /all showed an IPv4 address and a default gateway of 10.0.2.2, which is VirtualBox's built-in virtual router. On my home network the gateway would be my router at 192.168.1.1.
+
+The default gateway is the door out of the local network. Anything not on the local network is handed to it to send on.
+
+Note: if a PC has an IPv4 address starting with 169.254.x.x, Windows has given itself that address because DHCP didn't answer. That points to a DHCP or connection problem.
+
+Step 2: Break it (bad DNS server)
+
+1. Pressed Win + R, typed ncpa.cpl and pressed Enter to open Network Connections.
+2. Right-clicked Ethernet, chose Properties, and opened Internet Protocol Version 4 (TCP/IPv4).
+3. Left the IP address on automatic, but set "Use the following DNS server addresses" with a preferred DNS server of 10.0.2.99.
+4. Clicked OK and Close.
+5. Ran ipconfig /flushdns to clear Windows' cached DNS answers.
+
+Step 3: Troubleshoot it like a ticket
+
+Ticket: "The internet's down."
+
+I re-ran my tests:
+
+ping 8.8.8.8 – worked
+ping google.com – worked
+nslookup google.com – timed out
+
+Diagnosis: The connection to the internet was fine, because pinging 8.8.8.8 by IP address worked. Only name lookups were failing. It's like having a working phone line but the wrong phone book: you can call a number you already know, but you can't look anyone up by name.
+
+The lookup timed out rather than saying "not found" because nothing exists at 10.0.2.99. The request went out and nobody answered.
+
+Why did ping google.com still work? nslookup always asks the DNS server directly. ping uses Windows' normal name lookup, which can fall back on a cached answer or another DNS server, such as an IPv6 one. That's why users with DNS problems sometimes say "some sites work and some don't." nslookup is the honest test for DNS.
+
+How I'd find it on a real ticket: The user won't say "I changed my DNS." I'd run ipconfig /all and check the DNS Servers line. To prove the server was at fault, I'd compare:
+
+nslookup google.com 10.0.2.99 – times out
+nslookup google.com 8.8.8.8 – works
+
+If a known-good server answers and the configured one doesn't, the configured DNS server is the problem. That's proof, not a guess.
+
+Step 4: The fix
+
+1. Went back into the IPv4 properties and set DNS back to "Obtain DNS server address automatically".
+2. Ran ipconfig /flushdns.
+3. Ran nslookup google.com again and it worked.
+
+Gotcha: a "timeout" that wasn't a failure
+
+After the fix, nslookup still showed "DNS request timed out" and "Server: UnKnown", so I thought the problem was still there. I checked ipconfig /all and the DNS server was correctly back on 10.0.2.3, VirtualBox's DNS.
+
+The timeout was harmless. When nslookup starts, it tries to look up the name of the DNS server itself, and VirtualBox's DNS server doesn't have one. Further down, under "Non-authoritative answer", google.com had resolved to its addresses, so the lookup had worked.
+
+Lesson: read the whole output, not just the first line. "Non-authoritative" just means the answer came from a server that had it cached, not from Google's own servers.
+
+Work from the inside out: adapter, IP, gateway, internet, DNS.
+
+If pinging an IP address works but names don't resolve, suspect DNS.
+
+nslookup tests DNS directly. ping can be fooled by cached answers.
+
+Testing against a known-good DNS server such as 8.8.8.8 proves where the fault is.
+
+A 169.254.x.x address means DHCP didn't answer.
+
+Skills shown
+
+Network troubleshooting, TCP/IP, DNS, DHCP, ipconfig, ping, nslookup, structured help desk diagnosis
+
+Next steps: Wrong static IP and the disabled adapter.
+
+
+
+
+Part 2: a wrong static IP address and a disabled network adapter.
