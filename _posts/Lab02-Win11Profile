@@ -1,0 +1,75 @@
+Home Lab #2: Fixing a Corrupted Windows 11 User Profile
+
+1 November 2026
+
+Background
+
+When I worked on the help desk at ANZ, I kept getting calls from staff with strange problems that no one could pin down. Apps crashing, settings not sticking, things just behaving oddly. Some of these people had called four or five times, and their tickets had already been through second-level support without being fixed.
+
+Nobody taught me this, but while users were restarting I started looking at their machines, and I noticed their user profiles were much bigger than everyone else's. The bank used roaming profiles, and these ones had bloated and become corrupted over time. I started logging the user out, deleting their profile and having them log back in to get a fresh one. They lost a few settings, but the problems were gone. I always followed up with the users afterwards, and the feedback was great. That fix played a big part in me moving from the help desk straight into on-site desktop and server support.
+
+At the time I knew it worked but not exactly why. In this lab I recreate the problem and fix it properly.
+
+What a user profile actually is
+
+A Windows user profile is two things working together:
+
+The profile folder in C:\Users\username, which holds the user's desktop, documents, app data and temp files.
+
+A registry entry under HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList, which tells Windows where that folder is.
+
+The user's own settings live in a file called NTUSER.DAT inside the profile folder. If the PC crashes or loses power while that file is being saved, it can become corrupted. Profiles can also bloat over time with temp files, caches and large Outlook data files, which was a big problem with roaming profiles because the whole profile was copied across the network at every login and logout.
+
+The lab
+
+1. Created a test user from an administrator Command Prompt:
+
+net user testuser <password> /add
+
+2. Logged in as testuser so Windows built their profile, and saved a file called MyFile on the desktop.
+
+3. Logged back in as my admin account and deleted only the C:\Users\testuser folder, the way I used to at ANZ.
+
+The problem
+
+Symptom: When testuser logged in, Windows said it couldn't sign in to the account and logged them in with a temporary profile. The desktop was empty and MyFile was gone. Anything saved in a temporary profile is lost at logout.
+
+Cause: I deleted the folder, but the registry entry in ProfileList was still pointing to it. Windows went looking for a folder that no longer existed, so it fell back to a temporary profile.
+
+The fix
+
+1. Logged in as admin and opened Regedit.
+
+2. Went to HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList.
+
+3. Clicked through the S-1-5-21 keys and found the one whose ProfileImagePath was C:\Users\testuser.
+
+4. Deleted that key and signed out.
+
+5. Logged in as testuser. Windows treated it as a first-time login and built a fresh folder and a new registry entry. No more error.
+
+The right way to do it
+
+The cleaner method is System Properties, Advanced, User Profiles, Settings, then select the profile and click Delete. This removes the folder and the registry entry together, so you don't end up with a temporary profile at all.
+
+How I'd handle it today
+
+Back up or rename the user's profile folder first instead of deleting it, so their files can be copied across to the new profile.
+
+Many workplaces now use OneDrive or profile tools like FSLogix, so users' files and settings follow them and a profile rebuild is much less painful.
+
+Lessons learned
+
+A profile is a folder plus a registry entry. Fixing one without the other causes the temporary profile error.
+
+Comparing a problem machine against a working one, like checking profile sizes, is a simple but powerful way to find the cause.
+
+Always follow up with the user after a fix.
+
+Skills shown
+
+Windows user profiles, Registry Editor, command line user management, troubleshooting temporary profile errors, root cause analysis
+
+Next steps
+
+Lab 03: network troubleshooting, no internet connection.
