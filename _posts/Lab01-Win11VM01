@@ -1,7 +1,14 @@
-Home Lab #1: Setting Up a Windows 11 VM (and Fixing What Went Wrong)”
+Home Lab #1: Setting Up a Windows 11 VM with Virtual Box (and Fixing What Went Wrong)”
 Setup Windows 11 using VM Ware
 
 VirtualBox 7, Windows 11 Pro, 8 GB RAM, 3 CPUs, 64 GB dynamic disk, EFI + TPM 2.0 + Secure Boot
 Issue 1: “failed to boot”, ISO not attached (download incomplete) → rebuilt VM
 Issue 2: missed the boot prompt → UEFI menu → Boot Manager → CD-ROM
 Manual install: no product key, Pro edition, custom install
+
+I created the VM before the download had finished, so there was no ISO to attach, and “failed to boot” was the result. 
+There was also a second cause worth including:
+
+The second time, the ISO was attached, but Windows waits a few seconds for “Press any key to boot from CD or DVD”. When nobody pressed a key,
+it moved on to the empty hard disk, found nothing, and dropped into the UEFI startup menu. I fixed it by going into Boot Manager and choosing the CD-ROM drive.
+The automatic install didn’t take effect either, which is why it asked for a product key. I finished the setup manually instead.
