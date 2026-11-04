@@ -1,0 +1,138 @@
+Lab 06 – DNS Troubleshooting: "I Can't Get on the Internet"
+
+Objective
+Practise troubleshooting one of the most common help desk calls by deliberately breaking DNS on a Windows 11 VM, diagnosing the fault from the bottom up, then fixing and verifying it.
+
+Environment
+- Windows 11 Home VM in VirtualBox
+- Network mode: NAT (VirtualBox's default)
+- Tools: ipconfig, ping, nslookup, Windows Settings
+
+The analogy: posting a letter
+Network troubleshooting works from the bottom up, like checking why a letter didn't arrive:
+
+1. Do I have a return address? → IP address
+2. Can I reach my local post office? → Default gateway
+3. Can the post office deliver to another city? → Reaching the internet by IP address
+4. Can I look the address up in the phone book? → DNS (turning names into IP addresses)
+
+If step 1 fails, there's no point testing step 4.
+
+---
+
+Part 1 – Baseline (what "good" looks like)
+
+ipconfig /all
+
+[Screenshot: ipconfig /all showing default gateway and DNS server]
+
+- Default gateway: 10.0.2.2
+- DNS server: 10.0.2.3
+- DHCP enabled: Yes
+
+NAT vs bridged: in NAT mode, VirtualBox acts as the VM's own little router. The VM sits on a private 10.0.2.x network, and VirtualBox translates its traffic out through the host's real connection. In bridged mode, the VM would join my home network directly and use my real router as its gateway.
+
+What the default gateway does: it's the VM's door out of its own network. Anything not on the local 10.0.2.x network gets handed to the gateway to deal with.
+
+Then I tested each layer in order:
+
+    ping 10.0.2.2      → gateway (local post office)
+    ping 8.8.8.8       → internet by IP (another city, no DNS needed)
+    ping google.com    → DNS (needs the phone book first)
+
+All three succeeded.
+
+[Screenshot: successful pings]
+
+---
+
+Part 2 – Breaking it
+
+I set the IPv4 DNS server to an address that doesn't exist:
+
+Settings > Network & internet > Ethernet > DNS server assignment > Edit > Manual > IPv4 Preferred DNS: 10.0.2.99
+
+[Screenshot: manual DNS setting]
+
+Then:
+
+    ipconfig /flushdns
+    ping google.com
+
+Why flush DNS first?
+Windows keeps a DNS cache. It's like a sticky note on the fridge with numbers you've already looked up. I'd already pinged google.com, so it was on the sticky note. Without flushing, Windows might use the cached address and the ping would work even with a broken DNS server, which would hide the fault.
+
+Unexpected result: it still worked!
+ping google.com still succeeded. My theory was that only IPv4 DNS was broken, and that the IPv6 DNS server was still answering.
+
+To prove it rather than guess, I ran:
+
+    nslookup google.com
+
+[Screenshot: nslookup timing out against 10.0.2.99]
+
+nslookup timed out against 10.0.2.99, so the IPv4 break had worked.
+
+Why did ping and nslookup disagree?
+- nslookup asks only the first DNS server and reports exactly what it says.
+- Windows (which ping relies on) quietly falls back to any other DNS server it knows about, including the IPv6 one.
+
+💡 Lesson: if ping works but nslookup fails, one DNS server is probably bad and Windows is falling back to another.
+
+Completing the break
+I also set the IPv6 Preferred DNS to fd00::99 (also non-existent), flushed again, and retested:
+
+    ping 8.8.8.8      → ✅ works
+    ping google.com   → ❌ fails ("could not find host")
+
+[Screenshot: 8.8.8.8 succeeding, google.com failing]
+
+This is the textbook DNS fault: you can reach the internet by IP, but names won't resolve.
+
+---
+
+Part 3 – Troubleshooting it like a ticket
+
+User report: "I can't open any websites. Chrome says it can't find the server."
+
+| Check | Result | Meaning |
+|---|---|---|
+| ipconfig /all | IP and gateway present; DNS set to 10.0.2.99 and fd00::99 | Address OK, DNS servers look wrong |
+| ping 8.8.8.8 | Success | Internet connectivity works |
+| ping google.com | Could not find host | Name resolution failing |
+| nslookup google.com | Timed out | DNS server not responding |
+
+Diagnosis: this is not "no internet." Connectivity is fine by IP, but DNS resolution is failing because the DNS servers were set manually to addresses that don't exist.
+
+"Could not find host" = a DNS problem (the name couldn't be looked up).
+"Request timed out" = the address was found, but nothing replied.
+
+---
+
+Part 4 – The fix
+
+1. Changed DNS server assignment from Manual back to Automatic (DHCP)
+2. Ran ipconfig /flushdns
+3. Ran ipconfig /all to confirm the gateway was back to 10.0.2.2, DNS was back to 10.0.2.3, and the IPv6 settings looked normal again
+
+[Screenshot: DNS set back to Automatic]
+
+Why Automatic rather than typing 10.0.2.3 back in? A hard-coded DNS server only works until the network changes. Automatic means the machine always uses whatever DNS server the network hands out. Forgotten "temporary" manual DNS settings are a classic cause of this exact ticket.
+
+Verification
+
+    ping 8.8.8.8         → ✅
+    ping google.com      → ✅
+    nslookup google.com  → ✅ answered by 10.0.2.3
+
+[Screenshot: all tests passing]
+
+---
+
+Key takeaways
+- Troubleshoot bottom up: IP → gateway → internet by IP → DNS
+- ping 8.8.8.8 works but ping google.com fails = DNS problem, not "no internet"
+- Flush the DNS cache (ipconfig /flushdns) before testing, so old cached answers don't hide the fault
+- nslookup and ping can disagree, because Windows falls back to other DNS servers and nslookup doesn't
+- When a fix doesn't behave as expected, form a theory and prove it with evidence
+- Restore settings to Automatic where possible, rather than hard-coding them
