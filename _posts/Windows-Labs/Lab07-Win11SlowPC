@@ -1,0 +1,22 @@
+Lab 07: Windows 11 VM “My computer is so slow.” 
+
+Goal: The lab plan
+
+Part 1. Baseline: see what a healthy VM looks like in Task Manager.
+
+Part 2. Break it: run a harmless loop that keeps the chef busy all the time.
+
+Part 3. Troubleshoot: find the culprit in Task Manager, end it, then check Startup apps and Resource Monitor.
+
+The analogy: a restaurant kitchen
+
+CPU is the chef. It does the actual work. One chef can only cook so fast.
+
+RAM is the bench space. It holds whatever the chef is working on right now. When the bench is full, things get stacked on the floor, and everything slows down.
+
+Disk is the pantry. Fetching from there takes longer than grabbing something off the bench.
+
+Network is the delivery door. Sometimes “slow” really means waiting on a delivery.
+
+When someone says “it’s slow”, I need to work out what is overloaded.
+
