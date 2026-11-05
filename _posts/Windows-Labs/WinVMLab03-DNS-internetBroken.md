@@ -1,4 +1,4 @@
-# Home Lab #3: "The internet's broken"
+# Home Lab #3: Part 2 DNS "The internet's broken" 
 
 ## The ticket
 
