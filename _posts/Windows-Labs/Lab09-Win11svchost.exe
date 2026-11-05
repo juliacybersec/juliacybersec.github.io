@@ -1,0 +1,139 @@
+Lab 09: Why are there so many svchost.exe processes?
+
+Goal
+Work out why Windows 11 runs dozens of svchost.exe processes, how to tell a genuine one from a fake, and how to handle the common help desk ticket "svchost is using all my CPU".
+
+Environment
+Windows 11 Pro VM in VirtualBox (Win11-Lab). Tools used: Task Manager, Command Prompt, PowerShell, services.msc.
+
+Background
+svchost.exe (Service Host) is like a block of flats, and Windows services are the tenants. Services can't run on their own, so they need a host process to live in. On Windows 11, most services get their own svchost, so if one service crashes it doesn't take the others down with it. That's why seeing 40 or more svchost.exe processes is normal and not a sign of a virus.
+
+There is only one real svchost.exe file, in C:\Windows\System32. Every svchost you see running is that same file loaded again, each one hosting different service DLLs.
+
+The security angle: malware likes to hide in the crowd, either with a lookalike name (svch0st.exe, scvhost.exe) or by running a file called svchost.exe from the wrong folder.
+
+Part 1: What normal looks like
+In Task Manager, Details tab, I sorted by name and counted around 40 svchost.exe processes. I added the Command line column (right-click a column header, Select columns). Most look like -k netsvcs -p -s ServiceName, where the name after -s is the service inside that svchost.
+
+The User name column showed most running as SYSTEM, with a few as LOCAL SERVICE and NETWORK SERVICE, which is expected.
+
+[Screenshot: Task Manager Details tab with svchost.exe processes and Command line column]
+
+Part 2: Mapping svchost to services
+In Command Prompt:
+
+```
+tasklist /svc /fi "imagename eq svchost.exe"
+```
+
+This lists each svchost PID with the service or services it's hosting.
+
+[Screenshot: tasklist /svc output]
+
+Part 3: Is it genuine? Two checks
+Check 1, location. Right-click any svchost.exe in Task Manager and choose Open file location. Every genuine one opened C:\Windows\System32.
+
+Check 2, parent. A genuine svchost is always started by services.exe. To see the parent, I used PowerShell:
+
+```
+Get-CimInstance Win32_Process -Filter "name='svchost.exe'" | Select ProcessId, ParentProcessId, ExecutablePath
+```
+
+Then to get the ID of services.exe:
+
+```
+(Get-Process services).Id
+```
+
+Every genuine svchost should have that ID as its ParentProcessId.
+
+A shorter command to remember for the location check alone:
+
+```
+Get-Process svchost | Select Id, Path
+```
+
+[Screenshot: services.exe ID]
+
+Part 4: Planting a harmless fake
+To practise spotting a fake, I copied cmd.exe to the Desktop and renamed it svchost.exe:
+
+```
+Copy-Item C:\Windows\System32\cmd.exe "$env:USERPROFILE\Desktop\svchost.exe"
+```
+
+Then I double-clicked it to run it.
+
+Issue I hit first: my first attempt used Notepad and didn't show up at all. Either I'd made a shortcut instead of a real copy (renaming a shortcut only changes the label, it still runs the real notepad.exe), or Windows 11 Notepad handed off to the Store version and closed the original. Switching to cmd.exe and copying it with PowerShell fixed both problems.
+
+To hunt for the fake, I filtered out everything running from System32:
+
+```
+Get-CimInstance Win32_Process -Filter "name='svchost.exe'" | Where-Object { $_.ExecutablePath -notlike "C:\Windows\System32\*" } | Format-Table ProcessId, ParentProcessId, ExecutablePath -AutoSize
+```
+
+One result came back, running from my Desktop folder. Then I checked the parent:
+
+```
+Get-Process -Id <ParentProcessId>
+```
+
+It came back as explorer.exe.
+
+Result: the fake failed both checks.
+Location: Desktop instead of C:\Windows\System32
+Parent: explorer.exe instead of services.exe
+
+Explorer as the parent means someone double-clicked it, which a real svchost never needs. The fake also wasn't hosting any service. It was just an ordinary program wearing a svchost name tag.
+
+Clean up: closed the window, deleted the file, reran the hunt command and got no results.
+
+[Screenshot: hunt command showing the fake (username cropped)]
+[Screenshot: Get-Process showing explorer as parent]
+
+Part 5: Ticket – "svchost is using all my CPU"
+Symptom: user sees svchost.exe high in Task Manager and is worried.
+
+Steps:
+1. Task Manager, Details tab, sort by CPU, note the PID of the busy svchost. Mine was PID 2232.
+2. Map the PID to its service:
+
+```
+tasklist /svc /fi "PID eq 2232"
+```
+
+It was SysMain.
+
+3. Quicker way on a user's PC: Task Manager, Processes tab, sorted by CPU, shows names like "Service Host: SysMain" without needing commands.
+
+Cause: SysMain (formerly Superfetch) preloads commonly used apps into memory so they open faster. It's normally helpful, but on older PCs or slow drives it can get stuck and hammer the CPU and disk.
+
+Fix: in services.msc, right-click the service and choose Restart. After the restart the service had a new PID, showing it was a fresh process. Don't end the svchost itself in Task Manager, because some svchosts still host more than one service and you could take them all down. If it's something like Windows Update working normally, the fix is to let it finish. Disabling SysMain on an older machine is a judgement call to discuss with the user or senior staff, not a first move.
+
+[Screenshot: tasklist showing SysMain under the PID]
+[Screenshot: services.msc Restart on SysMain]
+
+What I'd tell a user
+"That's normal. Windows runs each service in its own container. I'll just confirm they're all running from the right folder and were started by Windows itself."
+
+Lessons learned
+Lots of svchost.exe processes on Windows 11 is by design, not a virus.
+The number doesn't matter. What's inside each one and whether it's genuine does.
+Two checks for a genuine svchost: location (C:\Windows\System32) and parent (services.exe).
+Use the PID to find which service is the real problem.
+Restart the service, don't kill the svchost.
+A shortcut is not a copy. Check for the little arrow on the icon.
+Nobody memorises long PowerShell commands. Know what to check and why, and keep the commands in your notes.
+
+Skills shown
+Task Manager Details and Processes tabs, custom columns
+tasklist /svc to map processes to services
+PowerShell: Get-Process, Get-CimInstance, filtering with Where-Object
+Checking process location and parent process to spot masquerading malware
+Restarting a Windows service with services.msc
+Structured troubleshooting: baseline, break, diagnose, fix, verify
+
+Next steps
+Resource Monitor (resmon) for disk and network usage per process
+A memory pressure version of the slow PC lab
