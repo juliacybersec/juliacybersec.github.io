@@ -1,4 +1,6 @@
-Lab 09: Why are there so many svchost.exe processes?
+Lab 09: Why are there so many svchost.exe processes?                                        
+
+05/11/2026
 
 Goal
 Work out why Windows 11 runs dozens of svchost.exe processes, how to tell a genuine one from a fake, and how to handle the common help desk ticket "svchost is using all my CPU".
