@@ -1,0 +1,100 @@
+Lab05 Triaging My Own Windows Event Viewer
+
+A late-night help desk refresher: reading real logs on my own laptop and working out what matters and what's just noise.
+
+Why I did this
+
+It's been a while since I worked in IT, and Windows has moved on. A big part of any help desk or SOC role is looking at logs and deciding quickly: is this a problem, or is this normal background noise? So instead of reading about it, I opened Event Viewer on my own laptop and had a go.
+
+How I opened Event Viewer
+
+1. Pressed Windows key + R to open the Run box
+2. Typed eventvwr.msc and pressed Enter
+   (You can also just search "Event Viewer" in the Start menu)
+3. In the left panel, went to Windows Logs, then System
+4. Clicked the Level column heading to sort by severity
+
+Screenshot: Event Viewer sorted by Level, with no hostname or username visible
+
+My approach
+
+I skipped the Information events. There are thousands of them, and they mostly just say "this happened successfully." I looked at Critical first, then Errors, then Warnings.
+
+It's the same idea as triage in a hospital: deal with the most serious first, and don't waste time on the people who are just there for a check-up.
+
+
+What I found
+
+Critical: Kernel-Power (Event ID 41)
+
+What it means: Windows didn't shut down cleanly. Something cut it off, like a power loss, holding down the power button, or a freeze.
+
+My verdict: Not a worry for me, as I know when these happened. On a help desk, though, if a user's machine logged these often, I'd look at overheating, the battery or power supply, or drivers.
+
+
+Error: BitLocker-Driver (Event ID 24641)
+
+Message: "An unexpected error was encountered attempting to retrieve the BitLocker volume master key during restart."
+
+What it means: BitLocker encrypts the drive with a key, and that key is itself locked away. I think of it like a house key kept in a key safe. The volume master key (VMK) is the key inside, and the TPM chip is what opens the safe when the laptop starts. This error says Windows hit a problem getting the key out of the safe during a restart.
+
+My verdict: This one keeps coming up, so I looked into it. My laptop still boots normally without asking for a recovery key, so the drive is unlocking fine. The likely cause is that the stored key information is slightly corrupted. Microsoft's fix is to turn BitLocker off and back on to rebuild the keying information. That's a job for a day when I'm fresh, not 1am.
+
+What I checked first: that my recovery key was backed up.
+
+I opened Command Prompt as Administrator (searched "cmd" in Start, right-clicked, chose Run as administrator) and ran:
+
+manage-bde -status C:
+
+This confirmed BitLocker protection is on and showed which key protectors the drive uses.
+
+Then I ran:
+
+manage-bde -protectors -get C:
+
+This shows the recovery key ID and the 48-digit recovery password.
+
+Screenshot: manage-bde -status output, cropped. 
+
+Next, I went to check that Microsoft had a copy. In Settings, then Accounts, then Your info, I found which Microsoft account the laptop is linked to. It turned out to be a very old email address I don't use anymore, and I couldn't easily sign in to it.
+
+So I backed up the recovery password directly from the laptop instead, wrote it down, and stored it safely off the laptop. Retiring that old account is now on my to-do list.
+
+Help desk lesson: "Where's your BitLocker recovery key?" is a classic help desk call, often after a BIOS update or a hardware change. And most users have no idea which account it's stored under, which is exactly what happened to me. Checking it before you need it is the easy win.
+
+
+Warning: DistributedCOM (Event ID 10016)
+
+What it means: DCOM is an old Windows system that lets programs ask other components to do things for them. A 10016 warning means an app asked to start something it didn't have permission for.
+
+My verdict: Noise. These are extremely common, and Microsoft says they're safe to ignore. Knowing what to ignore is a skill too.
+
+
+Warning: Windows Time Service (NTP)
+
+Message: The NTP client was unable to set a manual peer as a time source.
+
+What it means: Windows checks its clock against a time server using NTP (Network Time Protocol). This time it couldn't reach the server, probably because the laptop was asleep, offline, or DNS wasn't ready yet.
+
+My verdict: Harmless at home if the clock is right. But at work, time matters more than you'd think. Kerberos authentication fails if clocks are more than 5 minutes apart, so a time sync problem can turn into "nobody can log in."
+
+
+Also seen
+
+Windows Update failure: worth watching only if the same update keeps failing.
+Spotify install failure: I know the cause, so not an issue.
+
+
+Summary
+
+Kernel-Power 41 (Critical): expected, from unclean shutdowns
+BitLocker-Driver 24641 (Error): recurring; recovery key backed up, fix scheduled
+DistributedCOM 10016 (Warning): noise
+Time Service NTP (Warning): harmless here, matters on a work network
+
+
+What I learned
+
+Logs are mostly noise. The skill isn't reading every line, it's knowing what to look at first, what to ignore, and what to follow up. Thirty minutes on my own laptop was a good reminder that my old troubleshooting instincts are still there, even if the menus have moved. I also found a real issue to fix: an old email account I wish to retire, still linked to my laptop.
+
+Security+ links: encryption and key management (BitLocker, TPM), availability, and using logs as a data source for investigations.
