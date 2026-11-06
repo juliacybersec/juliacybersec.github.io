@@ -1,4 +1,8 @@
-Domain 3, Security Architecture 3.1 #1 — Cloud Infrastructures
+---
+layout: post
+title: "Domain 3, Security Architecture 3.1 #1 — Cloud Infrastructures"
+date: 2026-10-29
+---
 
 The big picture for Domain 3: Domain 2 was about what attacks look like. Domain 3 is about how you build things so they’re harder to attack. 
 What are the different ways to set up IT infrastructure, and what security trade-offs does each one bring?

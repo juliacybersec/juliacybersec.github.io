@@ -1,4 +1,8 @@
-CompTIA Security 2.1
+---
+layout: post
+title: "CompTIA Security 2.1"
+date: 2026-10-16
+---
 
 The six threat actors: 1
 
@@ -1107,7 +1111,7 @@ Now you're in the admin panel. And admin panels almost always have a feature tha
 
 File upload — "upload your logo" → you upload a webshell instead
 Command injection — "run a backup script" → you inject ; whoami into the parameter
-Template injection — "customise the email template" → you inject {{ config.__class__ }} (Jinja2/SSTI)
+Template injection — "customise the email template" → you inject {% raw %}{{ config.__class__ }}{% endraw %} (Jinja2/SSTI)
 You get a shell. You're in. Full control.
 
 chain looks like this:

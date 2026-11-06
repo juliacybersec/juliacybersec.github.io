@@ -1,4 +1,8 @@
-Lab 06 – DNS Troubleshooting: "I Can't Get on the Internet"
+---
+layout: post
+title: "Lab 06 – DNS Troubleshooting: \"I Can't Get on the Internet\""
+date: 2026-11-04
+---
 
 Objective
 Practise troubleshooting one of the most common help desk calls by deliberately breaking DNS on a Windows 11 VM, diagnosing the fault from the bottom up, then fixing and verifying it.

@@ -1,4 +1,8 @@
-Topic 1 3.2 #1 Secure Infrastructures
+---
+layout: post
+title: "Topic 1 3.2 #1 Secure Infrastructures"
+date: 2026-10-31
+---
 
 3.1 was about what you build. 3.2 is about how you protect it: where you put security devices and how you divide the network up. This first video sets up the basics for the rest of 3.2.
 Think of it as securing a medical clinic building:

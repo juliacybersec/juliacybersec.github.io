@@ -1,4 +1,8 @@
-CompTIA Security+ 1.2: Fundamental Security Concepts 7/10/26
+---
+layout: post
+title: "CompTIA Security+ 1.2: Fundamental Security Concepts 7/10/26"
+date: 2026-10-07
+---
 
 Gap Analysis
 

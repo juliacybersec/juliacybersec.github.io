@@ -1,4 +1,8 @@
-Lab05 Triaging My Own Windows Event Viewer
+---
+layout: post
+title: "Lab05 Triaging My Own Windows Event Viewer"
+date: 2026-11-03
+---
 
 A late-night help desk refresher: reading real logs on my own laptop and working out what matters and what's just noise.
 

@@ -1,4 +1,8 @@
-Security+ 2.3 in practice: checking my own GitHub Pages blog with curl
+---
+layout: post
+title: "Security+ 2.3 in practice: checking my own GitHub Pages blog with curl"
+date: 2026-10-21
+---
 
 I'm studying for Security+, and one of the things that keeps coming up is misconfiguration — the idea that most breaches aren't some fancy zero-day,
 they're just a door left unlocked. A file that shouldn't be there. A setting that was "temporary" and never got changed back.

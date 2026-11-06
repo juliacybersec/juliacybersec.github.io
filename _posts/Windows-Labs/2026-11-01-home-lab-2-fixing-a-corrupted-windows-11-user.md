@@ -1,4 +1,8 @@
-Home Lab #2: Fixing a Corrupted Windows 11 User Profile
+---
+layout: post
+title: "Home Lab #2: Fixing a Corrupted Windows 11 User Profile"
+date: 2026-11-01
+---
 
 1 November 2026
 

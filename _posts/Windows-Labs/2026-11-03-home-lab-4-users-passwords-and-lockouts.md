@@ -1,4 +1,8 @@
-Home Lab #4: Users, Passwords and Lockouts
+---
+layout: post
+title: "Home Lab #4: Users, Passwords and Lockouts"
+date: 2026-11-03
+---
 
 3 November 2026
 

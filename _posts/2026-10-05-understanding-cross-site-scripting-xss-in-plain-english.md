@@ -1,5 +1,9 @@
+---
+layout: post
+title: "Understanding Cross-Site Scripting (XSS) in Plain English"
+date: 2026-10-05
+---
 
-"Understanding Cross-Site Scripting (XSS) in Plain English"
  What is XSS? Cross site Scripting is a vulnerability where an attacker puts malicious java script into a page viewed by others, by putting a script tags in a forum
  comment that then gets run like it executes on every viewers individuals browser.
  

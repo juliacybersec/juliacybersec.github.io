@@ -1,4 +1,8 @@
-# Home Lab #3: Part 2 DNS "The internet's broken" 
+---
+layout: post
+title: "Home Lab #3: Part 2 DNS \"The internet's broken\""
+date: 2026-11-02
+---
 
 ## The ticket
 

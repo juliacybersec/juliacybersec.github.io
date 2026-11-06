@@ -1,4 +1,8 @@
-Lab 07 – "My Computer Is So Slow": CPU Troubleshooting with Task Manager
+---
+layout: post
+title: "Lab 07 – \"My Computer Is So Slow\": CPU Troubleshooting with Task Manager"
+date: 2026-11-04
+---
 
 Goal
 Practise one of the most common issue of a slow computer by deliberately overloading the CPU on a Windows 11 VM, finding the culprit in Task Manager, 

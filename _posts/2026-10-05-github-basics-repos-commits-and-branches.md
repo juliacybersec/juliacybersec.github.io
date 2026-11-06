@@ -1,4 +1,8 @@
- GitHub basics: repos, commits and branches
+---
+layout: post
+title: "GitHub basics: repos, commits and branches"
+date: 2026-10-05
+---
 
 In GitHub I created my repository, this is like a filing cabinet for my files. 
 Branch is a safe copy of the main trunk 

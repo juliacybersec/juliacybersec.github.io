@@ -1,4 +1,8 @@
-Home Lab #3: The Internet's Down Part 1: DNS – Network Troubleshooting 
+---
+layout: post
+title: "Home Lab #3: The Internet's Down Part 1: DNS – Network Troubleshooting"
+date: 2026-11-01
+---
 
 2 November 2026
 

@@ -1,4 +1,9 @@
-CompTIA Security 2.4 
+---
+layout: post
+title: "CompTIA Security 2.4"
+date: 2026-10-23
+---
+
 Topic 1 An Overview of Malware: Malware is about the attacks, and the signs that tell you an attack is happening.
 This is the most SOC-analyst part of the whole exam, spotting the signs is what a SOC analyst does all day.
 

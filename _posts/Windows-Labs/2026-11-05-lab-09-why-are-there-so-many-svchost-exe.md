@@ -1,4 +1,8 @@
-Lab 09: Why are there so many svchost.exe processes?                                        
+---
+layout: post
+title: "Lab 09: Why are there so many svchost.exe processes?"
+date: 2026-11-05
+---
 
 05/11/2026
 

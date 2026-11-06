@@ -1,4 +1,8 @@
-Topic 1. 2.5: Mitigation techniques
+---
+layout: post
+title: "Topic 1. 2.5: Mitigation techniques"
+date: 2026-10-29
+---
 
 Domain 2 so far has been the attacker’s side: who attacks, how they get in, what’s vulnerable, and what the clues look like. 2.5 switches to defence. 
 It covers how organisations reduce the chance of an attack working, and limit the damage if it does.

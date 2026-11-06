@@ -1,4 +1,9 @@
-Comptia Security -
+---
+layout: post
+title: "Comptia Security"
+date: 2026-10-06
+---
+
 Before we start this is my own records for understanding it shows my learning and understanding, not perfect english. 
 There is a analogies as I find it a great way to learn and makes things interesting for teaching others. 
 I sometimes use humor and crazyness as our brains tend to tune out, but a silly analogy of wild possums invading your house, eating your data cable will stick in your mind forever({true story). 

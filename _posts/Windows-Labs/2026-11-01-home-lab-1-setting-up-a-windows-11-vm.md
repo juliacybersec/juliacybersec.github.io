@@ -1,4 +1,8 @@
-Home Lab #1: Setting Up a Windows 11 VM in VirtualBox (and Fixing What Went Wrong)
+---
+layout: post
+title: "Home Lab #1: Setting Up a Windows 11 VM in VirtualBox (and Fixing What Went Wrong)"
+date: 2026-11-01
+---
 
 1 November 2026
 

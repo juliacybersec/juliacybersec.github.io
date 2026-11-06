@@ -1,4 +1,8 @@
-Networking Protocols: A Security Deep Dive - CompTIA Network+ Basics In Depth
+---
+layout: post
+title: "Networking Protocols: A Security Deep Dive - CompTIA Network+ Basics In Depth"
+date: 2026-10-21
+---
 
 This is a running reference of the networking fundamentals that keep coming up in security — the stuff from the CompTIA Network+ syllabus that you need a
 solid grip on before the security stuff actually makes sense. I did Comptia Network+ a while back, but I found myself wanting to go deeper on the protocols that

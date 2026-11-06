@@ -1,4 +1,8 @@
-Comptia Security Study notes 1.4
+---
+layout: post
+title: "Comptia Security Study notes 1.4"
+date: 2026-10-11
+---
 
 Learning. I have heard of people who have passed in two weeks. I personally think this is unrealistic for most, the most likely answer was they knew most of the material before starting study or they crammed using memory. If its the latter this information doen't sink in and the knowledge will probably be lost not long after. 
 
