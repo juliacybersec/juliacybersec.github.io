@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Home Lab #1: Setting Up a Windows 11 VM in VirtualBox (and Fixing What Went Wrong)"
+title: "Lab 01: Setting Up a Windows 11 VM in VirtualBox (and Fixing What Went Wrong)"
 date: 2026-11-01
 ---
 

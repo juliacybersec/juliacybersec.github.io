@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab 10: \"My program keeps crashing\" – Using Reliability Monitor"
+title: "Lab 10: \"My Program Keeps Crashing\" – Using Reliability Monitor"
 date: 2026-11-06
 ---
 

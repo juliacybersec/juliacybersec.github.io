@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Home Lab #3: Part 2 DNS \"The internet's broken\""
+title: "Lab 03 Part 2: DNS – \"The Internet's Broken\""
 date: 2026-11-02
 ---
 

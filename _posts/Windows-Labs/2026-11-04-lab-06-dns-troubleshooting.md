@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab 06 – DNS Troubleshooting: \"I Can't Get on the Internet\""
+title: "Lab 06: DNS Troubleshooting – \"I Can't Get on the Internet\""
 date: 2026-11-04
 ---
 

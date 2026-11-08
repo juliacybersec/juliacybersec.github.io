@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Home Lab #4: Users, Passwords and Lockouts"
+title: "Lab 04: Users, Passwords and Lockouts"
 date: 2026-11-03
 ---
 

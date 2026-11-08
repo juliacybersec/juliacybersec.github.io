@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab 07 – \"My Computer Is So Slow\": CPU Troubleshooting with Task Manager"
+title: "Lab 07: \"My Computer Is So Slow\" – CPU Troubleshooting with Task Manager"
 date: 2026-11-04
 ---
 

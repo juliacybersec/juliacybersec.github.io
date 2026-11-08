@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab 08 – \"My Printer Won't Print\": Clearing a Stuck Print Queue"
+title: "Lab 08: \"My Printer Won't Print\" – Clearing a Stuck Print Queue"
 date: 2026-11-06
 ---
 

@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Home Lab #2: Fixing a Corrupted Windows 11 User Profile"
+title: "Lab 02: Fixing a Corrupted Windows 11 User Profile"
 date: 2026-11-01
 ---
 

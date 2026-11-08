@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab05 Triaging My Own Windows Event Viewer"
+title: "Lab 05: Triaging My Own Windows Event Viewer"
 date: 2026-11-03
 ---
 

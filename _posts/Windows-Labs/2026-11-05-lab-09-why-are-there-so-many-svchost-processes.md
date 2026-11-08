@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Lab 09: Why are there so many svchost.exe processes?"
+title: "Lab 09: Why Are There So Many svchost.exe Processes?"
 date: 2026-11-05
 ---
 

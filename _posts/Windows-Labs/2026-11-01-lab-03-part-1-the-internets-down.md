@@ -1,6 +1,6 @@
 ---
 layout: post
-title: "Home Lab #3: The Internet's Down Part 1: DNS – Network Troubleshooting"
+title: "Lab 03 Part 1: The Internet's Down – Network Troubleshooting"
 date: 2026-11-01
 ---
 

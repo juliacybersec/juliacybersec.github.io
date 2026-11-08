@@ -1,4 +1,10 @@
-Lab 11: Outlook Problems (New Outlook on Windows 11)
+---
+layout: post
+title: "Lab 11: Outlook Problems (New Outlook on Windows 11)"
+date: 2026-11-08
+---
+
+8 November 2026
 
 Goal
 
