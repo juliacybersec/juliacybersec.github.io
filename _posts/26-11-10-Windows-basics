@@ -14,3 +14,7 @@ Windows 11 Enterprise LTSC (Long-Term Servicing Channel)
 It’s frozen on one version for years. It gets security fixes only, with no new features and no surprise changes.
 It’s stripped back: no Microsoft Store and most of the consumer apps removed.
 It’s built for machines that must do one job reliably and never change: ATMs, factory and lab equipment, airport kiosks, and medical imaging workstations.
+
+The reason LTSC exists for certain company's like Medical Imaging. A computer driving a scanner or running imaging software has been tested and 
+certified exactly as it is, and you don’t want a yearly feature update moving things around or breaking the vendor’s software.
+LTSC is Microsoft saying “this version will stay exactly as it is, just kept safe.” The normal edition is more like an everyday car that gets a full overhall every year.
