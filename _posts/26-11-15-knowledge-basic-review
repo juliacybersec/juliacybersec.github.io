@@ -1,0 +1,205 @@
+Basic Knowledge Review
+
+What DSRM is:
+
+DSRM (Directory Services Restore Mode) is a special boot mode where the DC comes up as a plain Windows server with Active Directory offline. 
+It exists so you can restore or repair the AD database (NTDS.dit) from a System State backup without AD trying to replicate or authenticate. You set a separate
+DSRM password during promotion (it's not your domain admin password) and log in as Administrator with that password when booted into DSRM. You'd use it, for 
+example, if the AD database is corrupted or you need to do a forest-wide restore. 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+Why DC01 points DNS at itself:
+
+Active Directory is entirely dependent on DNS. The Netlogon service on a DC registers SRV records (e.g. _ldap._tcp.dc._msdcs.<domain>) into the AD-integrated DNS
+zone so that clients and other DCs can locate the domain controller.  If DC01 pointed to an external resolver like 8.8.8.8, those records could never be registered
+— the external DNS doesn't host your AD zone — and the promotion would fail.
+
+For the first and only DC in a forest, Microsoft's guidance is explicit: configure the DNS client to point to itself.  There is no other DNS server that knows about
+the domain yet. (The "point at a partner first, self second" rule applies to additional DCs, to avoid the "DNS island" problem during boot when AD services start 
+before the local DNS service is fully ready.) 
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+What is DSRM, and when would you ever need that password?
+
+DSRM (Directory Services Restore Mode) is a special boot mode for a DC where Active Directory isn’t running.
+You use it to restore AD from a backup, or to repair AD when something’s broken.
+Without the DSRM password, you’re locked out of that recovery path.
+Why you need a separate password. Normally you log in with a domain account, and domain accounts live inside the AD database. In DSRM that database is offline,
+so those accounts can’t be checked. The DSRM password belongs to a local Administrator account stored on the DC itself, which is the only account that works in that
+mode.
+
+Analogy: the security desk (AD) is closed. The master staff register is locked inside it, so nobody’s badge works. The DSRM password is the building manager’s emergency key, kept in a sealed envelope. It still works when the desk is shut.
+Restoring a single deleted user. You’re right that DSRM can do this. It’s called an authoritative restore, done with the ntdsutil tool. In modern domains, the first thing you’d try is the AD Recycle Bin, if it was turned on. It restores a deleted user while AD stays online, with no reboot. DSRM is the fallback.
+“Stopping AD.” Since Server 2008, you can stop the AD DS service while Windows is running, for some maintenance tasks. You don’t always have to reboot into DSRM. Full restores from backup still need DSRM.
+“The only DC is gone.” If the server is completely dead, you’d rebuild it and restore from a system state backup. DSRM is used on that box during the restore.
+If you have a second DC, you usually don’t need DSRM at all, because the healthy DC replicates everything back.
+
+Simplified one line - version:
+DSRM is a safe mode for Domain Controllers where AD is offline. You log in with the local DSRM password, because domain accounts can’t be checked, 
+and use it to restore or repair the AD database.
+What DSRM is (recap)
+DSRM is a special boot mode where the DC starts with Active Directory completely offline.  The ntds.dit database and log files are unlocked as plain files on disk, so you can run offline operations on them. You log in as .\Administrator with the DSRM password — the domain admin password won't work because AD isn't running to validate it.
+
+When you actually need the DSRM password
+Scenario	Why DSRM is required?
+
+Authoritative restore of deleted AD objects (e.g. someone deleted a user/OU and you need to restore it and have it replicate out)	You must restore the system state
+while AD is offline, then use ntdsutil to mark the restore as authoritative before rebooting Non-authoritative restore of a DC's system state	Same — AD must be 
+stopped to accept the restored ntds.dit ntds.dit corruption — running ntdsutil → files → integrity or recover	These offline integrity checks only work when the AD
+DS service isn't holding the database Last (sole) DC recovery	If your only DC is destroyed and you're rebuilding from a system-state backup, you boot into DSRM to
+restore.  No DSRM password = no recovery Seizing FSMO roles after a permanent DC failure	The receiving DC must be in DSRM (or AD stopped) to 
+run ntdsutil → roles → seize
+
+Key practical notes
+Each DC has its own DSRM password — they are not shared across the domain. 
+The password is set once at promotion and never expires or auto-rotates.  If you don't store it in a vault or break-glass procedure, you will forget it.
+You can reset it while AD is still running with ntdsutil → set dsrm password → reset password on server null — so do this proactively rather than discovering you 
+need it during a disaster. A full image/VM restore of a DC does not require the DSRM password — only system-state-only restores do. 
+The short version: you need it whenever you have to touch ntds.dit while AD is offline, which is exactly the set of operations that can only be done in DSRM. 
+
+Before promoting DC01, its DNS server to point's at itself (its own IP address). Why does a Domain Controller need DNS, and what would go wrong setting up Windows11 
+Server Domain Controller (lab 16) if DNS wasn’t set up properly?
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------
+How does a PC finds the Domain Controller in the first place? 
+
+The PC uses DNS SRV records via the Netlogon service (DC Locator).
+You type your username at the logon screen (or run net join). The client's Netlogon service calls DsGetDcName with your domain FQDN.
+Netlogon sends a DNS query to the DNS server configured on the NIC for:
+_ldap._tcp.dc._msdcs.corp.local
+
+The DNS server (your DC01) returns SRV records — each one carries the DC's hostname, priority, weight, and port (389).
+The client picks the lowest-priority target, resolves its hostname to an IP, and sends an LDAP ping (UDP 389) to confirm the DC is alive.
+If it responds, the client caches the result and proceeds to Kerberos (port 88) for authentication.
+The single chain that must work:
+
+PC's NIC DNS setting → DC01's DNS service → AD-integrated zone → SRV record → DC IP
+
+Break any link (wrong DNS server on the PC, zone not AD-integrated, SRV records never registered) and the PC gets a "domain could not be contacted" error. 
+That's why pointing DNS at itself is a hard prerequisite for the first DC — there's no other resolver that hosts the zone.
+
+Quick checks:
+
+nltest /dclist:corp.local
+Resolve-DnsName _ldap._tcp.dc._msdcs.corp.local -Type SRV
+
+Why a DC needs DNS (and what breaks)
+
+AD uses DNS as its service discovery mechanism.  Every DC registers a set of SRV records into the AD-integrated zone so that clients and other DCs can find it. 
+If DC01's DNS client wasn't pointing at itself (or at a server that hosts the AD zone):
+PCs find a Domain Controller through SRV records in DNS. If they can’t find them, there’s no domain join, no Kerberos and no logon.
+A DC needs a static IP. If its address changed, the DNS records would point to the wrong place.
+
+Where SRV records live. The DC registers them in DNS. On DC01 the DNS zone is AD-integrated, which means the zone data is stored inside AD and replicates with it. So you were half right: they’re DNS records, kept in AD’s storage.
+The record names look like _ldap._tcp.dc._msdcs.silkylab.local. Think of it as a sign saying “Domain Controllers for silkylab.local, this way.”
+Why DC01 points at itself. The DC sends its own SRV records to whichever DNS server it’s configured to use. If DC01 pointed at the VirtualBox gateway or a
+public DNS like 8.8.8.8, it would be posting its “this way to the DC” signs to a server that doesn’t host silkylab.local. The records would never land, and
+DC01 couldn’t even find its own domain.
+
+Analogy: the security desk lodging its own phone number with the wrong switchboard. Nobody calling the hospital can get through, and the desk can’t look itself
+up either. Two different DNS settings. “The DC points at itself” and “the PC points at the DC” are separate settings, and both matter:
+DC01: DNS points at itself, so its records register. 
+Win11-Ent-Lab: DNS must point at DC01, so it can look up those records. 
+The actual error. If Win11’s DNS is wrong, the join fails with something like “An Active Directory Domain Controller (AD DC) for the 
+domain ‘silkylab.local’ could not be contacted.” That’s one of the most common domain-join issues, and the first thing to check is the PC’s DNS server.
+
+One-line version:
+PCs find Domain Controllers by looking up SRV records in DNS. The DC points DNS at itself so its records register, and every domain PC must point DNS 
+at the DC, or joining and logging in will fail.
+
+What breaks? Why?
+
+Promotion (dcpromo/Install-ADDSDomainController) fails	The DC can't register its own SRV records into a zone that doesn't exist yet on the resolver it's pointing
+at No clients can find the DC	Clients query DNS for _ldap._tcp.dc._msdcs.<domain> — if that zone isn't hosted by the resolver they ask, the query returns NXDOMAIN
+Kerberos authentication fails	Clients need _kerberos._tcp.dc._msdcs.<domain> to locate a KDC (port 88)
+Replication fails (when you add DC02)	DCs use GUID-based CNAMEs and SRV records under _msdcs.<forest> to find their replication partners
+Site awareness breaks	Site-specific records like _ldap._tcp.<SiteName>._sites.dc._msdcs.<domain> are never registered
+
+In a single-DC lab the most common symptom is: you join a PC to the domain and get "The specified domain either does not exist or could not be contacted"
+(Error 1722 / 5311). The PC's DNS query for the SRV record goes to a resolver (e.g. your home router's DNS, or 8.8.8.8) that has no idea your AD zone exists.
+
+How a PC finds the Domain Controller
+The process is called the DC Locator and is implemented by the Netlogon service on the client via the DsGetDcName API. Here's the sequence:
+
+Client triggers a locator call — e.g. you type credentials at the logon screen, or you run net join /domain:corp.local. The client passes the domain FQDN to the
+local Netlogon service. 
+Netlogon queries DNS for SRV records.
+It sends a DNS query to the configured DNS server (the one on the NIC) for:
+_ldap._tcp.dc._msdcs.corp.local
+
+(or the site-specific variant _ldap._tcp.Default-First-Site-Name._sites.dc._msdcs.corp.local if the client already knows its site).
+DNS returns a list of SRV records.
+
+Each record contains:
+Priority (lowest = preferred)
+Weight (for load-balancing among equal-priority targets)
+Port (389 for LDAP)
+Target (the DC's hostname, e.g. dc01.corp.local) 
+Client selects a DC — picks the lowest-priority record; if multiple have the same priority, it chooses weighted-randomly (RFC 2782). 
+Client resolves the target hostname to an IP via a standard A-record lookup. 
+Client sends an LDAP "ping" (UDP LDAP search) to the chosen DC on port 389 to confirm it's alive and operational. If it doesn't respond, the client tries the next SRV record in the list.
+Client caches the result (the Netlogon service caches the discovered DC for subsequent requests, so it doesn't re-query DNS every time).
+Quick verification commands
+See what the client would find:
+nltest /dclist:corp.local
+
+ Query the SRV records directly:
+Resolve-DnsName -Name "_ldap._tcp.dc._msdcs.corp.local" -Type SRV
+
+ Force a fresh DNS re-registration on the DC:
+ipconfig /registerdns
+
+The key insight for when I setup lab 16 with the Domain Controler DC01 and Acive Directory AD.
+The entire chain is: PC → its configured DNS server → AD-integrated zone → SRV record → DC IP. If any link is broken (wrong DNS server on the PC, zone not 
+AD-integrated, SRV records not registered because Netlogon can't reach DNS), the PC simply cannot find the DC. That's why "point DNS at itself" isn't a 
+recommendation — it's a hard prerequisite for the first DC in a forest. 
+================================================================================================================================================================
+What is Kerberos - the short answer.
+
+Kerberos is a ticket-based authentication protocol that lets a user prove their identity to the domain once, then access any number of services without 
+re-entering a password.  In AD, the KDC (Key Distribution Center) runs on every DC — that's what the _kerberos._tcp.dc._msdcs.corp.local SRV record you 
+queried earlier is pointing to (port 88).
+
+The three parties
+Party	What it is in AD	Role
+Client	The user's PC (or a service account)	Proves identity, holds tickets
+KDC	The DC (has two sub-components: AS and TGS)	Issues tickets, holds the account database (AD DS)
+Service	A file server, RDP host, SQL server, etc.	Validates the service ticket to grant access
+
+The flow (what actually happens at logon)
+Step 1 — AS exchange (logon):
+
+Client sends AS-REQ to the KDC: username + a timestamp encrypted with a key derived from the password.  The password itself is never sent over the wire — only the encrypted timestamp (called pre-authentication). 
+The KDC looks up the user's stored hash in AD, decrypts the timestamp. If it matches and the clock is within ±5 min, it replies with:
+A TGT (Ticket-Granting Ticket) encrypted with the krbtgt account's key → the client cannot read or modify it.
+A session key encrypted with the user's key → the client can decrypt it. 
+Step 2 — TGS exchange (access a service):
+3. Client sends TGS-REQ to the KDC: the TGT + the SPN (Service Principal Name) of the service it wants (e.g. CIFS/fileserver01.corp.local) + an authenticator. 
+4. The KDC decrypts the TGT with krbtgt, validates it, and returns a Service Ticket encrypted with the target service's own key (e.g. the computer account hash of fileserver01$). 
+
+Step 3 — AP exchange (access granted):
+5. Client sends AP-REQ to the target service: the service ticket + a fresh authenticator.
+6. The service decrypts the ticket with its own key, checks the timestamp, and grants access — no DC contact needed for every single file open or RDP session. 
+
+Key defaults in AD
+Setting	Default
+TGT lifetime	10 hours (renewable up to 7 days)
+Service ticket lifetime	600 minutes (10 hours)
+Clock skew tolerance	±5 minutes (why NTP matters on every DC and client)
+Transport	UDP 88 (TCP 88 for large tickets / mutual auth)
+
+Why this matters for your lab
+If DC01's DNS is wrong, the client's Netlogon can't find the _kerberos._tcp SRV record → no KDC found → logon fails.
+If the client clock drifts more than 5 minutes from the DC, the timestamp in the AS-REQ is rejected → "Kerberos clock skew" error.
+The krbtgt account's password is the root of trust for all TGTs. If an attacker obtains it (a "Golden Ticket"), they can forge TGTs for any user.  
+After a compromise, you reset krbtgt twice (so old hashes are invalid).
+
+Quick verification
+See your current Kerberos ticket cache:
+klist get
+
+See what tickets are in memory (logon session):
+klist
+
+Check clock sync (critical for Kerberos):
+w32tm /query /status
+==============================================================================================================================================================
+
