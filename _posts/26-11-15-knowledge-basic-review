@@ -21,7 +21,7 @@ before the local DNS service is fully ready.)
 What is DSRM, and when would you ever need that password?
 
 DSRM (Directory Services Restore Mode) is a special boot mode for a DC where Active Directory isn’t running.
-You use it to restore AD from a backup, or to repair AD when something’s broken.
+You would use it to restore AD from a backup, or to repair AD when something’s broken.
 Without the DSRM password, you’re locked out of that recovery path.
 Why you need a separate password. Normally you log in with a domain account, and domain accounts live inside the AD database. In DSRM that database is offline,
 so those accounts can’t be checked. The DSRM password belongs to a local Administrator account stored on the DC itself, which is the only account that works in that
@@ -186,7 +186,7 @@ Service ticket lifetime	600 minutes (10 hours)
 Clock skew tolerance	±5 minutes (why NTP matters on every DC and client)
 Transport	UDP 88 (TCP 88 for large tickets / mutual auth)
 
-Why this matters for your lab
+Why this matters for lab 16
 If DC01's DNS is wrong, the client's Netlogon can't find the _kerberos._tcp SRV record → no KDC found → logon fails.
 If the client clock drifts more than 5 minutes from the DC, the timestamp in the AS-REQ is rejected → "Kerberos clock skew" error.
 The krbtgt account's password is the root of trust for all TGTs. If an attacker obtains it (a "Golden Ticket"), they can forge TGTs for any user.  
@@ -201,6 +201,11 @@ klist
 
 Check clock sync (critical for Kerberos):
 w32tm /query /status
+
+Kerberos and the clock. If a VMs is paused for some reason like going out to lunch, User VM clock may have fallen behind. Domain logons use Kerberos, which is very strict 
+about time. Kerberos is like a strickt ticket inspector: if your ticket’s timestamp is more than 5 minutes off from the inspector’s watch, you’re refused, even 
+though the phone line works (this happened during lab 16). In the real world, a DC gets its time from an internet time server (NTP), so this doesn’t happen.
+
 ==============================================================================================================================================================
 IE Enhanced Security Configuration (IE ESC) in the Group Policy Management Console
 
