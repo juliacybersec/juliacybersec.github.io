@@ -206,6 +206,59 @@ Kerberos and the clock. If a VMs is paused for some reason like going out to lun
 about time. Kerberos is like a strickt ticket inspector: if your ticket’s timestamp is more than 5 minutes off from the inspector’s watch, you’re refused, even 
 though the phone line works (this happened during lab 16). In the real world, a DC gets its time from an internet time server (NTP), so this doesn’t happen.
 
+Who stamps the time: the PC puts the timestamp in the logon request (Kerberos calls this part the authenticator). It’s encrypted with the user’s password-derived 
+key. The DC decrypts it and compares that time with its own clock. If the difference is more than 5 minutes, it rejects the request, even when the password is 
+correct. 
+
+Security - Why that stops replay attacks?
+If an attacker captures a logon request off the network and sends it again later, the timestamp inside is already stale, so the
+DC refuses it. The attacker can’t just change the time either, because it’s encrypted with a key they don’t have. The DC also remembers recent requests during 
+that 5-minute window, so even a quick replay is caught as a duplicate.
+
+Why does a clock difference stop a domain PC from talking to the DC? What does Kerberos use the time for?
+
+A strict ticket inspector who checks the time on your ticket is a good picture of how Kerberos works.
+Kerberos authentication includes an encrypted timestamp from the client. The DC compares it with its own clock and rejects anything more than 5 minutes off 
+(the default maximum clock skew), even with correct credentials. This stops replay attacks, because a captured logon message quickly becomes stale and can’t be 
+re-timestamped without the user’s key. In my lab 16, a 7-minute drift between the VMs caused gpupdate /force to fail until the clocks were synced.
+
+The Analogy - Kerberos the strict ticketing dude or dudeete who has special ink and issues with punctuallity!
+
+The strict inspector: every ticket has the time printed on it in tamper-proof ink. Inspector Kerberos checks it against the station clock. If it’s more than
+5 minutes off, you don’t get on the train, even with a valid ticket. A photocopied ticket (a replay) fails because the time is stale, and you can’t reprint 
+it because you don’t have the special ink.
+
+If a manager rings up and says, say, one colleague can't open the settings, but one can, and they both should be blocked. 
+Here's the steps to find out:
+How to check what Group Policies are applied 
+
+Confirm the symptom: run gpresult /r /scope:user in the user’s own session. 
+This is your answer: you expect Lab-Block-ControlPanel to be missing for the person who can open Settings.
+
+Find the cause: check which OU each account lives in. The GPO is linked to an OU, so the most likely culprit is that the account is in the wrong one. 
+
+A new starter might have been created in the default Users container, or someone moved them.
+
+On the DC, open Active Directory Users and Computers, find the user and check their location, or
+
+           Run the command    Get-ADUser username | Select DistinguishedName
+
+           Get-ADUser username looks up the account.
+
+         | Select DistinguishedName shows only its full AD path, which includes the OU it’s in, e.g. OU=Lab-Users.
+
+Fix: move the account into the correct OU. Then the user runs gpupdate /force, logs off and logs back on. User policies apply fully at logon.
+
+Verify: run command   gpresult /r /scope:user again.
+
+The GPO is listed and Settings is blocked.
+Document it in the ticket: symptom, cause, fix, verification.
+
+If they’re both in the right OU: the next suspects are the GPO’s security filtering, or the user simply hasn’t logged off and on since the change.
+
+🏫 Classroom analogy again: one student isn’t following the “no phones” rule. Before blaming the rule, check the enrolment list. They’re probably enrolled in the 
+wrong classroom.
+
 ==============================================================================================================================================================
 IE Enhanced Security Configuration (IE ESC) in the Group Policy Management Console
 
