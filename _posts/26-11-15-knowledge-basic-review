@@ -222,6 +222,10 @@ Kerberos authentication includes an encrypted timestamp from the client. The DC 
 (the default maximum clock skew), even with correct credentials. This stops replay attacks, because a captured logon message quickly becomes stale and can’t be 
 re-timestamped without the user’s key. In my lab 16, a 7-minute drift between the VMs caused gpupdate /force to fail until the clocks were synced.
 
+One nuance worth knowing: Windows has a self-healing path — when the KDC returns KRB_AP_ERR_SKEW, the client can read the server's time from the error, adjust 
+its local clock, and retry.  So a few minutes of drift often "fixes itself" on the next logon, but sustained drift (e.g., a broken time source or a VM whose host
+clock is wrong) will keep failing. The correct fix is always to repair the time source (W32Time / NTP hierarchy), not to widen the tolerance.
+
 The Analogy - Kerberos the strict ticketing dude or dudeete who has special ink and issues with punctuallity!
 
 The strict inspector: every ticket has the time printed on it in tamper-proof ink. Inspector Kerberos checks it against the station clock. If it’s more than
