@@ -1,0 +1,250 @@
+Comptia Security+ 3.2 #1: Secure Infrastructures - Infrastructure Considerations 
+
+1. Security zones. A hospital isn’t one open space. The waiting room is public, the wards are for staff and patients, and theatre, ICU and the drug room are locked down. Each area has its own trust level and its own rules about who can go in. A network works the same way. You group systems by how much you trust them and how sensitive they are: an untrusted internet zone, a screened zone (DMZ) for public-facing servers, an internal zone for staff, and a restricted zone for things like domain controllers or payment systems. Traffic between zones goes through a checkpoint, usually a firewall, and the rules are written as “zone A can talk to zone B on this port only.”
+Your lab: LabNet is already a zone. It’s isolated from your home network, and DC01 sits inside it.
+
+2. Device placement. Where you put a security device decides what it can see and protect. A guard at the main entrance can’t stop someone already walking between wards. A guard outside the drug room can’t see who comes in the front door. So firewalls go at zone boundaries, sensors go where the important traffic flows, and honeypots or jump servers sit in specific zones on purpose.
+
+3. Attack surface. This is every door, window, loading dock and staff entrance someone could get in through. On a network it’s open ports, exposed services, user accounts, remote access, and so on. The job is to know every entry point, close the ones you don’t need, and guard the rest. (Same idea as the 2.2 attack surface material you’ve already done, now applied to network design.)
+
+4. Connectivity. How sites and zones link together, and how well those links are protected: private links, VPNs and encrypted tunnels. Think of a locked patient transfer corridor between two buildings, as opposed to wheeling patients across the open car park.
+
+5. Failure modes: fail-open vs fail-closed. This one is the most likely to come up in exam questions.
+
+Fail-open: the device breaks and traffic carries on through with no checks. It’s like a fire door that unlocks when the power goes out. People stay safe, but security is lost. You choose this when availability matters most.
+Fail-closed: the device breaks and everything stops. It’s like a drug room door that stays locked during a power cut. The drugs are safe, but nobody can get in. You choose this when security matters most.
+
+6. Device attributes: active vs passive, inline vs tap/monitor.
+
+Active: the device can block or stop traffic. Think of a security guard who stops someone at the door. An IPS is the classic example.
+Passive: the device only watches and alerts. Think of a CCTV camera: it records the intruder but doesn’t stop them. An IDS is the classic example.
+Inline: traffic flows through the device. The guard stands in the doorway and everyone walks past them. If the device fails, the failure mode decides what happens next.
+Tap / port mirror (monitor): the device gets a copy of the traffic. The camera watches the doorway from the side. It can’t block anything, but if it fails, the traffic keeps flowing anyway.
+
+The usual pairings are active + inline (IPS) and passive + tap (IDS).
+
+  What’s the difference between fail-open and fail-closed? Then give me one real-world example of a system where you’d choose each, and say why. 
+It could be from a hospital, a bank ect
+
+Fail-open vs Fail-closed
+When a security control fails or loses connectivity, the failure mode determines what happens next:
+
+Fail-open	                                                                    Fail-closed
+On failure	                                                            Allows traffic/access through	Blocks all traffic/access
+Prioritises                                                            	Availability	Security
+Risk Unprotected window (uninspected traffic, unauthorised access)    	Outage (legitimate users locked out)
+
+Exam shortcut:
+
+"Operations must continue" → fail-open
+"No unauthorised access may occur" → fail-closed
+"People must be able to exit" (life safety) → fail-open (sometimes called fail-safe for physical doors) 
+Real-world example: an inline IPS protecting a payment environment
+An IPS (Intrusion Prevention System) sits in the path between the internet and a cardholder data environment. It inspects every packet before it reaches the
+payment servers.
+
+If it fails closed: the IPS process crashes → all traffic is dropped → the payment site is down. No transactions, but no uninspected packets reach the cardholder 
+systems. Security wins.
+
+If it fails open: the IPS process crashes → traffic bypasses the IPS and flows directly to the payment servers → the site stays up, but every packet is now 
+uninspected. An attacker could exploit a vulnerability with no detection. Availability wins.
+
+For a payment environment, the correct choice is fail-closed — the risk of unauthorised access to cardholder data during the outage is worse than the downtime itself. 
+
+For a hospital's clinical systems, the answer flips — an IPS in front of patient monitoring equipment would be set to fail-open, because the cost of those systems 
+going offline (patient safety) is worse than the risk of uninspected traffic during the brief failure window. 
+
+The CompTIA exam tip: the right answer is never "always fail-closed" or "always fail-open." It depends on what the device protects and which loss is worse
+— the exam will give you that context in the scenario. 
+
+fail-open isn’t only for “low stakes” systems. It’s usually chosen when losing availability is itself the dangerous outcome, and that can be very high stakes. 
+
+Here’s an example from hospitals:
+
+Clinical systems (fail-open). Say an inline IPS sits in front of the network carrying patient monitors, the drug dispensing system, or radiology images to the ED.
+If the IPS dies and fails closed, clinicians lose access to patient data in the middle of an emergency. A few minutes without inspection is a much smaller risk 
+than a doctor who can’t see a CT scan. So you’d fail open and tighten other controls instead, like segmentation and monitoring.
+
+Fire doors (the physical version). They unlock when power fails because getting people out alive beats keeping the building secure.
+
+Exam tip: The question is always “which is worse here: losing security or losing availability?” Money and secret data usually point to fail-closed.
+Life safety and critical operations usually point to fail-open.
+
+What’s the difference between an active device and a passive device? Tell me which one is usually inline and which one usually sits on a tap or port mirror.
+
+Active = inline = can block. Passive = tap/mirror = can only watch. 
+
+An IPS (active) must sit inline because it needs to drop or modify packets in real time. The trade-off is that if the IPS crashes, the link goes down — which is
+why you often see a bypass TAP (a small relay switch) around it: if the IPS stops sending heartbeats, the relay closes and traffic flows around the dead appliance. 
+
+An IDS (passive) doesn't need to be in the path at all. It just needs a copy of the traffic.  A network tap (physical, on the cable) or a SPAN port (configured
+on the switch) feeds it that copy.  If the IDS crashes, the network doesn't notice — the link was never broken.
+
+The BOOZE BUS Checkpoint Analogy 
+
+The perfect inline example is a booze bus / RBT checkpoint:
+Every car has to drive through it. Nothing gets past without being checked, and a drunk driver gets stopped on the spot. That’s an inline IPS.
+The cost: every car slows down, so inline devices can add latency.
+The catch: if the checkpoint has to shut down, do you wave everyone through (fail-open) or close the road (fail-closed)? Only inline devices have to make that choice.
+Speed camera (tap/mirror): if it breaks, traffic keeps flowing as normal. You lose visibility, but you don’t lose the road.
+
+So the booze bus is active and inline, and the speed camera is passive and tapped. 
+
+Quick exam trigger words
+You see…	                                                            Think…
+"block", "prevent", "drop", "inline"	                                Active
+"monitor", "detect", "alert", "tap", "mirror", "SPAN"                	Passive
+"single point of failure" concern with an inline device	              Bypass TAP
+
+What is a security zone? If you were designing a network for a small business that has a public website, 
+staff PCs, and a domain controller, which zone would each one go in, and why?
+
+A security zone is a segment of your network with its own trust level and its own firewall rules controlling what can talk to what. 
+The whole point is containment — if one zone is compromised, the firewall boundary stops the attacker from freely moving into the next one. 
+
+The three zones that matter for a small business:
+
+Zone	                                      Trust	                                       What lives there
+DMZ (Demilitarized Zone)                	Semi-trusted	                            Anything the internet must reach
+Internal LAN	                            Trusted	                                  User workstations, printers, file shares
+Server / Restricted zone	                Highest trust	                            Domain controller, internal databases, sensitive data
+
+Internet
+   │
+ [Firewall — WAN interface]
+   │
+ [DMZ]
+   │  ← public website server (port 443 only from internet)
+   │
+ [Firewall — DMZ interface]
+   │
+ [Internal LAN]
+   │  ← staff PCs
+   │
+ [Firewall — LAN interface / VLAN boundary]
+   │
+ [Server Zone]
+      ← DC01 (domain controller)
+
+      Why each one goes where it does: 
+
+Public website → DMZ. It must be reachable from the internet.  But it's also your most likely compromise point — anyone on the internet can try to attack it. By 
+putting it in the DMZ, if it gets pwned, the attacker hits a firewall wall before they can reach your staff PCs or your DC. The DMZ server can only talk to specific
+internal services on specific ports (e.g., to an internal database on port 3306), and cannot initiate connections to the LAN by default. 
+Staff PCs → Internal LAN. They need to browse the internet, reach the website (outbound), and authenticate to the DC. They don't need to be reachable from the 
+internet. The firewall blocks inbound connections to this zone. If a staff PC gets malware, the firewall and internal segmentation limit what that malware can 
+reach. DC01 → Server / Restricted zone. This is your crown jewels. It holds the AD database, all credentials, and all the GPOs that control the domain.
+It should be in its own VLAN or subnet separate from the staff PCs, with a firewall or ACL between them. Staff PCs can authenticate to the DC 
+(Kerberos ports 88, 464, 389/636, 53) but cannot RDP into it or browse its shares. The DC should not be on the same flat network as 20 staff PCs — if one of those
+PCs is compromised, the attacker shouldn't be able to just nmap their way to the DC.
+
+a zone has its own trust level and rules, the goal is containment so one compromised zone can’t spread, it shrinks the attack surface, and your three placements 
+are all correct. A few exam terms will make it even sharper:
+
+The public website zone has a name: the DMZ, which the SY0-701 calls a screened subnet. The internet itself is the untrusted zone.
+you’re stopping lateral movement. 
+Firewall rules between zones are directional, and they’re deny-by-default. For your small business:
+Internet → DMZ: allow 443 (HTTPS) only
+DMZ → internal LAN / DC: deny. This is the important one. If the website gets hacked, the attacker is stuck in the DMZ.
+Staff PCs → DC: allow only the ports the domain needs, which are DNS (53), Kerberos (88), LDAP (389) and SMB (445). 
+Everything else: deny
+
+Simplified
+DMZ = "the internet can touch this, but it can't touch anything else."
+Internal LAN = "my people use this, but the internet can't reach it."
+Server zone = "this is the most sensitive thing I own, and even my own staff can't just walk up to it." 
+
+For a small business, a single three-legged firewall (one box, three interfaces: WAN, DMZ, LAN) with a VLAN on the LAN side separating staff PCs from the DC 
+is the standard, budget-appropriate design. You don't need two firewalls for this.
+
+You’ve been asked to add an IPS to that small business network. Where would you place it (in front of what, or between which zones), and what’s the 
+trade-off of putting it inline?
+
+Where you put the booze bus
+Checkpoint location	Network position	Why
+Main road → local street	WAN → DMZ (in front of your website)	This is where the public first touches anything you own. Every car (packet) from the open 
+road gets checked before it reaches your front bar.
+Local street → back lane	DMZ → Internal LAN	A second checkpoint between the public-facing area and your staff PCs / DC01. If a car got through the first
+checkpoint (website is compromised), it still has to pass a second one before it reaches the back room.
+
+The first checkpoint (WAN → DMZ) is the most important one. That's your primary booze bus.
+
+The trade-off: what happens when the booze bus breaks down
+This is the whole problem with putting a checkpoint in the road:
+
+Failure mode	Analogy	Network effect
+Fail-closed	The booze bus breaks down, and the police close the road. Nobody gets through.	IPS crashes → all traffic dropped → your website is down.
+Fail-open	The booze bus breaks down, and the police step aside. Cars drive past un-checked.	IPS crashes → traffic flows through uninspected → an attacker can
+slip through.
+
+You can't have both. That's the trade-off.
+
+The fix: a bypass road (bypass TAP)
+In real booze bus setups, if the checkpoint vehicle breaks down, the police open a secondary lane so traffic can keep flowing.
+
+In networking, that's a bypass TAP — a small relay switch around the IPS. The IPS sends heartbeats (like the engine running). If the heartbeats stop, the relay
+closes the main lane and opens the bypass — traffic flows around the dead IPS. You get fail-open behaviour without the checkpoint being a permanent single point
+of failure.
+
+Exam one-liner: An inline IPS is a booze bus in the road — if it breaks, you either close the road (fail-closed, downtime) or let traffic through unchecked 
+(fail-open, risk). A bypass TAP is the secondary lane.
+
+Main booze bus = the perimeter. Put the IPS right behind the edge firewall, where all internet traffic comes in, before it reaches the DMZ. Every car gets checked. ✅
+Your back-street police car is a real design called defence in depth, so it fits better than you thought. A second IPS or IDS sits between the DMZ and the internal LAN, or in front of the DC zone. That catches anything that slipped past the first checkpoint, like a hacked web server trying to reach DC01. ✅
+
+Trade-offs: you got the big one, and there are two more.
+
+Failure mode (you nailed this): road closed (fail-closed) or wave everyone through (fail-open). 
+Latency: every car slows down to be checked, even the sober ones. Inline devices add delay to all traffic.
+False positives: the booze bus sometimes pulls over a sober driver. An inline IPS can block legitimate traffic, like a real customer’s payment, because it looked
+suspicious. A passive IDS would only raise an alert, and nobody would be stopped.
+
+Bypass (the second lane opens unchecked): a hardware bypass switch. This is just how fail-open is done, so it’s not a separate option. Traffic flows, but
+nothing gets checked.
+Redundancy (a second booze bus in the other lane): two IPS units in a high-availability (HA) pair. If one breaks, the other takes over, so you keep both
+security and availability. That’s the real fix, and the trade-off is cost.
+
+What is the attack surface of a network? Give me three ways to reduce it, using the small business network from where there is a public website, staff PCs
+and your server a  DC).
+
+Every point where an attacker can interact with your systems. Ports, services, protocols, admin interfaces, physical access points, human factors — anything that creates a potential entry or pivot.
+
+The bigger the surface, the more ways in an attacker has. Reducing it means removing or restricting interaction points, not just adding more firewalls.
+
+Your small business, mapped
+Zone	Attack surface points
+DMZ (website)	Every open port, every service, every admin panel, every API endpoint reachable from the internet
+Internal LAN (staff PCs)	RDP, SMB shares, local admin accounts, any service listening on the network
+Server zone (DC01)	Kerberos (88), LDAP (389/636), SMB (445), RDP (3389), DNS (53) — every one of these is a target
+
+Three ways to reduce it
+1. Close everything that doesn't need to be open
+On the DMZ web server, the only port the internet should reach is 443 (HTTPS). If port 80, 3306 (MySQL), 22 (SSH), 3389 (RDP), or 8080 (admin panel) is also open, close it. Every open port is a door. Every door is a potential entry. 
+
+On DC01, if RDP (3389) is reachable from the LAN and you don't actually need it, disable it or restrict it to a jump host. If SMB (445) is needed for file access, make sure only the specific shares that are required exist — not C$, ADMIN$, or a shared folder someone created "for a quick test" two years ago.
+
+2. Segment the zones so a breach in one doesn't reach the others
+This is the DMZ / LAN / Server zone design you already built. The reduction here is in the firewall rules between zones:
+
+Internet → DMZ: Only 443 in. Nothing else.
+DMZ → LAN: The web server can reach one internal database on one port. It cannot initiate connections to staff PCs or the DC.
+LAN → Server zone: Staff PCs can authenticate to DC01 (Kerberos 88, LDAP 389) but cannot RDP into it, cannot browse its shares, cannot access port 445 for
+file access. The reduction: if the web server gets compromised, the attacker hits a firewall wall before they can reach a staff PC or the DC. 
+The attack surface from the attacker's perspective shrinks from "the whole network" to "just this one DMZ server."
+
+3. Remove unused services, accounts, and protocols
+This is the cheapest and most overlooked reduction:
+
+Staff PCs: If RDP is enabled on every workstation and nobody uses it, disable it. If a local admin account was created "for setup" and never removed, delete it.
+Every unused service or account is a potential entry point that no one is monitoring. DC01: If NTLM is still enabled and you don't need it (modern AD uses Kerberos),
+disable it. You already know from the earlier scenario why that matters — NTLM means the hash is the credential, and a compromised workstation can pass-the-hash to
+the DC.
+DMZ web server: If the web server runs on IIS and has .NET, PHP, and a legacy ASP handler all enabled, and you only need one of those, disable the others. 
+Each runtime is a separate set of vulnerabilities to patch. The principle: if it's not needed, it's not a defence — it's a door.
+
+Keep people (phishing) and physical (an unlocked comms room) in mind too.
+RDP is 3389. Never expose it straight to the internet. Put it behind a VPN, or a jump server, which comes up later in 3.2.
+Port 80: spot on. It’s sometimes left open only to redirect visitors to 443, and that’s the one exception.
+Disabling NTLM where you can is a real attack-surface reduction, so it was a good instinct to bring up. Two more you could add: patching and MFA. Both 
+shrink how usable each remaining door is.
+
