@@ -17,4 +17,5 @@ and reusable PowerShell detection queries for SOC-relevant events.
 
 ## Full write-up
 
-[Link to blog post]   
+[Link to blog post]  
+https://github.com/juliacybersec/juliacybersec.github.io/tree/main/_posts/audit-the-domain
