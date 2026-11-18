@@ -1,0 +1,62 @@
+Audit the Domain - Learning Windows security auditing - Setup a DC and configured advanced audit policy and Structure Notes for Lab17
+ Baseline the current audit settings, then build and apply the audit GPO, used PowerShell to pull specific security events and read the fields a SOC analyst actually 
+uses (failure codes, logon types).
+
+Step-by-step breakdown
+
+-Setup a DC	You stand up a Windows Server Domain Controller (e.g., in a VM or Hyper-V) so you have a domain to audit.
+-Configured advanced audit policy	You open Group Policy → Computer Config → Policies → Windows Settings → Security Settings → Advanced Audit Policy Configuration and enable 
+specific categories (Logon/Logoff, Object Access, Policy Change, etc.). This is what generates the security events in the first place. Baseline the current audit settings	
+-Before changing anything, you snapshot what's already enabled (e.g., auditpol /get /category:*). This is your "before" state — if something breaks, you know what to revert 
+to. 
+-Build and apply the audit GPO	You create a dedicated Group Policy Object containing your audit settings, link it to the domain (or a specific OU), and force it to apply 
+(gpupdate /force).
+-Used PowerShell to pull specific security events	You query the Security event log with Get-WinEvent or Get-EventLog for specific event IDs — e.g., 4625 (failed logon), 4624
+(successful logon), 4740 (account lockout).
+-Read the fields a SOC analyst actually uses	You learn to interpret the key fields in those events: Status/SubStatus (failure codes like 0xC000006D = bad password), Logon Type
+(2 = interactive, 3 = network, 10 = remote desktop), Source Network Address, Target Account Name, etc. This is what an analyst at a SOC does all day.
+-Ends with a reusable query you could turn into a script	The exercise concludes with a PowerShell one-liner or small script (e.g., "pull all failed logons from the last 24 
+hours, show source IP and account") that you can save, parameterise, and run repeatedly — the seed of an actual SOC detection script.
+
+Why it's structured this way
+It follows the real-world order a security engineer works in:
+Infrastructure (DC exists)
+Enable the signal (audit policy generates events)
+Know your baseline (so you can detect changes)
+Apply policy at scale (GPO, not local config)
+Consume the signal (PowerShell queries)
+Understand the signal (SOC-relevant fields)
+Automate (reusable script)
+It's essentially a mini detection engineering pipeline: generate → collect → parse → alert. The "reusable query" at the end is the bridge from "I ran a one-off 
+command" to "I have a detection rule" — which is exactly what tools like Sigma, Splunk, or Elastic ingest in production.
+
+Explained audit policy effects
+In short: they tell Windows to write a record to the Security log every time a specific action happens. Before you enable them, those actions occur silently — no trace.
+After, every occurrence generates a structured event you can query.
+
+What actually changes on the system
+You enable…	What happens from that moment on
+Audit Logon (Success + Failure)	Every sign-in attempt (interactive, RDP, service, network) writes a 4624 or 4625 event to the Security log on the machine being accessed.
+Audit Account Logon (Kerberos, Credential Validation)	Every TGT request, service ticket request, or NTLM validation on the DC writes events like 4768, 4769, 4771, 4776.
+Audit Account Management	Any time someone creates, modifies, disables, or deletes a user/computer account or group membership, an event fires (4720, 4722, 4738, 4732,etc.).
+Audit Policy Change	Any modification to audit policy, GPO, or local security settings is logged (4719, 4742, 4739).
+Audit Object Access + SACL on a file/folder	Every read/write/delete on that specific object is logged (4663, 4656, 4660).
+Audit Process Creation	Every new process launch writes a 4688 event (with command line if you also enable that sub-setting). 
+Audit Privilege Use	Any time a process calls a sensitive privilege (SeBackupPrivilege, SeDebugPrivilege, etc.), a 4673 event is written.
+
+The practical effect in one sentence
+You go from "blind" (actions happen, no record) to "visible" (every action you chose to track leaves a timestamped, structured, queryable event in the Security log).
+
+Important nuances
+Enabling the policy alone isn't always enough. For Object Access, you also need a SACL (System Access Control List) on the specific file/folder/registry key. The policy 
+says "if an audited object is touched, log it" — the SACL says "this object is audited."
+Success vs. Failure — you choose which to log.  A common mistake is enabling only Failure and thinking you're covered. Many of the most important events (account changes,
+group membership changes, policy changes) are Success events. Volume matters.
+Enabling everything indiscriminately (especially Object Access or Process Creation with command lines) can flood the Security log and bury the signal. That's why the exercise uses Advanced (subcategory-level) rather than the legacy Basic (category-level) policy — you pick exactly which subcategories to turn on. 
+The GPO is the delivery mechanism. You're not editing each machine locally; the GPO pushes the audit config to every computer in the linked OU. gpupdate /force makes it 
+apply immediately rather than waiting for the next refresh cycle. The log rolls. The local Security log has a fixed size (default ~20 MB). If you generate more events than
+it can hold, old events are overwritten (or the log stops, depending on the overflow policy). This is why real deployments forward events to a SIEM (Splunk, Elastic, Sentinel
+,etc.) in near-real-time. So the "change" is: Windows now has a mandate to record specific actions, and the GPO ensures that mandate is applied consistently across the 
+domain rather than being a one-off local tweak.
+
+
