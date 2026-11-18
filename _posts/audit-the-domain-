@@ -1,5 +1,10 @@
-Audit the Domain - Learning Windows security auditing - Setup a DC and configured advanced audit policy and Structure Notes for Lab17
- Baseline the current audit settings, then build and apply the audit GPO, used PowerShell to pull specific security events and read the fields a SOC analyst actually 
+# audit-the-domain   
+
+Audit the Domain - Learning Windows security auditing 
+
+- Setup a DC and configured advanced audit policy and Structure Notes for Lab17
+
+Baseline the current audit settings, then build and apply the audit GPO, used PowerShell to pull specific security events and read the fields a SOC analyst actually 
 uses (failure codes, logon types).
 
 Step-by-step breakdown
