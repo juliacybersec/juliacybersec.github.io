@@ -6,7 +6,7 @@ Shell key: CMD = Command Prompt. PS = PowerShell. CMD/PS = works in both.
 Admin = needs an elevated window (right-click Start > Terminal (Admin)).
 Text in angle brackets, like <username>, is a placeholder: swap in your own value and leave out the brackets.
 
-Last updated: Lab 16 (17 Nov 2026)
+Last updated: Lab 17 (18 Nov 2026)
 
 ---
 
@@ -441,6 +441,49 @@ Makes the first DC sync with an internet time server and act as the domain's tru
 - /syncfromflags:manual: use that list
 - /reliable:yes: advertise this DC as a trusted time source
 - /update: load the new settings now
+
+---
+
+AUDIT POLICY AND SECURITY LOG (on the DC, Admin)
+
+```
+auditpol /get /category:*
+```
+Shows the audit policy the machine is actually using, every subcategory. The source of truth, not the GPO. (CMD/PS, Lab 17)
+- /get: display current settings
+- /category:*: all categories
+
+```
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4768} -MaxEvents 5
+```
+Newest events of one ID from the Security log. Swap the Id for any event. (PS, Lab 17)
+- -FilterHashtable: filter at the source (fast)
+- LogName / Id: which log, which event
+- -MaxEvents: how many, newest first
+
+```
+(Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624} -MaxEvents 1).Message
+```
+Full text of the newest event, with every field. (PS, Lab 17)
+- .Message: full text instead of the summary
+
+```
+Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4672} -MaxEvents 5 | Format-List TimeCreated, Message
+```
+Newest privileged (admin) logons. (PS, Lab 17)
+- Format-List: show chosen properties one per line
+
+```
+$events = Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624} -MaxEvents 20
+$events | Select-Object TimeCreated, @{n='Account';e={$_.Properties[5].Value}}, @{n='LogonType';e={$_.Properties[8].Value}}, @{n='SourceIP';e={$_.Properties[18].Value}} | Format-Table -AutoSize
+```
+Logon events as a table: when, who, how, from where. (PS, Lab 17)
+- $events =: store results in a variable to reuse
+- @{n='name';e={...}}: calculated column (n = name, e = expression)
+- 4624 data positions: [5] account, [8] logon type, [10] Kerberos or NTLM, [18] source IP
+
+Key event IDs: 4624 logon OK, 4625 logon failed, 4672 admin logon, 4720 user created, 4724 password reset, 4728/4732 added to group, 4740 locked out, 4768 Kerberos TGT, 4771 Kerberos pre-auth failed, 4776 NTLM check
+Logon types: 2 keyboard, 3 network, 5 service, 10 RDP
 
 ---
 
