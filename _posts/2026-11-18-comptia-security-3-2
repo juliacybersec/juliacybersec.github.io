@@ -1,4 +1,6 @@
-Comptia Security+ 3.2 #1: Secure Infrastructures - Infrastructure Considerations 
+Comptia Security+ 3.2 
+
+Topic 1 #1: Secure Infrastructures - Infrastructure Considerations 
 
 1. Security zones. A hospital isn’t one open space. The waiting room is public, the wards are for staff and patients, and theatre, ICU and the drug room are locked down. Each area has its own trust level and its own rules about who can go in. A network works the same way. You group systems by how much you trust them and how sensitive they are: an untrusted internet zone, a screened zone (DMZ) for public-facing servers, an internal zone for staff, and a restricted zone for things like domain controllers or payment systems. Traffic between zones goes through a checkpoint, usually a firewall, and the rules are written as “zone A can talk to zone B on this port only.”
 Your lab: LabNet is already a zone. It’s isolated from your home network, and DC01 sits inside it.
@@ -247,4 +249,141 @@ RDP is 3389. Never expose it straight to the internet. Put it behind a VPN, or a
 Port 80: spot on. It’s sometimes left open only to redirect visitors to 443, and that’s the one exception.
 Disabling NTLM where you can is a real attack-surface reduction, so it was a good instinct to bring up. Two more you could add: patching and MFA. Both 
 shrink how usable each remaining door is.
+==============================================================================================================================================
+Topic 2. Intrusion Prevention 3.2 
+
+                                                IDS vs IPS — The Core Split
+          IDS (Intrusion Detection System)	                                        IPS (Intrusion Prevention System)
+Role	    Detects and alerts                        	                                      Detects and blocks
+Mode  	  Passive / detective	Active
+Placement	              Out-of-band — sees a copy of traffic via SPAN port or network TAP	      Inline — traffic physically flows through it
+Can it stop an attack?  	No — the malicious packets still reach their destination	            Yes — drops packets, resets connections, blocks IPs in real time
+If it crashes	No impact on traffic flow (you just lose visibility)                            	Can interrupt the traffic path entirely
+False positive cost	An alert someone has to read	                                              A legitimate connection gets blocked
+
+Exam rule of thumb: if the question says "monitor without affecting traffic" → IDS. If it says "stop/block/prevent" → IPS. 
+
+Deployment Topologies
+Inline (IPS): Internet → Firewall → IPS → Core Switch → Internal network. The IPS is in the path; it inspects every packet and can drop it.
+Tap / SPAN (IDS): The switch sends a mirror copy of traffic to the IDS. The IDS watches but is not in the data path — so it can never cause downtime, but also can never block. 
+Professor Messer makes the point that you can technically run an IPS in tap mode (it sees a copy), but then it behaves like an IDS because it can't act on the traffic.
+
+One small exam-language nudge: the precise terms the exam wants you to use are inline (IPS) vs out-of-band or passive (IDS, fed by a TAP or SPAN port). "Before the switch"
+is fine in plain English, but if a question asks for the placement mode, "inline" is the keyword that earns the mark.
+
+
+Network-Based vs Host-Based
+                                  Network (NIDS/NIPS)	                                    Host (HIDS/HIPS)
+Scope	                      Monitors traffic across a network segment              	Monitors activity on a single endpoint
+Typical placement	        At trust boundaries (edge, DMZ)	                          On servers, workstations
+What it sees	              Packets flowing through the wire	                      System calls, file changes, process behaviour, logins
+
+Detection Methods
+   Method	                                  How it works	                        Strength	                                                      Weakness
+Signature-based	        Matches traffic against a database of known attack patterns (like an antivirus signature)	        High accuracy, low false positives for known threats	    Misses zero-days / novel attacks
+Anomaly-based	          Builds a baseline of "normal" traffic, flags deviations	Can catch zero-days and unknown threats    	Higher false-positive rate (what's "normal" shifts)
+
+Most real-world deployments use both — signatures for the known stuff, anomaly detection as a safety net.
+
+Failure Modes (exam favourite)
+Fail-open: if the IPS crashes, traffic flows uninspected. Availability is preserved, security is not. 
+Fail-closed: if the IPS crashes, traffic is blocked. Security is preserved, availability is not.
+The exam will ask you which mode to choose in a given scenario. A hospital or financial trading floor might prefer fail-open (can't afford downtime); a high-security military network might prefer fail-closed.
+
+Where It Sits in the Stack
+NGFW (Next-Gen Firewall) often has IPS built in — it does stateful inspection plus deep packet inspection plus app awareness, so it's a superset.
+WAF (Web Application Firewall) is a specialised IPS for HTTP/HTTPS traffic (SQLi, XSS, CSRF). 
+SIEM ingests the alerts from IDS/IPS and correlates them across the environment.
+
+Analogy -  Quick Mental Model (Mutley/Alan the fool framing)
+Mutley at the gate (IPS, inline): checks every person's ticket with his special ink before letting them in. If the ticket is bad, he physically blocks them. If Mutley gets
+sick (crashes), either the gate stays open (fail-open) or it stays shut (fail-closed). The security camera on the wall (IDS, tap): watches everyone walk through the gate
+and calls the office if someone looks suspicious. But it can't stop them — they're already through the door.
+Alan (the target): the person walking through the gate, hopefully with a valid ticket.
+
+QUESTIONS:
+An IPS in your DMZ goes down during a major sales event. Your business says "we cannot lose a single transaction." 
+Should it have been configured fail-open or fail-closed? Why?
+
+Fail-open → traffic flows uninspected, transactions complete, availability preserved ✓
+Fail-closed → traffic blocked, transactions lost, availability sacrificed ✓
+One thing to keep in your back pocket for the exam: the trade-off sentence. Fail-open preserves availability but sacrifices confidentiality/integrity during the outage
+— the malicious traffic that would have been blocked is now getting through unimpeded. If a question asks "what's the risk of fail-open?" that's the answer they want.
+
+You're deploying protection for a web application that's getting hit with SQL injection and XSS attempts. What type of device do you reach for, and where does it
+sit relative to the web server?
+
+WAF (Web Application Firewall), not just a generic IPS
+
+IPS → inspects packets at layers 3–4 (and sometimes 7), catches things like port scans, known exploit signatures, malformed packets.
+WAF → a specialised IPS that operates at layer 7 (application layer), specifically for HTTP/HTTPS. It understands SQL syntax, HTML, JSON, etc. 
+That's what lets it catch SQLi payloads (' OR 1=1 --) and XSS strings (<script>alert(1)</script>) that a generic IPS might miss because it's not parsing
+the application protocol. So the exam answer is: WAF, placed in the DMZ, inline between the firewall and the web server. It's a WAF because the threat is 
+application-layer (SQLi, XSS), not just network-layer.
+
+If a question said "port scan" or "SYN flood" → IPS. If it said "SQL injection" or "XSS" → WAF.
+An extra through in regards to Nmap and Metasploit kali tools for hacking 
+Nmap scan → NIPS (Network IPS)
+
+Nmap's scan patterns are a classic L3/L4 signature. The IPS has rules for:
+
+SYN sweeps (many SYN packets, one source, no completed handshakes)
+Specific data lengths (40 bytes = stealth scan, 44 = SYN scan, 60 = connect scan)
+Flag combinations that no legitimate OS would send (NULL, Xmas, FIN-only) 
+It's pure network-layer pattern matching. WAF has no role here — it only sees HTTP. 
+
+Metasploit → depends on the phase:
+
+Phase	What's happening	What catches it
+Exploit delivery (e.g., SMB buffer overflow, RDP exploit)	Known exploit payload sent to a network service	NIPS — signature match on the exploit pattern
+Web app exploit (e.g., SQLi via Metasploit's sqlmap-style modules)	Malicious payload in an HTTP parameter	WAF — it's parsing the decoded HTTP request
+Post-exploitation / C2 (Meterpreter reverse shell, staged payloads)	Encrypted callback to attacker's machine	Neither, really — this is where you need EDR
+(Endpoint Detection and Response) or host-based monitoring
+
+That last row is the important one for the exam. Meterpreter specifically uses encrypted communication back to the attacker. 
+A network IPS sitting outside the TLS boundary sees ciphertext and is blind. The detection has to happen at the endpoint — looking for unusual process spawns, 
+unexpected outbound connections to rare ports, script interpreters launched from unusual parent processes. 
+
+Mutley framing:
+
+Nmap = Mutley walking up to the gate and trying every lock on the fence (the IPS sees him doing it and blocks him).
+Metasploit exploit = Mutley picking the lock with a known tool (IPS has the signature for that specific lockpick).
+Meterpreter C2 = Mutley already inside the building, calling his buddy outside through an encrypted phone. The gate (IPS) can't hear that. You need a security camera 
+inside the room (EDR/host-based) to see that Alan is suddenly talking to a stranger on a burner phone.
+So the exam takeaway:
+IPS handles the network-level stuff (scans, exploits to services), WAF handles the web-app-level stuff, and endpoint detection handles what happens after the initial 
+compromise. They're complementary, not interchangeable
+
+Your SOC team is complaining that they're getting hundreds of alerts a day, most of which are false positives. You suspect the detection method is the problem. 
+Which method are you likely running, and what's the trade-off if you switch?
+
+The detection method is anomaly-based, which has a high false-positive rate. Switching to signature-based would reduce noise, but you'd lose visibility into 
+unknown/zero-day threats. The best approach is a hybrid with tuned thresholds.
+The culprit: Anomaly-based detection. It builds a baseline of "normal" and flags deviations — but "normal" shifts (new software, seasonal traffic spikes, a new department
+onboarding), so it generates a lot of false positives. That's the classic reason SOC teams drown in alerts.
+
+The fix (and the trade-off):
+
+Switch to (or weight more heavily) signature-based detection.
+
+Gain: Drastically fewer false positives — it only alerts on known patterns, so it's precise.
+Loss: You lose zero-day / novel attack detection. If an attacker uses a technique that's not in the signature database, you're blind.
+The real-world answer (and the one the exam accepts): use both. Signatures for the known stuff (low noise), anomaly detection as a secondary layer tuned with a higher 
+threshold so it only alerts on significant deviations rather than every small one.
+
+A net work TAP is used to feed traffic to an IDS. What happens to the IDS's ability to act on malicious traffic if you tried to use it as an IPS instead?
+
+(Scenario) You're designing a network for a hospital. Patient monitoring systems are on the internal LAN. You need visibility into all traffic for compliance logging,
+but you cannot introduce any single point of failure that could interrupt patient data flow. Do you deploy an IDS or an IPS at the internal switch, and why?
+
+What's the relationship between a next-gen firewall and an IPS? If you already have an NGFW, do you still need a separate IPS?
+
+(Mutley question 🐕) In your Kerberos analogy, Mutley validates tickets with "special ink." If Mutley were an IDS, what would change about his behaviour?
+If he were an IPS, what would change?
+
+
+
+
+
+
 
