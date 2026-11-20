@@ -372,17 +372,62 @@ The real-world answer (and the one the exam accepts): use both. Signatures for t
 threshold so it only alerts on significant deviations rather than every small one.
 
 A net work TAP is used to feed traffic to an IDS. What happens to the IDS's ability to act on malicious traffic if you tried to use it as an IPS instead?
+An IPS behind a TAP only sees a mirror copy of the traffic — it's not in the data path, so it has no ability to drop packets, reset connections, or block IPs.
+It can detect and alert, but it behaves exactly like an IDS in that configuration.
+To act as a true IPS, it needs to be inline — physically in the path so traffic flows through it and it can intervene in real time.
+
+If you try to run an Intrusion Prevention System (IPS) behind a standard passive network TAP, it cannot directly block or drop malicious traffic. Because it only receives 
+a duplicate copy of the packets rather than sitting directly in the traffic path, it is effectively reduced to functioning as a passive Intrusion Detection System (IDS).
 
 (Scenario) You're designing a network for a hospital. Patient monitoring systems are on the internal LAN. You need visibility into all traffic for compliance logging,
 but you cannot introduce any single point of failure that could interrupt patient data flow. Do you deploy an IDS or an IPS at the internal switch, and why?
 
+I would deploy a passive IDS (Intrusion Detection System) connected via a network TAP or a switch SPAN/mirror port. In a clinical environment with life-critical patient
+monitoring systems, continuous availability takes priority over automated blocking.
+
+Why IDS is the Right Choice Here
+
+• Eliminates single points of failure. Because an IDS sits out-of-band and only analyzes a copied stream of traffic, a hardware crash, power loss, or software hang on
+the sensor has zero effect on the live switch forwarding patient telemetry.
+• Prevents false-positive outages. An inline IPS can mistakenly flag legitimate, proprietary medical device traffic (such as HL7 or DICOM streams) as anomalous 
+and drop packets, which could disrupt real-time patient alarms or vitals monitoring.
+• Satisfies compliance logging. A passive IDS captures full packet headers, metadata, and security alerts for audit trails and HIPAA/compliance logging without adding 
+latency to the production LAN.
+
 What's the relationship between a next-gen firewall and an IPS? If you already have an NGFW, do you still need a separate IPS?
 
-(Mutley question 🐕) In your Kerberos analogy, Mutley validates tickets with "special ink." If Mutley were an IDS, what would change about his behaviour?
+Mutley, the strict, no-nonsense security dog who takes his job very seriously (whether he's stamping tickets at the Kerberos booth, snitching from the sidelines as an IDS, 
+or bouncing intruders at the door as an IPS
+
+(Mutley question 🐕) If Mutley was Kerberos, the strict ticketing dog. Mutley validates tickets with "special ink." If Mutley were an IDS, what would change about his behaviour?
 If he were an IPS, what would change?
+If Mutley steps down from guarding the Kerberos ticket booth and takes on network security duties, his physical position at the door and his power to stop intruders change completely.
+Here is how Mutley's behavior shifts depending on his new role:
+
+1. Mutley as an IDS (The Hallway Snitch)
+
+• Where he stands: Mutley is no longer blocking the doorway. He sits off to the side in a booth behind a one-way mirror, watching photocopies of everyone's tickets go by.
+• What he does: He still inspects the "special ink" on every ticket copy, looking for forged signatures, expired timestamps, or suspicious behavior.
+• How he reacts to a fake: He does not jump up or tackle the intruder. The person with the fake ticket walks right into the building unimpeded. Instead, Mutley writes down the intruder's description in a logbook, blows a whistle, or sends an urgent memo to the security team—and maybe lets out his signature wheezy snicker while watching the chaos unfold.
+
+2. Mutley as an IPS (The Bouncer Dog at the Door)
+
+• Where he stands: Mutley is back directly in the doorway. Nobody gets past him without handing over their ticket first.
+• What he does: Just like before, he checks the special ink on every ticket—except now he isn't just checking Kerberos passes; he is also patting people down for hidden 
+weapons, known attack patterns, and sketchy behavior.
+• How he reacts to a fake: The instant Mutley spots bad ink or a threat, he slams the door shut on the spot, rips (or should I say eats) up the fake ticket, and kicks the
+intruder out before they ever step foot inside—before quietly snickering under his breath and waiting for the next person in line.
+
+Quick Comparison
+
+Mutley's Role	         Position	                                                            Reaction to a Forged Ticket
+Kerberos	          At the ticket booth	                                      Checks cryptographic "ink" and hands out access passes (or refuses to issue one).
+IDS	                Watching from the sidelines	                              Lets the intruder pass, logs the fake ticket, and alerts the admin.
+IPS	                Blocking the doorway	                                    Stops the intruder cold, drops their ticket in the trash, and blocks entry.
 
 
 
+============================================================================================================================================================================
 
 
 
