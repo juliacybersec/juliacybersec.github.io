@@ -396,12 +396,19 @@ latency to the production LAN.
 
 What's the relationship between a next-gen firewall and an IPS? If you already have an NGFW, do you still need a separate IPS?
 
+For the exam: the key takeaway is that a traditional firewall + separate IPS is the old architecture. An NGFW consolidates that into one appliance. The exam won't ask you
+to design a standalone IPS deployment — it'll ask you to recognise that an NGFW includes IPS functionality, and that this reduces appliance sprawl and simplifies policy 
+management. 
+
+
 Mutley, the strict, no-nonsense security dog who takes his job very seriously (whether he's stamping tickets at the Kerberos booth, snitching from the sidelines as an IDS, 
 or bouncing intruders at the door as an IPS
 
 (Mutley question 🐕) If Mutley was Kerberos, the strict ticketing dog. Mutley validates tickets with "special ink." If Mutley were an IDS, what would change about his behaviour?
 If he were an IPS, what would change?
-If Mutley steps down from guarding the Kerberos ticket booth and takes on network security duties, his physical position at the door and his power to stop intruders change completely.
+If Mutley steps down from guarding the Kerberos ticket booth and takes on network security duties, his physical position at the door and his power to stop intruders change 
+completely.
+
 Here is how Mutley's behavior shifts depending on his new role:
 
 1. Mutley as an IDS (The Hallway Snitch)
@@ -426,8 +433,134 @@ IDS	                Watching from the sidelines	                              Le
 IPS	                Blocking the doorway	                                    Stops the intruder cold, drops their ticket in the trash, and blocks entry.
 
 
+===========================================================================================================================================================================
+Topic 3. 3.2 Network Appliances
 
-============================================================================================================================================================================
+This sub-topic sits under the broader objective "Given a scenario, apply security principles to secure enterprise infrastructure." It covers five appliance types and the 
+two attribute axes that define how each interacts with traffic. 
+
+The two axes (exam loves these)
+Axis	                            Meaning
+Active vs. Passive	        Active = can modify/block traffic.      Passive = can only observe and report.
+Inline vs. Tap/Monitor	    Inline = sits in the traffic path.      Tap/monitor = receives a copy of traffic (SPAN port, network tap).
+
+The pairing is predictable: blocking requires active + inline; 
+                            visibility without disruption requires passive + tap/monitor. 
+
+
+The five appliances
+Appliance	                         Role                                  	Axis	                                                        Placement
+Jump server (bastion host)	  Single hardened, audited entry point into a management zone; admins SSH/RDP to it first, then pivot to internal hosts	Active (gateway)
+                                                                                                                                      Edge of the admin/management subnet
+Proxy server	  Mediates requests between clients and servers.            Forward proxy = client→internet (filtering, caching, egress control). 
+Reverse proxy = in front of servers (TLS offload, hide origin)	Active	  Between clients and internet, or in front of a server pool
+IPS	            Detects and blocks malicious traffic in real time	        Active, inline	At a trust boundary (e.g., between DMZ and internal)
+IDS	            Detects and alerts on suspicious traffic; does not block	  Passive	Tap Monitor                                           Tap/SPAN port, out-of-band
+Load balancer	  Distributes incoming connections across a server pool; often also terminates TLS and runs health checks	Active,           inline	In front of the web/app tier
+Sensors	        Distributed collection points that feed telemetry to a SIEM or monitoring platform	                              Passive	Scattered across segments via tap/SPAN
+
+Diagram 1 Jump Server
+A jump server is a hardened, audited intermediary host that serves as the single controlled entry point for administrators to
+access and manage devices in separate, more restricted security zones. 
+
+Function: It prevents direct access from external or untrusted networks to internal infrastructure by forcing administrators to connect to the jump server first, then
+"jump" to target systems via SSH, RDP, or VPN.
+
+Placement: It is typically deployed in a management zone, screened subnet, edge of the management/admin subnet. Used to create a choke point for auditing and access control.
+The jump server sits at the boundary of the internal management zone so that admins must pass through it to reach internal servers. The key exam phrasing is
+                "single point of entry into the management plane."
+Hardening: It must be strictly secured with multi-factor authentication (MFA), minimal software, and comprehensive logging to prevent compromise, which would otherwise
+grant attackers a foothold into the internal network.
+
+Diagram 2 Proxy Server Application Proxies
+
+Proxy server (forward) — Sits between your internal clients and the internet. When a user in the office wants to browse a website, the request goes through the proxy first.
+It can block certain sites, cache content, enforce egress policy, and hide the client's real IP from the external site. It's about controlling what goes out.
+
+Diagram 3 Forward Proxies 
+
+Reverse proxy — Sits in front of your servers, facing the internet. External users hit the reverse proxy, and it forwards the request to the actual server behind it.
+It terminates TLS, hides the real server IP, and can add an extra auth or WAF layer. The key distinction from a load balancer: it handles traffic for a single server (or a small group) but does not distribute connections across a pool or run health checks.
+Diagram 4 Reverse Proxy
+
+IPS (Intrusion Prevention System) — Sits inline in the traffic path at a trust boundary (e.g., between the DMZ and internal network). 
+It inspects every packet and, if it matches a known attack signature or anomaly, it blocks the packet in real time. Because it's inline and active, if it fails it can 
+break connectivity — that's the trade-off.
+
+IDS (Intrusion Detection System) — Does the same detection as an IPS but does not block. It receives a copy of traffic via a SPAN port or network tap, analyses it,
+and sends alerts to the SIEM or SOC. Because it's out-of-band (passive, tap/monitor), it can never disrupt traffic even if it crashes. The only difference between
+IDS and IPS is the action: alert vs. block.
+Diagram 5 Open Proxy
+
+Load balancer — Sits in front of a pool of servers and distributes incoming connections across them. It terminates TLS, runs health checks (is server 3 still up?),
+and hides the backend IPs. The exam giveaway is "distributes across a pool" + "health checks." A reverse proxy hides a server; a load balancer spreads traffic across servers.
+Diagram 6 Active/Passive Load Balancing
+
+Sensors — General-purpose telemetry collectors scattered across network segments. They collect flow data, logs, and metrics and feed them into a SIEM or monitoring platform. Unlike an IDS, they aren't looking for specific attack patterns — they're just gathering data. Think of them as the "eyes and ears" that provide raw material for other tools to analyse.
+
+The one-sentence distinction that matters most on the exam:
+
+Forward proxy → controls egress (client → out)
+Reverse proxy → protects one server (in → server)
+Load balancer → spreads traffic across many servers (in → pool)
+IPS → blocks (active, inline)
+IDS → alerts (passive, tap)
+Sensors → collects general data (passive, tap)
+
+
+Key exam distinctions to lock in
+IDS vs. IPS: same detection engine, different action. IDS alerts; IPS blocks.
+
+If a question says "detect and alert" → IDS.            "Detect and block" → IPS.
+
+Jump server: the exam will describe it as a "single point of entry" or "bastion." The security concern is that compromising it is a major breach because it's the gateway 
+to the management zone. 
+
+Forward vs. reverse proxy: forward = protects the client's egress; reverse = protects the server's ingress.
+
+Sensors vs. IDS: sensors are general-purpose telemetry collectors (network flow, logs, etc.); IDS is specifically looking for attack signatures/anomalies.
+
+
+How it connects to what you already know
+You just covered NGFW vs. IPS — an NGFW bundles IPS (active, inline) plus app awareness and stateful inspection. A standalone IPS is the narrower, dedicated version of 
+that same capability. The jump server and proxy are the "access control" appliances; the load balancer is the "availability" appliance; sensors and IDS are the "visibility" appliances. 
+
+This is a high-yield section for scenario questions — they'll describe a deployment and ask you to identify which appliance is missing, or which attribute
+(active/passive, inline/tap) a described device has.
+
+Questions
+
+A company has deployed a device at the boundary between their DMZ and internal network. The device monitors all traffic passing through that segment and sends alerts to 
+the SOC when it detects signature matches, but it does not block or modify any packets. The device is connected via a SPAN port on the switch.
+
+What type of appliance is this, and which two attributes (from the active/passive and inline/tap axes) apply?
+
+Appliance: IDS
+Axis 1: Passive (alerts only, no blocking)
+Axis 2: Tap/Monitor (SPAN port = it receives a copy of traffic, not the traffic itself)
+You identified the SPAN port, which is the giveaway for tap/monitor — just make sure to name both axes explicitly in your exam answers. 
+The exam wants you to state "passive, tap/monitor" not just "passive."
+
+An organisation wants to centralise all administrative access to their internal server management plane. They deploy a single hardened Linux host at the edge of the 
+management subnet. All admin SSH and RDP sessions must first connect to this host before pivoting to the target servers. All sessions are logged and recorded.
+
+Which appliance is this, and where on the network is it placed?
+
+Appliance: Jump server (bastion host) ✅
+Placement: Edge of the management/admin subnet 
+The jump server sits at the boundary of the internal management zone so that admins must pass through it to reach internal servers. The key exam phrasing is
+"single point of entry into the management plane."
+
+A company places a device in front of their public-facing web server pool. Incoming HTTPS traffic hits this device first, which terminates TLS, checks server health,
+and distributes connections across four backend web servers. It also hides the actual server IPs from external scanners.
+
+Which appliance is this, and which axis attributes apply (active/passive, inline/tap)?
+Load Balancer
+The giveaway is the distributing connections across four backend servers + health checks. A reverse proxy mediates between client and server (hides origin, terminates TLS)
+but doesn't inherently distribute across a pool. A load balancer does both — it's a reverse proxy plus traffic distribution and health monitoring.
+
+
+
 
 
 
