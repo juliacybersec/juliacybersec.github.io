@@ -14,7 +14,8 @@ Your lab: LabNet is already a zone. It’s isolated from your home network, and 
 5. Failure modes: fail-open vs fail-closed. This one is the most likely to come up in exam questions.
 
 Fail-open: the device breaks and traffic carries on through with no checks. It’s like a fire door that unlocks when the power goes out. People stay safe, but security is lost. You choose this when availability matters most.
-Fail-closed: the device breaks and everything stops. It’s like a drug room door that stays locked during a power cut. The drugs are safe, but nobody can get in. You choose this when security matters most.
+Fail-closed: the device breaks and everything stops. It’s like a drug room door that stays locked during a power cut. The drugs are safe, but nobody can get in. 
+You choose this when security matters most.
 
 6. Device attributes: active vs passive, inline vs tap/monitor.
 
@@ -493,7 +494,8 @@ IDS and IPS is the action: alert vs. block.
 Diagram 5 Open Proxy
 
 Load balancer — Sits in front of a pool of servers and distributes incoming connections across them. It terminates TLS, runs health checks (is server 3 still up?),
-and hides the backend IPs. The exam giveaway is "distributes across a pool" + "health checks." A reverse proxy hides a server; a load balancer spreads traffic across servers.
+and hides the backend IPs. The exam giveaway is "distributes across a pool" + "health checks." A reverse proxy hides a server; a load balancer spreads traffic across
+servers.
 Diagram 6 Active/Passive Load Balancing
 
 Sensors — General-purpose telemetry collectors scattered across network segments. They collect flow data, logs, and metrics and feed them into a SIEM or monitoring platform. Unlike an IDS, they aren't looking for specific attack patterns — they're just gathering data. Think of them as the "eyes and ears" that provide raw material for other tools to analyse.
