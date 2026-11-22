@@ -1,4 +1,4 @@
-Comptia Security+ 3.2 
+  Comptia Security+ 3.2 
 
 Topic 1 #1: Secure Infrastructures - Infrastructure Considerations 
 
@@ -448,16 +448,15 @@ Inline vs. Tap/Monitor	    Inline = sits in the traffic path.      Tap/monitor =
 The pairing is predictable: blocking requires active + inline; 
                             visibility without disruption requires passive + tap/monitor. 
 
-
 The five appliances
 Appliance	                         Role                                  	Axis	                                                        Placement
 Jump server (bastion host)	  Single hardened, audited entry point into a management zone; admins SSH/RDP to it first, then pivot to internal hosts	Active (gateway)
-                                                                                                                                      Edge of the admin/management subnet
+                                                                                                                                Edge of the admin/management subnet
 Proxy server	  Mediates requests between clients and servers.            Forward proxy = client→internet (filtering, caching, egress control). 
-Reverse proxy = in front of servers (TLS offload, hide origin)	Active	  Between clients and internet, or in front of a server pool
+Reverse proxy = in front of servers (TLS offload, hide origin)	          Active	                                            Between clients and internet, or in front of a server pool
 IPS	            Detects and blocks malicious traffic in real time	        Active, inline	At a trust boundary (e.g., between DMZ and internal)
-IDS	            Detects and alerts on suspicious traffic; does not block	  Passive	Tap Monitor                                           Tap/SPAN port, out-of-band
-Load balancer	  Distributes incoming connections across a server pool; often also terminates TLS and runs health checks	Active,           inline	In front of the web/app tier
+IDS	            Detects and alerts on suspicious traffic; does not block	  Passive	Tap Monitor                                        Tap/SPAN port, out-of-band
+Load balancer	  Distributes incoming connections across a server pool; often also terminates TLS and runs health checks	Active,      inline	In front of the web/app tier
 Sensors	        Distributed collection points that feed telemetry to a SIEM or monitoring platform	                              Passive	Scattered across segments via tap/SPAN
 
 Diagram 1 Jump Server
@@ -468,6 +467,10 @@ Function: It prevents direct access from external or untrusted networks to inter
 "jump" to target systems via SSH, RDP, or VPN.
 
 Placement: It is typically deployed in a management zone, screened subnet, edge of the management/admin subnet. Used to create a choke point for auditing and access control.
+The jump server sits at the boundary of the internal management zone so that admins must pass through it to reach internal servers. The key exam phrasing is
+"single point of entry into the management plane." Why hardening matters: Because it's the only entry point into that zone, if it's compromised, an attacker has a
+foothold inside the restricted area. So it's minimally configured, patched, monitored, and often requires MFA.
+
 The jump server sits at the boundary of the internal management zone so that admins must pass through it to reach internal servers. The key exam phrasing is
                 "single point of entry into the management plane."
 Hardening: It must be strictly secured with multi-factor authentication (MFA), minimal software, and comprehensive logging to prevent compromise, which would otherwise
@@ -496,6 +499,11 @@ Diagram 5 Open Proxy
 Load balancer — Sits in front of a pool of servers and distributes incoming connections across them. It terminates TLS, runs health checks (is server 3 still up?),
 and hides the backend IPs. The exam giveaway is "distributes across a pool" + "health checks." A reverse proxy hides a server; a load balancer spreads traffic across
 servers.
+what is the difference between active and passive load balancing?
+Active (real) load balancing: The balancer actively checks server health (ping, HTTP request, etc.) and only sends traffic to servers that respond. It makes real-time decisions.
+Passive (round-robin) load balancing: The balancer just cycles through servers in order without checking if they're actually healthy. If one is down, it keeps sending traffic there until the timeout kicks in.
+In practice, most modern load balancers use active health checks.
+
 Diagram 6 Active/Passive Load Balancing
 
 Sensors — General-purpose telemetry collectors scattered across network segments. They collect flow data, logs, and metrics and feed them into a SIEM or monitoring platform. Unlike an IDS, they aren't looking for specific attack patterns — they're just gathering data. Think of them as the "eyes and ears" that provide raw material for other tools to analyse.
@@ -506,9 +514,8 @@ Forward proxy → controls egress (client → out)
 Reverse proxy → protects one server (in → server)
 Load balancer → spreads traffic across many servers (in → pool)
 IPS → blocks (active, inline)
-IDS → alerts (passive, tap)
+IDS → alerts (passive, tap) Monitors and alerts without disrupting traffic flow - An IDS is always passive/monitor-only.
 Sensors → collects general data (passive, tap)
-
 
 Key exam distinctions to lock in
 IDS vs. IPS: same detection engine, different action. IDS alerts; IPS blocks.
@@ -530,7 +537,9 @@ that same capability. The jump server and proxy are the "access control" applian
 This is a high-yield section for scenario questions — they'll describe a deployment and ask you to identify which appliance is missing, or which attribute
 (active/passive, inline/tap) a described device has.
 
-Questions
+
+
+Questions and Answers
 
 A company has deployed a device at the boundary between their DMZ and internal network. The device monitors all traffic passing through that segment and sends alerts to 
 the SOC when it detects signature matches, but it does not block or modify any packets. The device is connected via a SPAN port on the switch.
@@ -540,18 +549,21 @@ What type of appliance is this, and which two attributes (from the active/passiv
 Appliance: IDS
 Axis 1: Passive (alerts only, no blocking)
 Axis 2: Tap/Monitor (SPAN port = it receives a copy of traffic, not the traffic itself)
-You identified the SPAN port, which is the giveaway for tap/monitor — just make sure to name both axes explicitly in your exam answers. 
+The SPAN port, which is the giveaway for tap/monitor — just make sure to name both axes explicitly in your exam answers. 
+ Connected passively (via a tap or SPAN/mirror port) — not inline
+✅ Monitors and alerts without disrupting traffic flow
+An IDS is always passive/monitor-only.
 The exam wants you to state "passive, tap/monitor" not just "passive."
 
 An organisation wants to centralise all administrative access to their internal server management plane. They deploy a single hardened Linux host at the edge of the 
 management subnet. All admin SSH and RDP sessions must first connect to this host before pivoting to the target servers. All sessions are logged and recorded.
-
 Which appliance is this, and where on the network is it placed?
 
 Appliance: Jump server (bastion host) ✅
 Placement: Edge of the management/admin subnet 
 The jump server sits at the boundary of the internal management zone so that admins must pass through it to reach internal servers. The key exam phrasing is
-"single point of entry into the management plane."
+"single point of entry into the management plane." Why hardening matters: Because it's the only entry point into that zone, if it's compromised, an attacker has a
+foothold inside the restricted area. So it's minimally configured, patched, monitored, and often requires MFA.
 
 A company places a device in front of their public-facing web server pool. Incoming HTTPS traffic hits this device first, which terminates TLS, checks server health,
 and distributes connections across four backend web servers. It also hides the actual server IPs from external scanners.
@@ -560,6 +572,136 @@ Which appliance is this, and which axis attributes apply (active/passive, inline
 Load Balancer
 The giveaway is the distributing connections across four backend servers + health checks. A reverse proxy mediates between client and server (hides origin, terminates TLS)
 but doesn't inherently distribute across a pool. A load balancer does both — it's a reverse proxy plus traffic distribution and health monitoring.
+
+A company wants to filter and cache web traffic for all internal users accessing the internet. They also want to block access to certain websites.
+Which type of proxy server would be deployed, and where would it be placed in the network?
+Forward proxy — sits between internal clients and the internet
+ All outbound web traffic goes through it
+ Can filter, cache, and block websites
+Placed at the network boundary (between internal network and the internet)
+Bonus point: a reverse proxy would be the opposite — it sits in front of internal servers to protect them from incoming traffic.
+
+A security team wants to monitor network traffic for suspicious activity without impacting network performance or disrupting traffic flow. They want to be alerted
+but do not need to block anything in real time. Which device should they deploy, and how should it be connected to the network (inline vs. tap/monitor)?
+IDS passive Tap
+ Connected passively (via a tap or SPAN/mirror port) — not inline
+✅ Monitors and alerts without disrupting traffic flow
+Key distinction: an IPS (Intrusion Prevention System) is inline and can actively block traffic. An IDS is always passive/monitor-only.
+
+ A large e-commerce site uses multiple web servers to handle incoming traffic. The IT team wants to distribute the load evenly across these servers and ensure 
+that if one server goes down, the others can pick up the work. What appliance handles this, and what is the difference between active and passive load balancing?
+Load balancer sits in front of the server pool
+✅ Inline in the traffic path
+✅ Redistributes traffic if a server goes down
+✅ Spreads connections across available servers
+what is the difference between active and passive load balancing?
+Active (real) load balancing: The balancer actively checks server health (ping, HTTP request, etc.) and only sends traffic to servers that respond. 
+It makes real-time decisions. 
+Passive (round-robin) load balancing: The balancer just cycles through servers in order without checking if they're actually healthy. 
+If one is down, it keeps sending traffic there until the timeout kicks in.
+
+An IPS is deployed inline between a firewall and a core switch. If the IPS crashes, what are the two possible failure modes, and what happens to traffic in each case?
+Fail-closed (not "active fail") — traffic is blocked when the IPS goes down. Security over availability.
+Fail-open (not "active open") — traffic passes through as normal when the IPS goes down. Availability over security.
+
+A hospital that needs patient monitoring to continue like o2 sat, HR or blood pressure this is really important so might choose fail-closed to ensure no unmonitored traffic
+reaches sensitive systems, while a retail site might choose fail-open so the store doesn't go offline and no transactions go though as it may be better to shutdown than have 
+unchecked transactions.
+========================================================================================================================================================================
+Topic 4. 3.2 Port Security
+
+Port Security — Detailed Explanation
+The problem it solves: If someone walks into your office, plugs a laptop into an available switch port, they're on your network. Port security stops that. You don't get 
+access until you authenticate.
+
+The standard: IEEE 802.1X, also called Port-based Network Access Control (NAC).  It works on both wired switch ports and wireless access points. 
+
+The protocol that carries the conversation: EAP (Extensible Authentication Protocol).  It's a framework — a wrapper for passing authentication messages. By itself it
+doesn't provide security; it just transports the credentials between the three parties. 
+
+The Three Roles
+Role	What it is	What it does
+Supplicant	Your laptop, phone, workstation	Requests access and provides credentials
+Authenticator	The switch or wireless AP	Controls the port.  Blocks all traffic until auth is done. Relays EAP messages between supplicant and server. Does NOT make the access decision itself.
+Authentication Server	Usually a RADIUS server (can also be LDAP, TACACS+, Kerberos)	Actually validates the credentials and tells the authenticator to allow or deny
+
+The Authentication Flow (step by step)
+Device connects — you plug in or associate with the AP. The port is in an unauthorized state.  It only passes EAPOL frames (the 802.1X traffic). Everything else — DHCP, 
+web, file shares — is dropped. 
+Authenticator sends EAP-Request/Identity — "Who are you?"
+Supplicant responds with EAP-Response/Identity — "I'm James" (or a device ID). 
+Authenticator forwards to the Authentication Server — wraps the EAP message inside a RADIUS packet and sends it to the server. 
+Server may request more details — e.g., "send me your username and password" or "present your certificate."
+Authenticator relays that back to the supplicant — you type in your credentials (or your client presents a certificate). 
+Supplicant sends credentials back through the authenticator to the server. 
+Server validates — checks against its database. If valid → Access-Accept. If not → Access-Reject.
+Authenticator opens the port (on success) — the port transitions from unauthorized to authorized, and normal traffic flows. 
+Key things to remember for the exam:
+The authenticator is a middleman, not the decision-maker.  The server decides.
+EAP is a framework, not a specific method.  Specific methods include EAP-TLS, PEAP, EAP-TTLS, EAP-FAST (these come up in the wireless topic too). 
+802.1X is not about TCP/UDP ports.  It's about the physical port on a switch or the wireless association. 
+It's commonly paired with RADIUS as the backend.
+
+The version for dummies. 
+The Problem (in real life)
+Imagine your house has a front door. Anyone who walks up to it can just... walk in. That's bad. You want a doorman Mutley the Security Dog, at the door who says
+"Prove you live here before you come in or I will growl."
+
+That's what port security is. A switch (the thing that connects your computers to the internet) has lots of little "doors" (ports). 
+Without security, anyone can plug in and get on your network. Port security puts a "doorman or Mutley" on each port.
+
+The Three Characters
+Think of it like checking into a hotel:
+
+Character	Hotel version	Network version
+Supplicant	YOU, the guest walking up to the front desk	Your laptop/phone that wants to connect
+Authenticator	The front desk clerk. They don't decide if you can stay — they just pass your info to the manager and hold the door	The switch port. It blocks everything until it gets the "all clear"
+Authentication Server	The manager in the back office who actually checks the guest list and says "yes, let them in" or "no, you're not on the list"	A RADIUS server (a computer somewhere on the network that holds all the passwords)
+
+What Happens Step by Step
+You plug in. Your laptop connects to the switch port. The port is locked. Nothing gets through. Not your web page, not your email, nothing.
+The switch asks: "Who are you?"
+You say: "I'm Dave" (or your computer automatically sends a username).
+The switch forwards that to the RADIUS server (the manager in the back).
+The RADIUS server asks: "Prove it. Give me your password."
+You give your password (your laptop sends it back through the switch to the server).
+The server checks its list. You're on it. It sends back: "Let Dave in."
+The switch unlocks the port. Now your internet works.
+If you're NOT on the list → the port stays locked. You're stuck.
+
+The Names You Need to Remember
+802.1X = the name of the whole "doorman at the door" system
+EAP = the language they use to talk to each other. It's not the security itself, it's just the envelope the messages travel in.
+RADIUS = the most common "manager in the back" (the server that checks passwords)
+One Last Thing
+This works for wired (you plug in a cable) AND wireless (you connect to Wi-Fi). Same idea, same three characters.
+
+Character	Role in 802.1X	What they do
+Miss Silky (you)	The narrator	Tells the story
+Mutley the dog	Authenticator (the switch port)	The bouncer. Stands at the door. Nobody gets past him until the manager says "let 'em in." He doesn't make the call — he just holds the door and passes messages.
+Allen the fool	Supplicant (your laptop/user)	Walks up to the door wanting in. Has to prove who he is.
+The manager in the back	Authentication Server (RADIUS)	Actually checks the list. Says yes or no.
+
+The Story (Miss Silky edition)
+So Allen the fool strolls up to the club. Mutley the dog is sitting on the door like a goddamn bouncer. Allen says "let me in, Mutley." Mutley says "nope, sit down." Allen can't get past. Mutley doesn't care. Mutley just holds the door.
+
+Mutley radios the manager in the back: "Hey, this guy Allen wants in. Who is he?" Manager says "Ask him for his password." Mutley radios Allen: "Manager wants your password, fool." Allen types it in. Mutley radios it back to the manager.
+
+Manager checks the list. "Yeah, Allen's on it." Radios Mutley: "Let him in."
+
+Mutley opens the door. Allen walks in.
+
+Now here's the gory part you remember: if Allen tries to shove past Mutley without the password? Mutley bites his hand off. Allen is on the floor. Port stays locked. Nobody's getting in.
+
+
+Questions.
+
+
+
+
+
+
+
 
 
 
