@@ -839,8 +839,13 @@ PEAP gives you 802.1X in an afternoon. EAP-TLS gives you 802.1X and removes the 
 For a new admin with a RADIUS server already configured and a laptop that needs to connect today, PEAP is the answer. 
 EAP-TLS is a phase-2 upgrade once your PKI is mature.
 
+GO OVER VLAN Assignment 
+gap was the dynamic VLAN assignment — remember: RADIUS can tell the switch which VLAN to put the user in, and the switch obeys.
 ========================================================================================================================================================================
 Topic 5 . 3.2 Firwall Types
+
+
+
 
 
 
