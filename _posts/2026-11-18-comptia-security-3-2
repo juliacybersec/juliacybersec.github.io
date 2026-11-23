@@ -608,12 +608,13 @@ A hospital that needs patient monitoring to continue like o2 sat, HR or blood pr
 reaches sensitive systems, while a retail site might choose fail-open so the store doesn't go offline and no transactions go though as it may be better to shutdown than have 
 unchecked transactions.
 ========================================================================================================================================================================
-Topic 4. 3.2 Port Security
+Topic 4. 3.2  Port Security
 
-Port Security — Detailed Explanation - The problem it solves: If someone walks into your office, plugs a laptop into an available switch port, they're on your network. Port 
-security stops that. You don't get access until you authenticate.
+Port Security — Detailed Explanation - The problem it solves: If someone walks into your office, plugs a laptop into an available switch port, they're on your network. 
+Port security stops that. You don't get access until you authenticate.
 
 The standard: IEEE 802.1X, also called Port-based Network Access Control (NAC).  It works on both wired switch ports and wireless access points. 
+Some times you will hear IEEE 802.1X refered to as NAC. EAP and IEEE 802.1X work together so you can provide logon credentials.
 
 The protocol that carries the conversation: EAP (Extensible Authentication Protocol).  It's a framework — a wrapper for passing authentication messages. By itself it
 doesn't provide security; it just transports the credentials between the three parties. 
@@ -626,10 +627,11 @@ Authenticator  - 	The switch or wireless AP	Controls the port.  Blocks all traff
 Authentication  -  Server	Usually a RADIUS server (can also be LDAP, TACACS+, Kerberos)	Actually validates the credentials and tells the authenticator to allow or deny
 
 The Authentication Flow (step by step)
-Device connects — you plug in or associate with the AP. The port is in an unauthorized state.  It only passes EAPOL frames (the 802.1X traffic). Everything else — DHCP, 
+Device connects — you plug in or associate with the AP. The port is in an unauthorized state.  
+It only passes EAPOL frames (the 802.1X traffic). Everything else — DHCP, 
 web, file shares — is dropped. 
 Authenticator sends EAP-Request/Identity — "Who are you?"
-Supplicant responds with EAP-Response/Identity — "I'm James" (or a device ID). 
+Supplicant responds with EAP-Response/Identity — "I'm Allen" (or a device ID). 
 Authenticator forwards to the Authentication Server — wraps the EAP message inside a RADIUS packet and sends it to the server. 
 Server may request more details — e.g., "send me your username and password" or "present your certificate."
 Authenticator relays that back to the supplicant — you type in your credentials (or your client presents a certificate). 
@@ -655,19 +657,50 @@ Think of it like checking into a hotel:
 
 Character	Hotel version	Network version
 Supplicant	YOU, the guest walking up to the front desk	Your laptop/phone that wants to connect
-Authenticator	The front desk clerk. They don't decide if you can stay — they just pass your info to the manager and hold the door	The switch port. It blocks everything until it gets the "all clear"
-Authentication Server	The manager in the back office who actually checks the guest list and says "yes, let them in" or "no, you're not on the list"	A RADIUS server (a computer somewhere on the network that holds all the passwords)
+Authenticator	The front desk clerk. They don't decide if you can stay — they just pass your info to the manager and hold the door	The switch port. It blocks everything 
+until it gets the "all clear"
+Authentication Server	- The manager in the back office who actually checks the guest list and says "yes, let them in" or "no, you're not on the list"	A RADIUS server 
+(a computer somewhere on the network that holds all the passwords)
 
 What Happens Step by Step
 You plug in. Your laptop connects to the switch port. The port is locked. Nothing gets through. Not your web page, not your email, nothing.
 The switch asks: "Who are you?"
-You say: "I'm Dave" (or your computer automatically sends a username).
+You say: "I'm Allen" (or your computer automatically sends a username).
 The switch forwards that to the RADIUS server (the manager in the back).
 The RADIUS server asks: "Prove it. Give me your password."
 You give your password (your laptop sends it back through the switch to the server).
-The server checks its list. You're on it. It sends back: "Let Dave in."
+The server checks its list. You're on it. It sends back: "Let Allen in."
 The switch unlocks the port. Now your internet works.
 If you're NOT on the list → the port stays locked. You're stuck.
+
+Access-Challenge (packet code 11) means the RADIUS server isn't done yet — it needs more information from the user before it can make a final Accept or Reject decision. 
+It's not a failure; it's the server saying "I need one more thing."
+
+What's actually happening in the flow:
+
+User's NAS (switch, router, VPN concentrator) sends an Access-Request (username + password) to the RADIUS server.
+RADIUS server validates the first factor (e.g., AD password checks out) but requires a second step.
+Server replies with Access-Challenge — this packet can carry:
+A Reply-Message attribute (e.g., "Enter your OTP token code")
+A State attribute (a token to tie the follow-up request to this session)
+The NAS displays the prompt to the user (or in EAP/802.1X, relays an EAP-Request frame to the supplicant).
+User provides the response (OTP code, token, certificate, etc.).
+NAS sends a new Access-Request (new request ID, User-Password replaced with the encrypted response, and the State attribute carried back).
+RADIUS server validates the second factor → Access-Accept or Access-Reject. 
+Most common real-world use cases:
+                                  Scenario	What the challenge collects
+                                  MFA / 2FA	OTP from a token app (Google Authenticator, RSA, etc.)
+                                  EAP-TLS / PEAP (802.1X Wi-Fi)	Certificate exchange, TLS handshake steps
+                                  Challenge-response protocols (MS-CHAPv2)	A nonce the client must encrypt back
+
+Key exam points to lock in:
+
+It's a continuation, not a denial. The port/session stays in an unauthorized/pending state until the final Accept or Reject arrives.
+If the NAS doesn't support challenge/response, it treats the Access-Challenge as an Access-Reject (per RFC 2865). 
+Multiple challenges can be sent in sequence before a final decision.
+In 802.1X, the Access-Challenge wraps an EAP-Message attribute — the switch relays it as an EAP frame to the supplicant. 
+So if you see "Access-Challenge" in a lab or on the exam: think MFA prompt or EAP handshake step, and the next thing that happens is the user provides additional 
+credentials and a second Access-Request goes out.
 
 The Names You Need to Remember
 802.1X = the name of the whole "doorman at the door" system
@@ -678,35 +711,153 @@ This works for wired (you plug in a cable) AND wireless (you connect to Wi-Fi). 
 
 Character	Role in 802.1X	What they do
 Miss Silky (you)	The narrator	Tells the story
-Mutley the dog	Authenticator (the switch port)	The bouncer. Stands at the door. Nobody gets past him until the manager says "let 'em in." He doesn't make the call — he just holds the door and passes messages.
+Mutley the dog	Authenticator (the switch port)	The bouncer. Stands at the door. Nobody gets past him until the manager says "let 'em in."
+He doesn't make the call — he just holds the door and passes messages.
 Allen the fool	Supplicant (your laptop/user)	Walks up to the door wanting in. Has to prove who he is.
 The manager in the back	Authentication Server (RADIUS)	Actually checks the list. Says yes or no.
 
-The Story (Miss Silky edition)
-So Allen the fool strolls up to the club. Mutley the dog is sitting on the door like a goddamn bouncer. Allen says "let me in, Mutley." Mutley says "nope, sit down." Allen can't get past. Mutley doesn't care. Mutley just holds the door.
+The Miss Silky Edition
+So Allen the fool strolls up to the club. Mutley the dog is sitting on the door like a goddamn bouncer. Allen says "let me in, Mutley." Mutley says "nope, sit down."
+Allen can't get past. Mutley doesn't care. Mutley just holds the door.
 
 Mutley radios the manager in the back: "Hey, this guy Allen wants in. Who is he?" Manager says "Ask him for his password." Mutley radios Allen: "Manager wants your password, fool." Allen types it in. Mutley radios it back to the manager.
-
 Manager checks the list. "Yeah, Allen's on it." Radios Mutley: "Let him in."
-
 Mutley opens the door. Allen walks in.
 
-Now here's the gory part you remember: if Allen tries to shove past Mutley without the password? Mutley bites his hand off. Allen is on the floor. Port stays locked. Nobody's getting in.
+Now here's the gory part: if Allen tries to shove past Mutley without the password? Mutley bites his hand off. Allen is on the floor. Mutley doesn't care.
+Port stays locked. Nobody's getting in. 
 
 
-Questions.
+Questions and Answers
+Allen the fool plugs his laptop into a switch port. The port is in its default state.
+What is the port doing right now, and what is the only type of traffic it will let through?
 
+Unauthorized state
+✅ Only EAPOL frames pass through
+✅ Everything else — DHCP, web, file shares — all dropped
+✅ Authenticator (Mutley) sends EAP-Request/Identity → "Who are you?"
+✅ Supplicant (Allen) responds with EAP-Response/Identity → "I'm so-and-so"
 
+Allen's laptop is connected, the port is locked, and Mutley has just radioed the RADIUS server.
+The RADIUS server sends back an Access-Challenge instead of an Accept or Reject. What does that mean, and what happens next?
 
+ Not a failure — it's a "I need more info"
+✅ RADIUS is saying "okay, password checks out, but now give me X" (could be a token code, a second factor, a certificate, whatever)
+✅ Mutley relays the challenge back to Allen, Allen responds, loop continues until Accept or Reject
 
+You're configuring a switch port for 802.1X. Allen connects and authenticates successfully. The RADIUS server sends back an Access-Accept with a VLAN assignment — VLAN 20.
+What happens to the switch port after that?
 
+ Port unlocks, traffic flows, internet works
+✅ If not on the list → port stays locked
+The RADIUS server didn't just say "let him in" — it said "let him in on VLAN 20." So the switch port dynamically moves to VLAN 20.
+That's the whole point of the VLAN assignment in the Access-Accept. It means Allen gets dropped into a specific network segment based on who he is.
+In my story: the manager doesn't just say "let Allen in" — he says "let Allen in, but put him in the VIP lounge, not the basement." The switch obeys.
 
+Allen connects to the Wi-Fi at the office. His laptop authenticates via 802.1X/PEAP. The access point is the authenticator. Now Allen's laptop gets a certificate
+revoked by the company (he got fired). What happens the next time he tries to connect?
 
+Next time Allen connects, his cert gets presented
+✅ RADIUS server checks the cert against the CA's revocation list (CRL) or OCSP
+✅ Revoked → Access-Reject
+✅ Port stays locked. Allen's out.
 
+What the company did (behind the scenes): The PKI admin revoked Allen's client certificate in the CA. 
+The CA publishes an updated CRL (Certificate Revocation List) containing the serial number of Allen's cert.
+If OCSP is deployed, the OCSP responder also marks it as "revoked." 
 
+Next time Allen tries to connect:
+
+Allen's laptop (supplicant) associates with the AP and initiates 802.1X.
+The AP (authenticator) forwards the EAP exchange to the RADIUS server.
+During the EAP-TLS handshake, Allen's laptop presents its client certificate to the RADIUS server.
+The RADIUS server validates the certificate chain and checks revocation status against the CRL (or queries OCSP). 
+The cert is found revoked → RADIUS sends Access-Reject with an EAP-Failure message.
+The AP keeps the port in the unauthorized state. Allen gets no network access. 
+Critical nuance (exam + real world):
+
+Revocation is not instantly enforced.  The RADIUS server caches the CRL until its next-update time. If the CA publishes CRLs every 12 hours and Allen's cert was 
+revoked 5 minutes ago, the RADIUS server may still be holding the old CRL that doesn't include Allen's cert — meaning he could still authenticate for up to that window. 
+
+To close that gap, the admin should:
+
+Publish a new CRL immediately (not wait for the scheduled update)
+Or use OCSP, which gives real-time per-certificate status checks 
+What Allen sees: On Windows, the WLAN AutoConfig log (Event ID 11006 or 12013) shows the authentication failure. The Wi-Fi icon shows "authentication failed" or 
+the connection simply won't establish. He gets no prompt asking for a password — it's a silent reject at the certificate layer. 
+
+Why this matters for the exam:
+
+Revocation ≠ expiry (different mechanisms, different CRL treatment)
+The check happens on the RADIUS server side, not the AP or the laptop
+If the CRL/OCSP endpoint is unreachable, most RADIUS servers are configured fail-closed → they reject all clients, not just the revoked one
+The AP is just a relay (authenticator) — it doesn't do the revocation check itself 
+
+You're a new admin. You want to deploy 802.1X on a wired switch. You've got your RADIUS server set up. What's the minimum you need on the client side (Allen's laptop) 
+for EAP-TLS vs PEAP, and why would you pick one over the other in a real office?
+PEAP = just username + password on the client. No cert to install on Allen's laptop. For a typical office? PEAP. Can setup fairly quickly. 
+✅ Server cert already exists (AD, GPO, PKI already in place)
+✅ Quickest to roll out across an office
+✅ EAP-TLS would require pushing a client certificate to every laptop — that's a whole extra project
+The one thing you could add for the exam: EAP-TLS is more secure (mutual auth, no password at all), so if you're in a high-security environment and can manage certs, 
+you'd pick EAP-TLS. 
+
+The Other Choices 
+PEAP (the pragmatic choice):
+
+The server's CA certificate (or the server cert itself) pinned in the laptop's trust store — this is what stops an evil twin
+Allen's AD username and password (already exists, nothing new to issue)
+A GPO (or manual WLAN/802.1X profile) telling the NIC to use PEAP-MSCHAPv2 and pointing to the correct server cert
+That's it. No PKI enrollment, no per-device certs, no renewal process.
+
+EAP-TLS (the "no standing credentials" choice):
+
+A client certificate issued by your internal CA (one per machine, or one per user)
+The private key (stored in Windows certificate store, TPM, or smart card)
+The CA root/intermediate cert in the trust store
+A GPO configured for EAP-TLS
+Every new machine needs a cert enrolled, and you now own a renewal + revocation lifecycle for every endpoint.
+
+Why you'd pick one over the other in a real office
+Pick PEAP when:
+
+You have 50–500 endpoints and want to deploy this this week
+Your AD is already healthy and passwords are managed
+You don't have a functioning internal CA / PKI team
+You're comfortable with the residual risk of password-based auth (spraying, lockouts, credential theft)
+This is what ~90% of enterprises actually run.
+
+Pick EAP-TLS when:
+
+You need zero standing credentials (compliance, defence, finance, or you're in a high-threat environment)
+You already have a working PKI (integrated with AD CS, auto-enrollment, etc.)
+You want to eliminate the entire class of "someone stole the password" incidents
+You're deploying in a server room, SCADA, or other segment where a password is unacceptable
+The honest trade-off in one line:
+
+PEAP gives you 802.1X in an afternoon. EAP-TLS gives you 802.1X and removes the password from the equation, but it costs you a PKI operation.
+For a new admin with a RADIUS server already configured and a laptop that needs to connect today, PEAP is the answer. 
+EAP-TLS is a phase-2 upgrade once your PKI is mature.
 
 ========================================================================================================================================================================
+Topic 5 . 3.2 Firwall Types
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+================================================================================================================================================================================
 
 
 
