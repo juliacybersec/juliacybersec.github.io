@@ -357,6 +357,88 @@ At 2:14 am on a Sunday, this is a live incident to investigate, not just an atte
 Type 3 means nobody sat at the DC or opened RDP. Something on the workstation reached the DC over the network: SMB, remote PowerShell or a tool like PsExec.
 Ruling out a legitimate scheduled task or service is the first look.
 Next look for a 4672 (admin privileges assigned) at the same second, and check what that workstation was running at 2:14.
+------------------------------------------------------------------------------------------------------------------------------------------
+RADIUS - Protocol vs Server
+RADIUS = the protocol. It's the rules for how the messages are formatted. Like HTTP is a protocol.
+A RADIUS server = a machine running software that speaks RADIUS (like FreeRADIUS or Windows NPS). Like Apache is a server that speaks HTTP.
+You don't "install RADIUS." You install FreeRADIUS or enable NPS on a Windows box. That makes it a RADIUS server.
+
+RADIUS is the language Mutley radios in. The RADIUS server is the manager who speaks that language. Mutley doesn't radio in "manager-speak" — he radios in RADIUS. 
+The manager just happens to be running software that understands RADIUS.
+
+That's the whole difference. Protocol = the language. Server = the person speaking it.
+
+----------------------------------------------------------------------------------------------------------------------------------------------------------------------
+What is RADIUS Protocol
+RADIUS — What It Actually Is
+RADIUS = Remote Authentication Dial-In User Service 
+
+It's a protocol — a set of rules for how messages get sent between two computers.  Specifically, it's the language that Mutley (the switch/bouncer) uses to radio
+the manager in the back (the RADIUS server) to ask "is this guy allowed in?"
+
+The Three Jobs It Does (AAA)
+Job	Question it answers	In your story
+Authentication	- "Is Allen actually Allen?"	Manager checks the password. Yes/No.
+Authorization  - 	"Okay, Allen's real. What can he do?"	Manager says "he gets the VIP lounge, not the basement."
+Accounting	-    "What did Allen do while he was in here?"	Manager writes down: "Allen was in from 9 to 5, used 4GB of data."
+
+How the Messages Flow
+Allen plugs in (or connects to Wi-Fi).
+Mutley (the switch) gets blocked — port is locked.
+Mutley sends an Access-Request packet to the RADIUS server: "This guy Allen says his password is XYZ. Is it right?"
+RADIUS server checks its database.  Three possible answers:
+Access-Accept → "Yeah, let him in. And put him on VLAN 10."
+Access-Reject → "Nope. Not on the list."
+Access-Challenge → "I need more info.  Ask him for his token code."
+Mutley gets the answer, opens or keeps the door shut.
+If accepted, Mutley sends Accounting-Start to the server. When Allen leaves, Accounting-Stop.
+
+The Boring Exam Details
+Detail	Value
+                  Transport	UDP (not TCP)
+                  Auth/Authorization port	1812
+                  Accounting port	1813
+                  Old/legacy ports	1645 / 1646
+Security	Only the password field is encrypted (using a shared secret).  The rest of the packet is basically cleartext.
+Standard	IETF RFC 2865 (auth), RFC 2866 (accounting)
+
+The Key Confusion on the Exam
+The RADIUS client is NOT Allen. The RADIUS client is Mutley (the switch/NAS). Allen is the supplicant. Mutley is the one talking RADIUS to the server.
+Allen just talks EAP to Mutley. Mutley then wraps that in RADIUS and sends it to the server.
+
+So: Allen speaks EAP to Mutley. Mutley speaks RADIUS to the server.
+
+--------------------------------------------------------------------------------------------------------------------------------------------
+What is Radius Server?
+RADIUS = Remote Authentication Dial-In User Service. 
+
+Analogy = Radius is the manager in the back office. The one Mutley calls in on the radios when Allen shows up at the door.
+
+Here's the deal:
+
+Mutley - (the switch/switch port) doesn't know Allen's password. He doesn't have the list. He's just a bouncer dog — he holds the door,
+nothing more.
+RADIUS is the server sitting somewhere on the network that actually has the list of who's allowed in and what their passwords are. 
+When Mutley radios in "this fool Allen wants in," RADIUS checks its database (which might be Active Directory, or LDAP, or just a flat file) and says "Access-Accept" or "Access-Reject".
+Three things RADIUS does (AAA):
+
+Function	In your story
+Authentication	"Is Allen actually Allen? Check his password."
+Authorization	"Okay, Allen's real. Which room can he go in? The VIP lounge or the basement?"
+Accounting	"Allen was in from 9am to 5pm. Write that down."
+
+Exam stuff to remember:
+
+Runs over UDP port 1812 (auth) and 1813 (accounting)
+It's a client-server protocol — but the "client" is Mutley (the switch/NAS), NOT Allen.  This trips people up on the exam.
+It was made in 1991 for dial-up, but now it's used for Wi-Fi, VPNs, wired ports — everything. 
+Common RADIUS server software: FreeRADIUS (Linux), NPS (Windows — Network Policy Server)
+So the full chain: Allen → Mutley → RADIUS → decision → back to Mutley → door opens or stays shut.
+
+---------------------------------------------------------------------------------------------------------------------------------------------
+
+
+
 
 
 ==============================================================================================================================================================
