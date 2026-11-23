@@ -436,7 +436,64 @@ Common RADIUS server software: FreeRADIUS (Linux), NPS (Windows — Network Poli
 So the full chain: Allen → Mutley → RADIUS → decision → back to Mutley → door opens or stays shut.
 
 ---------------------------------------------------------------------------------------------------------------------------------------------
+What is EAP = Extensible Authentication Protocol.
+EAP — What It Actually Is
 
+Here's the thing that confuses people: EAP is not a method of authentication. It's a framework — an envelope. It doesn't check passwords.
+It doesn't verify certificates. It just carries the conversation between Allen and the manager.
+
+Mutley is the bouncer at the door.
+Allen is the guy wanting in.
+The manager (RADIUS server) is the one who actually checks the password.
+EAP is the radio channel that Allen and the manager use to talk to each other. Mutley just passes the radio messages back and forth. He doesn't understand 
+what's being said. He doesn't make the decision. He just relays.
+
+"Extensible" — What That Word Means
+"Extensible" = pluggable. EAP doesn't say how you prove who you are. It just says "here's the envelope, put your proof in here."
+
+The actual proof can be:
+
+EAP Method -	What Allen has to show
+EAP-TLS	A digital certificate (like a government ID card with a photo and a signature)
+PEAP - A password, but wrapped in a secure tunnel (like putting your password in a locked box before handing it over)
+EAP-TTLS -	Same idea as PEAP — password in a tunnel
+EAP-FAST -	Password, but uses a cached key from a previous login (like a hotel keycard that remembers you)
+EAP-MD5	- A challenge-response with a password hash (old, weak, basically dead)
+
+So EAP is the envelope. The method (TLS, PEAP, etc.) is what's inside the envelope. 
+
+How It Travels (the boring part you need for the exam)
+Allen → Mutley: EAP messages are wrapped in EAPOL frames (EAP Over LAN).  This is Layer 2 — it works even before Allen has an IP address. EtherType 0x888E.
+Mutley → Manager (RADIUS server): Mutley takes the EAP message, wraps it inside a RADIUS packet, and sends it over UDP 1812.
+So EAP is inside EAPOL on the front side, and inside RADIUS on the back side.  Mutley just swaps the wrapper.
+
+The Key Exam Trap
+The exam will ask: "Who does the actual authentication?"  The answer is the RADIUS server (the authentication server).
+
+The answer is NOT Mutley (the authenticator).  Mutley is a pass-through proxy. He doesn't even
+know which EAP method is being used. He just forwards packets. 
+
+Allen talks EAP to the manager. Mutley just carries the messages.
+
+One-Liner for the Exam
+EAP is a framework (not a method) that transports authentication between a supplicant and an authentication server, relayed by an authenticator. 
+It works over both wired (EAPOL) and wireless networks. 
+
+That's EAP. Same envelope, different stuff inside depending on the method. Mutley never opens the envelope.
+-------------------------------------------------------------------------------------------------------------------------------------------------------
+PEAP Explained
+PEAP = Protected EAP.
+
+In your story: Allen's password is in a locked box before he hands it over. Nobody can read the password in transit.
+
+How it works (simplified):
+
+Mutley and the manager first set up a secure tunnel (TLS encryption) between them. No password involved yet — just the tunnel.
+Once the tunnel is up, Allen's password travels inside that tunnel.
+The manager checks the password. Done.
+Why it exists: Without PEAP, Allen's password would be flying around in the open. PEAP wraps it in encryption first, so even if someone sniffs the wire, 
+they see garbage.
+-----------------------------------------------------------------------------------------------------------------------------------------------------------
 
 
 
