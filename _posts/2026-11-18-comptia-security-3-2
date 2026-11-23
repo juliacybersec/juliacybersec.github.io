@@ -610,9 +610,8 @@ unchecked transactions.
 ========================================================================================================================================================================
 Topic 4. 3.2 Port Security
 
-Port Security — Detailed Explanation
-The problem it solves: If someone walks into your office, plugs a laptop into an available switch port, they're on your network. Port security stops that. You don't get 
-access until you authenticate.
+Port Security — Detailed Explanation - The problem it solves: If someone walks into your office, plugs a laptop into an available switch port, they're on your network. Port 
+security stops that. You don't get access until you authenticate.
 
 The standard: IEEE 802.1X, also called Port-based Network Access Control (NAC).  It works on both wired switch ports and wireless access points. 
 
@@ -621,9 +620,10 @@ doesn't provide security; it just transports the credentials between the three p
 
 The Three Roles
 Role	What it is	What it does
-Supplicant	Your laptop, phone, workstation	Requests access and provides credentials
-Authenticator	The switch or wireless AP	Controls the port.  Blocks all traffic until auth is done. Relays EAP messages between supplicant and server. Does NOT make the access decision itself.
-Authentication Server	Usually a RADIUS server (can also be LDAP, TACACS+, Kerberos)	Actually validates the credentials and tells the authenticator to allow or deny
+Supplicant  - 	Your laptop, phone, workstation	Requests access and provides credentials
+Authenticator  - 	The switch or wireless AP	Controls the port.  Blocks all traffic until auth is done. Relays EAP messages between supplicant and server. Does NOT make
+                    the access decision itself.
+Authentication  -  Server	Usually a RADIUS server (can also be LDAP, TACACS+, Kerberos)	Actually validates the credentials and tells the authenticator to allow or deny
 
 The Authentication Flow (step by step)
 Device connects — you plug in or associate with the AP. The port is in an unauthorized state.  It only passes EAPOL frames (the 802.1X traffic). Everything else — DHCP, 
@@ -705,6 +705,7 @@ Questions.
 
 
 
+========================================================================================================================================================================
 
 
 
