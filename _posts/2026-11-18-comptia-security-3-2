@@ -842,7 +842,9 @@ EAP-TLS is a phase-2 upgrade once your PKI is mature.
 GO OVER VLAN Assignment 
 gap was the dynamic VLAN assignment — remember: RADIUS can tell the switch which VLAN to put the user in, and the switch obeys.
 ========================================================================================================================================================================
-Topic 5 . 3.2 Firwall Types
+Topic 5 . 3.2 Firewall Types
+
+
 
 
 
