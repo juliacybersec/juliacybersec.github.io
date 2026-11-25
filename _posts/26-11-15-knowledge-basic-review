@@ -33,7 +33,7 @@ Restoring a single deleted user. You’re right that DSRM can do this. It’s ca
 “The only DC is gone.” If the server is completely dead, you’d rebuild it and restore from a system state backup. DSRM is used on that box during the restore.
 If you have a second DC, you usually don’t need DSRM at all, because the healthy DC replicates everything back.
 
-Simplified one line - version:
+Simplified version:
 DSRM is a safe mode for Domain Controllers where AD is offline. You log in with the local DSRM password, because domain accounts can’t be checked, 
 and use it to restore or repair the AD database.
 What DSRM is (recap)
@@ -378,12 +378,12 @@ the manager in the back (the RADIUS server) to ask "is this guy allowed in?"
 
 The Three Jobs It Does (AAA)
 Job	Question it answers	In your story
-Authentication	- "Is Allen actually Allen?"	Manager checks the password. Yes/No.
-Authorization  - 	"Okay, Allen's real. What can he do?"	Manager says "he gets the VIP lounge, not the basement."
-Accounting	-    "What did Allen do while he was in here?"	Manager writes down: "Allen was in from 9 to 5, used 4GB of data."
+Authentication	- "Is Alan actually Alan?"	Manager checks the password. Yes/No.
+Authorization  - 	"Okay, Alan's real. What can he do?"	Manager says "he gets the VIP lounge, not the basement."
+Accounting	-    "What did Alan do while he was in here?"	Manager writes down: "Alan was in from 9 to 5, used 4GB of data."
 
 How the Messages Flow
-Allen plugs in (or connects to Wi-Fi).
+Alan plugs in (or connects to Wi-Fi).
 Mutley (the switch) gets blocked — port is locked.
 Mutley sends an Access-Request packet to the RADIUS server: "This guy Allen says his password is XYZ. Is it right?"
 RADIUS server checks its database.  Three possible answers:
@@ -391,7 +391,7 @@ Access-Accept → "Yeah, let him in. And put him on VLAN 10."
 Access-Reject → "Nope. Not on the list."
 Access-Challenge → "I need more info.  Ask him for his token code."
 Mutley gets the answer, opens or keeps the door shut.
-If accepted, Mutley sends Accounting-Start to the server. When Allen leaves, Accounting-Stop.
+If accepted, Mutley sends Accounting-Start to the server. When Alan leaves, Accounting-Stop.
 
 The Boring Exam Details
 Detail	Value
@@ -403,29 +403,29 @@ Security	Only the password field is encrypted (using a shared secret).  The rest
 Standard	IETF RFC 2865 (auth), RFC 2866 (accounting)
 
 The Key Confusion on the Exam
-The RADIUS client is NOT Allen. The RADIUS client is Mutley (the switch/NAS). Allen is the supplicant. Mutley is the one talking RADIUS to the server.
-Allen just talks EAP to Mutley. Mutley then wraps that in RADIUS and sends it to the server.
+The RADIUS client is NOT Alan. The RADIUS client is Mutley (the switch/NAS). Alan is the supplicant. Mutley is the one talking RADIUS to the server.
+Alan just talks EAP to Mutley. Mutley then wraps that in RADIUS and sends it to the server.
 
-So: Allen speaks EAP to Mutley. Mutley speaks RADIUS to the server.
+So: Alan speaks EAP to Mutley. Mutley speaks RADIUS to the server.
 
 --------------------------------------------------------------------------------------------------------------------------------------------
 What is Radius Server?
 RADIUS = Remote Authentication Dial-In User Service. 
 
-Analogy = Radius is the manager in the back office. The one Mutley calls in on the radios when Allen shows up at the door.
+Analogy = Radius is the manager in the back office. The one Mutley calls in on the radios when Alan shows up at the door.
 
 Here's the deal:
 
 Mutley - (the switch/switch port) doesn't know Allen's password. He doesn't have the list. He's just a bouncer dog — he holds the door,
 nothing more.
 RADIUS is the server sitting somewhere on the network that actually has the list of who's allowed in and what their passwords are. 
-When Mutley radios in "this fool Allen wants in," RADIUS checks its database (which might be Active Directory, or LDAP, or just a flat file) and says "Access-Accept" or "Access-Reject".
-Three things RADIUS does (AAA):
+When Mutley radios in "this fool Alan wants in," RADIUS checks its database (which might be Active Directory, or LDAP, or just a flat file) and says
+"Access-Accept" or "Access-Reject". Three things RADIUS does (AAA):
 
-Function	In your story
-Authentication	"Is Allen actually Allen? Check his password."
-Authorization	"Okay, Allen's real. Which room can he go in? The VIP lounge or the basement?"
-Accounting	"Allen was in from 9am to 5pm. Write that down."
+Function	In the story
+Authentication -	"Is Alan actually Alan? Check his password."
+Authorization	- "Okay, Alan's real. Which room can he go in? The VIP lounge or the basement?"
+Accounting	- "Alan was in from 9am to 5pm. Write that down."
 
 Exam stuff to remember:
 
@@ -440,10 +440,10 @@ What is EAP = Extensible Authentication Protocol.
 EAP — What It Actually Is
 
 Here's the thing that confuses people: EAP is not a method of authentication. It's a framework — an envelope. It doesn't check passwords.
-It doesn't verify certificates. It just carries the conversation between Allen and the manager.
+It doesn't verify certificates. It just carries the conversation between Alan and the manager.
 
 Mutley is the bouncer at the door.
-Allen is the guy wanting in.
+Alan is the guy wanting in.
 The manager (RADIUS server) is the one who actually checks the password.
 EAP is the radio channel that Allen and the manager use to talk to each other. Mutley just passes the radio messages back and forth. He doesn't understand 
 what's being said. He doesn't make the decision. He just relays.
@@ -463,7 +463,7 @@ EAP-MD5	- A challenge-response with a password hash (old, weak, basically dead)
 So EAP is the envelope. The method (TLS, PEAP, etc.) is what's inside the envelope. 
 
 How It Travels (the boring part you need for the exam)
-Allen → Mutley: EAP messages are wrapped in EAPOL frames (EAP Over LAN).  This is Layer 2 — it works even before Allen has an IP address. EtherType 0x888E.
+Alan → Mutley: EAP messages are wrapped in EAPOL frames (EAP Over LAN).  This is Layer 2 — it works even before Alan has an IP address. EtherType 0x888E.
 Mutley → Manager (RADIUS server): Mutley takes the EAP message, wraps it inside a RADIUS packet, and sends it over UDP 1812.
 So EAP is inside EAPOL on the front side, and inside RADIUS on the back side.  Mutley just swaps the wrapper.
 
@@ -473,9 +473,9 @@ The exam will ask: "Who does the actual authentication?"  The answer is the RADI
 The answer is NOT Mutley (the authenticator).  Mutley is a pass-through proxy. He doesn't even
 know which EAP method is being used. He just forwards packets. 
 
-Allen talks EAP to the manager. Mutley just carries the messages.
+Alan talks EAP to the manager. Mutley just carries the messages.
 
-One-Liner for the Exam
+For the Exam
 EAP is a framework (not a method) that transports authentication between a supplicant and an authentication server, relayed by an authenticator. 
 It works over both wired (EAPOL) and wireless networks. 
 
@@ -484,17 +484,17 @@ That's EAP. Same envelope, different stuff inside depending on the method. Mutle
 PEAP Explained
 PEAP = Protected EAP.
 
-In your story: Allen's password is in a locked box before he hands it over. Nobody can read the password in transit.
+My story: Alan's password is in a locked box before he hands it over. Nobody can read the password in transit.
 
 How it works (simplified):
 
 Mutley and the manager first set up a secure tunnel (TLS encryption) between them. No password involved yet — just the tunnel.
-Once the tunnel is up, Allen's password travels inside that tunnel.
+Once the tunnel is up, Alan's password travels inside that tunnel.
 The manager checks the password. Done.
-Why it exists: Without PEAP, Allen's password would be flying around in the open. PEAP wraps it in encryption first, so even if someone sniffs the wire, 
+Why it exists: Without PEAP, Alan's password would be flying around in the open. PEAP wraps it in encryption first, so even if someone sniffs the wire, 
 they see garbage.
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
-SSH host key fingerprint, known_hosts and TOFU
+SSH host key fingerprint, known_hosts and TOFU                                                          Date:25/11/2026
 
 The first time you SSH to a server, it shows a fingerprint (for example SHA256:...) and asks yes or no. The fingerprint is a SHA-256 hash of the server's public host key, 
 shortened so a person can compare it.
