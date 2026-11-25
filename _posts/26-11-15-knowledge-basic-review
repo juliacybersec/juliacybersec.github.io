@@ -494,7 +494,46 @@ The manager checks the password. Done.
 Why it exists: Without PEAP, Allen's password would be flying around in the open. PEAP wraps it in encryption first, so even if someone sniffs the wire, 
 they see garbage.
 -----------------------------------------------------------------------------------------------------------------------------------------------------------
+SSH host key fingerprint, known_hosts and TOFU
 
+The first time you SSH to a server, it shows a fingerprint (for example SHA256:...) and asks yes or no. The fingerprint is a SHA-256 hash of the server's public host key, 
+shortened so a person can compare it.
+
+What it proves: that the server is the real server. It authenticates the server to me. My password or SSH key is what authenticates me to the server. Each side proves
+itself separately. known_hosts: when I type yes, my computer saves the server's key in a file called known_hosts (on Windows: C:\Users\<me>\.ssh\known_hosts). Every later
+connection is checked against it. If the key ever changes, SSH shows "REMOTE HOST IDENTIFICATION HAS CHANGED" and refuses to connect. That warning is the alarm for a 
+possible on-path (man-in-the-middle) attack.
+
+TOFU (Trust On First Use): the weak point is the very first connection, because there is nothing saved yet to compare against. If an attacker were already in the middle
+the first time, I would trust their key instead. Best practice is to check the fingerprint against the one shown on the server's own console before typing yes.
+
+The fingerprint is like checking their face before you talk. If a stranger answers pretending to be your friend, you don't want to tell them your password. The fingerprint
+is how you confirm "yep, that's actually your laptop." The attack it stops is someone on the same network (e.g. a café Wi-Fi) sneaking in between you and your laptop,
+posing as it, and stealing whatever you type. CompTIA calls this an on-path attack (old name: man-in-the-middle). SHA-256 is NOT the lock on the door. It's just the way 
+the fingerprint is written down so it's short and easy to compare. The actual "lock" (encryption of your session) is a completely different thing negotiated separately.
+
+What it protects against: The fingerprint protects you from a man-in-the-middle (MITM) attack — where an attacker on the network intercepts your connection and presents 
+their own fake server.  Without the fingerprint check, you'd be encrypting your credentials to an attacker who then relays them to the real server. 
+
+The SHA256: prefix tells you which hash function was used to compress the server's long public key into a short, comparable string.
+It uses a symmetric cipher like AES-256-GCM negotiated separately during the handshake. The fingerprint is purely an identity
+check: "is this really the machine I think it is?" 
+
+A useful mental model: encryption protects the conversation, the fingerprint proves who you're talking to. You can have perfectly strong encryption and still be talking 
+to an attacker. 
+
+Analogy: Mutley dog version: Mutley has a good nose for sniffing. The first time you visit Mutley's house, he takes a sniff and memorises Miss Silky's scent.
+Next time, if someone turns up wearing a Miss Silky mask but smelling of Alan, Mutley can sniff out the mask and noes it's alan,  and the impostor(Alan) gets
+biten on the leg. The catch is that on the very first visit, Mutley has nothing to compare against. If Alan turned up first pretending to be Miss Silky, Mutley would 
+memorise the wrong scent.
+
+Simplified Analogy: on your first visit, Mutley sniffs you and memorises your scent. After that, anyone wearing a Miss Silky mask who smells wrong gets caught. On the very
+first visit, though, Mutley has nothing to compare against.
+
+The technical point in one sentence: the SSH host key fingerprint authenticates the server to the client, known_hosts remembers it, and any later change warns you of a
+possible on-path attack. Only the first connection relies on trust (TOFU).
+
+Links to: Security+ 2.4 on-path attacks(man in the middle); hashing (SHA-256); authentication.
 
 
 
