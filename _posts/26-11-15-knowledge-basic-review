@@ -534,7 +534,42 @@ The technical point in one sentence: the SSH host key fingerprint authenticates 
 possible on-path attack. Only the first connection relies on trust (TOFU).
 
 Links to: Security+ 2.4 on-path attacks(man in the middle); hashing (SHA-256); authentication.
+------------------------------------------------------------------------------------------------------------------------------------------------------------------
+SSH config drop-in files (sshd_config.d) and why I did't edit the main config
 
+On Ubuntu the main SSH server settings live in the directory path /etc/ssh/sshd_config. That file belongs to the OS package, so I didn't make any changes to it.
+Instead I put my own settings in a separate file in /etc/ssh/sshd_config.d/, for example 10-hardening.conf.
+
+Why use my own file:
+
+- Updates. When Ubuntu updates the SSH package it can replace the main config file or stop and ask which version to keep. My own file is left alone, so my 
+hardening survives updates. 2. Easy to see what I changed. All my changes are in one small, clearly named file. Anyone checking the server (me later, or an 
+auditor) can see exactly what was hardened without comparing a long file against the default.
+
+
+- Priority. SSH reads the files in sshd_config.d in number order. For each setting, the first value it finds wins and later ones are ignored.
+Ubuntu can include a 50-cloud-init.conf that turns password login back on, so naming my file 10- means it is read first and my setting wins.
+
+Note: it is first value wins per setting, not per session.
+
+How to check which value SSH is really using:
+sudo sshd -T | grep -i passwordauth
+What it does: shows the setting SSH is actually using after reading every config file.
+sudo - runs it as administrator
+sshd - the SSH server program
+-T - prints every setting currently in use
+| - the pipe, sends the output into the next command
+grep - searches text for a word
+-i - ignore capitals
+passwordauth - the word being searched for
+Expected result: passwordauthentication no
+
+Why it matters (GRC): this is configuration management. The security baseline is a small, documented, reviewable change instead of an edit buried in a vendor file. It answers the audit question "how do you know your servers stay hardened?"
+
+Analogy: Mutley's rulebook comes from Head Office, and every few months they post a fresh copy and bin the old one, along with any notes in the margins. 
+So Miss Silky pins her own card to the front of the kennel: "RINGS ONLY. NO ROOT." Mutley reads the card first and follows it, whatever the book says further in.
+
+Links to: Security+ 2.5 hardening techniques and configuration enforcement; SSH hardening (Lab 19 Part B).
 
 
 ==============================================================================================================================================================
