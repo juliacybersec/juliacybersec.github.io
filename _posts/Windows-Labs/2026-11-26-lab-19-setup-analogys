@@ -22,4 +22,33 @@ the shutter slams down, and he's left hanging there by his trousers.
 The technical point: a default-deny inbound firewall blocks every port except the ones you deliberately open, so a service you forgot about isn't reachable from 
 outside.
 
+Instead of editing the main sshd_config file I put the settings in a new file starting with 10-. Explain why this is a better?
+
+The main sshd_config belongs to the OS package. When an update ships a new version, edits can be overwritten, or the update stops to ask which version 
+to keep. A separate file that's setup is left alone.
+
+Everything that changed is in one small file with a clear name. Anyone checking the server, including myself in six months or an auditor, can see exactly 
+what was hardened without comparing a 120-line file against the default.
+
+The first value wins per setting, not per session. SSH reads all the files, and for each setting (such as PasswordAuthentication) it keeps the first value it 
+finds and ignores any later ones. That's why 10- beats Ubuntu's 50-cloud-init.conf. Lower numbers are read first, meaning the first value wins.
+
+Mutley Analogy: Mutley's rulebook comes from Head Office, and every few months they post out a fresh copy and thow away the old one, along with any notes Miss Silky 
+scribbled in the margins. So she pins her own card to the front of the kennel: "RINGS ONLY. NO ROOT." Mutley reads the card first and follows it, whatever the Head
+Office book writes further along in the pages. Alan once tried slipping a "passwords OK" note into the back of the book, but Mutley had already read the front card,
+so the note just went soggy in his mouth. The technical point: drop-in config files keep your hardening separate from the vendor's file, so it survives updates, 
+is easy to audit, and takes priority when it's read first.
+
+Why it matters at GRC level: this is configuration management in practice. My security baseline is a small, documented, reviewable change instead of an edit buried
+in a vendor file. It's the kind of evidence an auditor asks for under "how do you know your servers stay hardened?"
+
+
+
+
+
+
+
+
+
+
 
