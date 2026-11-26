@@ -1,0 +1,25 @@
+Lab 19 Setup Explainer Using Analogy's 
+
+Key-based login
+
+🐕 The analogy: a password is a secret word you whisper to Mutley at the door. Alan's dodgy mates can stand outside all night shouting guesses. A key pair works
+differently. Mutley holds a wax impression of your signet ring (the public key), and only the real ring (the private key) makes a seal that matches. The ring never
+leaves your hand, so there's nothing to overhear or guess. Alan carves a fake ring out of a potato, and Mutley eats the potato and the finger holding it.
+The technical point: with key authentication, the server sends a challenge that only your private key can sign. The private key never crosses the network,
+which defeats password guessing, spraying and credential theft from the wire.
+
+
+Turn off password login
+
+🐕 Now that there is a signet ring, Mutley stops listening to whispered passwords at the door. Alan rocks up shouting "password123!" and Mutley doesn't even
+lift his head. He just points a paw at the sign: RINGS ONLY.
+
+
+Setting up the ufw firewall
+
+🐕 Mutley gets a gate. Nobody comes in at all except people from your street (your home network) going to door 22 (SSH). Alan tries climbing in a side window, 
+the shutter slams down, and he's left hanging there by his trousers.
+The technical point: a default-deny inbound firewall blocks every port except the ones you deliberately open, so a service you forgot about isn't reachable from 
+outside.
+
+
