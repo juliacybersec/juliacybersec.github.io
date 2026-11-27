@@ -42,6 +42,61 @@ is easy to audit, and takes priority when it's read first.
 Why it matters at GRC level: this is configuration management in practice. My security baseline is a small, documented, reviewable change instead of an edit buried
 in a vendor file. It's the kind of evidence an auditor asks for under "how do you know your servers stay hardened?"
 
+Setting Up SPLUNK On My Old Laptop
+
+The Analogy
+
+Miss Silky is building a control room in the basement. Every CCTV camera in the kingdom (your logs) will feed into one wall of screens. Before the screens go in, she checks that the wiring in the walls
+can carry the signal. Last time, Alan the Fool wired a control room with old kettle cord. The screens blew up and his eyebrows went with them, and they've never grown back. Mutley won't guard a room that
+hasn't been inspected.
+
+The technical point: Splunk needs a CPU with AVX instructions for its KV store, and it should run under its own low-privilege account, not root. So we check the hardware before we install anything.
+
+Section 1: Pre-flight Checks Before Installing Anything
+
+This laptop is old, and current Splunk has a hard CPU requirement: these CPU families must have support for Advanced Vector Extensions (AVX), Streaming SIMD Extensions 4.2 (SSE4.2), 
+and Advanced Encryption Standard: New Instructions (AES-NI). This support is required for App Key Value Store. It's much better to find out now than halfway through the install.
+
+I ran the command  grep -c avx /proc/cpuinfo and it came back 0 
+
+What it does: counts how many lines of the CPU's information mention AVX.
+
+/proc/cpuinfo: is a special file where Linux lists the CPU's details and features, with one block per CPU core
+
+Check: a number above 0 (often 2 or 4, one per core) means AVX is there. It came back 0 so we have a slightly huge problem
+
+A 0 means this laptop's CPU has no AVX, so current Splunk can't run properly on it. It's annoying, but this is exactly why we checked before installing. Alan wires the control room first and loses his
+eyebrows. Miss Silky inspects the wiring, finds kettle cord, and changes the plan before anything blows up. "Checked the vendor's hardware requirements before deploying, found a blocker, re-planned" 
+also reads really well in a write-up.
+
+What it means: Splunk's KV store needs AVX. On this CPU it would crash with an "illegal instruction" error. Splunk might still half-run, but that's an unsupported setup and not one I'd build your lab on.
+
+The good news: the laptop isn't wasted. It's already hardened, so it can become a Linux log source. A universal forwarder on it would send its SSH and auth logs to Splunk. Forwarders don't run the KV store,
+so they don't need AVX. That gives you Windows and Linux logs to hunt through, which looks better in a SOC portfolio than Windows alone.
+
+Installed a New Modem 
+
+Locking down the Ubuntu server's address and harden the router 
+
+Analogy: at the moment, the router is a cloakroom attendant who hands out a random ticket number to each guest. Today the server got ticket 8. If it's off
+when the power drops, it could get ticket 23 next time, and then Mutley's guest list (your ufw rules) and the Splunk forwarders all go to the wrong coat hook.
+A DHCP reservation staples the server's name to ticket 8 permanently. Alan once lost his coat ticket and was swapped for a coat rack. Nobody noticed for a week
+including Alan.
+
+The technical point: a DHCP reservation ties a device's MAC address to a fixed IP, so the server always gets the same address but the router still manages it
+centrally.
+
+
+
+Setting Up a Guest WIFI With the New Router
+
+My main Wi-Fi is the house itself, with my study, my server and the cameras. The guest network is the verandah. Guests get a comfy chair and the internet,
+but the door into my house stays shut and Mutley sleeps across the doorway. Sandy the everyday user sits happily on the verandah scrolling her phone.
+Alan, of course, tries to climb through the window into the study and ends up with Mutley wearing his trousers.
+
+The technical point: a guest network is a separate SSID with client isolation, so guest devices get internet access but can't reach devices on your main LAN.
+This is perfect security for my wifi. Alan doesn't understand how to use his phone and has a history of downloading dodgy apps. 
+
 
 
 
