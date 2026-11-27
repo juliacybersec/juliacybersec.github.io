@@ -19,7 +19,7 @@ What it does: shows the IP settings for each network adapter (IPv4 address, subn
 Each part:
 - ipconfig: the command itself. With no switches it gives the short summary.
 
-On the job: the first thing to check when a PC "has no internet" or can't reach a server. In Lab 16 I used it to read DC01's static IP before pointing Win11's DNS at it.
+Practical setting: the first thing to check when a PC "has no internet" or can't reach a server. In Lab 16 I used it to read DC01's static IP before pointing Win11's DNS at it.
 
 Related switches to add as I use them: /all (adds DNS servers, DHCP and MAC address), /flushdns (clears the local DNS cache).
 
@@ -37,7 +37,7 @@ Each part:
 - nslookup: the DNS lookup tool.
 - silkylab.local: the name to look up. Here it's my lab domain, which should return the Domain Controller's IP.
 
-On the job: confirms that DNS is working and pointing at the right server. If this fails, a PC can't join or log in to the domain.
+What it does: confirms that DNS is working and pointing at the right server. If this fails, a PC can't join or log in to the domain.
 
 ---
 
@@ -88,7 +88,7 @@ Each part:
 - -Identity: tells it which group to look up.
 - "Lab-Helpdesk": the group name. The quotes keep it together as one value, which matters for names with spaces.
 
-On the job: answers "Is this user in the group?" in seconds, without clicking through Active Directory Users and Computers.
+Answers "Is this user in the group?" in seconds, without clicking through Active Directory Users and Computers.
 
 ---
 
@@ -105,7 +105,7 @@ Each part:
 - -Filter: required when you don't use -Identity. Decides which computers to return.
 - *: a wildcard meaning "everything", so every computer account is listed.
 
-On the job: confirms that a PC actually joined the domain, and checks whether a computer account exists or is disabled.
+What it does: confirms that a PC actually joined the domain, and checks whether a computer account exists or is disabled.
 
 ---
 
@@ -122,7 +122,7 @@ What it does: shows the account you're logged in as, in the form domain\username
 Each part:
 - whoami: the command itself.
 
-On the job: proves whether a user is on a domain account (silkylab\tuser) or a local one (computername\user).
+proves whether a user is on a domain account (silkylab\tuser) or a local one (computername\user).
 
 ---
 
@@ -138,12 +138,7 @@ Each part:
 - whoami: shows who you're logged in as.
 - /groups: also lists all your group memberships, including the built-in ones Windows adds automatically (Everyone, Authenticated Users, and so on).
 
-On the job: when a user says "I was added to the group but still can't get in", this shows whether their logon picked it up. If the group is missing, they need to log off and back on to get a fresh token.
+If you ever have someone say "I was added to the group but still can't get in", this shows whether their logon picked it up. If the group is missing, they need to log off and back on to get a fresh token.
 
 ---
 
-COMING NEXT
-
-Group Policy (bonus lab): gpupdate /force, gpresult /r
-
-Earlier labs to back-fill: BitLocker (manage-bde), mapped drives (net use), DNS troubleshooting
