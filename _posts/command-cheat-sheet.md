@@ -508,9 +508,23 @@ outlook.exe /safe
 ```
 Starts classic Outlook without add-ins. If it works in safe mode, an add-in is the problem. Not supported in new Outlook. (Lab 11)
 
----
+
+Check Disc Space 
+
+Get-PSDrive C
+
+What it does: shows how much space is used and free on the C: drive.
+
+Get-PSDrive – the PowerShell cmdlet that lists drives and how much space each one has
+C – the drive letter, so it shows only the C: drive instead of every drive
+Output to read – Used (GB) and Free (GB) columns
+
+When I use it: checking there's enough free space before building a new VM, and confirming space came back after a clean-up.
+
 
 PowerShell tips for not memorising
 - Tab completion: type Get-Pro and press Tab. It works for parameters too.
 - Get-Help <command> -Examples shows example commands.
 - | Select <columns> keeps output short. | Format-Table -AutoSize makes it readable.
+
+- More commands will be added as I go though them. 
