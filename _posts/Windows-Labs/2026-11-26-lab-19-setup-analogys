@@ -97,6 +97,18 @@ Alan, of course, tries to climb through the window into the study and ends up wi
 The technical point: a guest network is a separate SSID with client isolation, so guest devices get internet access but can't reach devices on your main LAN.
 This is perfect security for my wifi. Alan doesn't understand how to use his phone and has a history of downloading dodgy apps. 
 
+I was unsure if this new modem had the ability to setup a guest wifi, when I checked in the settings that it had this capability I was wrapped. Guests can't cause damage to my main internet connection, 
+I have peace of mind knowing other people can't mess around effecting my devices through the WIFI (also means I don't need to get a new modem just yet).
+Guests get their own 192.168.x.x network, and I tested that they can't reach the server or the router. That's evidence that the guest wifi I setup is completely isolated from my main wifi. 
+
+My Analoby: Miss Silky built the verandah, then tried every door and window from outside. Alan climbed through his own window to steal snacks and found it bricked up. Mutley, lying behind the bricks, 
+didn't even open an eye.
+
+For my home network this is a security hardening of my own internet setup with evidence: guest and IoT-style devices segmented from the lab and personal network, with isolation tested rather than assumed.
+
+
+
+
 
 
 
