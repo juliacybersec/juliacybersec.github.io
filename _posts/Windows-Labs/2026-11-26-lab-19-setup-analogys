@@ -133,6 +133,25 @@ These fingerprints show again when you SSH in for the first time.
 If this ever happens just click inside the VM window and press Enter once for a fresh splunk01 login: line appears at the bottom.
 
 
+Check of avx - Unexpected Command Responce 
+
+After Slunk Installed I ran this command on the VM.
+
+grep -c avx /proc/cpuinfo
+
+The grep command came back as 0 unexpected I didn't expect this I was expecting a return of maybe 2.  The Laptop's processor (a 10th-gen Core i7) definitely has AVX, so the hardware is fine. 
+Something on Windows is hiding AVX from the VM.
+
+The most likely cause: Windows has its own hypervisor (Hyper-V) running in the background. Features like Memory Integrity (Core Isolation), WSL or Virtual Machine Platform switch it on.
+When it's on, VirtualBox can't reach the CPU directly. It has to run on top of Hyper-V instead, and in that mode the VM often doesn't get AVX.
+
+The analogy: VirtualBox used to walk straight into the CPU's workshop. Now a second bouncer, Hyper-V, stands at the door. He searches everyone and confiscates the fancy power tools (AVX),
+so the VM only gets a screwdriver. Alan the Fool once argued with a bouncer like that and left with his toolbelt stapled to his forehead.
+
+The technical point: when Windows' hypervisor is active, VirtualBox runs in "native API" (NEM) mode on top of Hyper-V, and AVX/AVX2 are often not passed through to the guest.
+
+Everything is fine, it's not yet the end of the world. 
+
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Installed a New Modem 
 
