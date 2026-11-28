@@ -113,9 +113,24 @@ Cable Connected is ticked: a virtual "network cable plugged in". Unticking it is
 Port Forwarding: may be greyed out here, which is normal. For a NAT Network, port forwarding is set in Network Manager, not on the VM. That's the C4 step where I would let Windows Terminal reach 
 Splunk01 for SSH and the Splunk web page.
 
+
 The analogy: LabNet is the castle's private courtyard. DC01, Win11-Ent-Lab and Splunk01 all live inside the walls and can shout to each other. The gate (VirtualBox's NAT router at .1) lets them go out to the 
 market (the internet), but strangers from outside can't wander in. Bridged would be like moving Mutley's kennel out onto the main road. Alan once did exactly that, and the kennel got hit by a bus.
 The technical point: NAT Network gives the lab VMs one shared subnet with outbound internet access, and keeps them isolated from your home LAN unless you deliberately add port forwards.
+
+Pause during setup - Explanation of what's happening
+
+When Ubuntu starts for the first time, a setup tool called cloud-init runs in the background. It prints messages straight over the top of the login prompt: the SSH host key fingerprints, then a line 
+saying it's finished. The splunk01 login: prompt is still there, just buried under all that text.
+
+The analogy: Mutley has been let into his new kennel. Before he settles down, the castle clerk shouts out his new ID tags (the host key fingerprints) for the record. The clerk shouts right over the top of the
+"who goes there?" sign on the door. The sign is still there, you just can't see it.
+
+The technical point: on first boot, cloud-init creates the server's SSH host keys and prints their fingerprints to the console, which overwrites the login prompt on screen.
+Pressing Enter redraws the prompt.
+These fingerprints show again when you SSH in for the first time.
+
+If this ever happens just click inside the VM window and press Enter once for a fresh splunk01 login: line appears at the bottom.
 
 
 ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
