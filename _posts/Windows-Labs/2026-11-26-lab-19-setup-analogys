@@ -42,7 +42,9 @@ is easy to audit, and takes priority when it's read first.
 Why it matters at GRC level: this is configuration management in practice. My security baseline is a small, documented, reviewable change instead of an edit buried
 in a vendor file. It's the kind of evidence an auditor asks for under "how do you know your servers stay hardened?"
 
-Setting Up SPLUNK On My Old Laptop
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
+Lab 19 Part 1.  Setting Up SPLUNK On My Old Laptop
 
 The Analogy
 
@@ -69,11 +71,54 @@ A 0 means this laptop's CPU has no AVX, so current Splunk can't run properly on 
 eyebrows. Miss Silky inspects the wiring, finds kettle cord, and changes the plan before anything blows up. "Checked the vendor's hardware requirements before deploying, found a blocker, re-planned" 
 also reads really well in a write-up.
 
-What it means: Splunk's KV store needs AVX. On this CPU it would crash with an "illegal instruction" error. Splunk might still half-run, but that's an unsupported setup and not one I'd build your lab on.
+What it means: Splunk's KV store needs AVX. On this CPU it would crash with an "illegal instruction" error. Splunk might still half-run, but that's an unsupported setup and not one I'd build my lab on.
 
-The good news: the laptop isn't wasted. It's already hardened, so it can become a Linux log source. A universal forwarder on it would send its SSH and auth logs to Splunk. Forwarders don't run the KV store,
-so they don't need AVX. That gives you Windows and Linux logs to hunt through, which looks better in a SOC portfolio than Windows alone.
+The good news is the laptop isn't wasted. It's already hardened, so it can become a Linux log source. A universal forwarder on it would send its SSH and auth logs to Splunk. Forwarders don't run the KV store,
+so they don't need AVX. That gives Windows and Linux logs to hunt through, which gives a better variety in my SOC portfolio than Windows alone.
 
+Lab 19 Part C: Setup Splunk on VM
+
+Miss Silky is building Mutley a new kennel at the back of the castle. It will be the watchtower where every CCTV feed in the kingdom ends up. Before she brings in the screens, she checks that the kennel 
+can see the sky. A watchtower with no windows is just a shed. Alan the Fool once built his watchtower with no windows. He sat inside for three weeks "monitoring" and never noticed the castle had burnt 
+down around him. Alan wondered why it was getting smokey, so he had nothing left to lose.
+
+The technical point: the Splunk VM needs enough RAM and disk, a spot on the same lab network as DC01, and the CPU's AVX instructions passed through from the Laptop. I checked AVX straight after the install, 
+so if it's missing I find out before installing Splunk, not after.
+
+Lab 19 Part C: Setup Splunk on VM
+
+Miss Silky is building Mutley a new kennel at the back of the castle. It will be the watchtower where every CCTV feed in the kingdom ends up. Before she brings in the screens, she checks that the kennel 
+can see the sky. A watchtower with no windows is just a shed. Alan the Fool once built his watchtower with no windows. He sat inside for three weeks "monitoring" and never noticed the castle had burnt 
+down around him. Alan wondered why it was getting smokey, so he had nothing left to lose.
+
+The technical point: the Splunk VM needs enough RAM and disk, a spot on the same lab network as DC01, and the CPU's AVX instructions passed through from the Laptop. I checked AVX straight after the install, 
+so if it's missing I find out before installing Splunk, not after.
+
+Lab 19: Network Adapter Setup 
+
+Need to enable Network Adapter : this is the virtual network card. Unticked, the VM has no network at all.
+ VirtualBox – Splunk01 Settings → Network → Adapter 1
+
+Attached to: NAT Network: decides which "cable" the virtual card plugs into. The options:
+NAT: each VM gets its own private bubble. It can reach the internet, but VMs can't see each other. That's no good here, because Splunk01 needs to hear from DC01.
+NAT Network : a shared private network for several VMs, with a way out to the internet. That's why DC01, Win11-Ent-Lab and now Splunk01 are all on it.
+Bridged Adapter: puts the VM straight onto your home network, next to your phone and the router. It's less isolated, so we avoid it for lab machines.
+Internal Network: VMs can only talk to each other, with no internet.
+Host-only Adapter: the VM can only talk to the laptop itself.
+Name: LabNet: which NAT Network it joins. It must match DC01's setting exactly, or they end up on different networks.
+Adapter Type: the brand of virtual card Linux sees. Left at the default Intel PRO/1000 MT Desktop. Ubuntu has drivers for it built in.
+Promiscuous Mode: Deny: stops this VM from listening in on other VMs' traffic. Leave it on Deny. The only reason to change it would be for packet-sniffing labs.
+MAC Address: the card's unique hardware ID. Has been left as is.  Would only change it when cloning VMs so two don't clash.
+Cable Connected is ticked: a virtual "network cable plugged in". Unticking it is like pulling the cable out, which is handy for isolating a VM in an incident-response lab.
+Port Forwarding: may be greyed out here, which is normal. For a NAT Network, port forwarding is set in Network Manager, not on the VM. That's the C4 step where I would let Windows Terminal reach 
+Splunk01 for SSH and the Splunk web page.
+
+The analogy: LabNet is the castle's private courtyard. DC01, Win11-Ent-Lab and Splunk01 all live inside the walls and can shout to each other. The gate (VirtualBox's NAT router at .1) lets them go out to the 
+market (the internet), but strangers from outside can't wander in. Bridged would be like moving Mutley's kennel out onto the main road. Alan once did exactly that, and the kennel got hit by a bus.
+The technical point: NAT Network gives the lab VMs one shared subnet with outbound internet access, and keeps them isolated from your home LAN unless you deliberately add port forwards.
+
+
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 Installed a New Modem 
 
 Locking down the Ubuntu server's address and harden the router 
@@ -86,7 +131,7 @@ including Alan.
 The technical point: a DHCP reservation ties a device's MAC address to a fixed IP, so the server always gets the same address but the router still manages it
 centrally.
 
-
+------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
 Setting Up a Guest WIFI With the New Router
 
@@ -105,6 +150,9 @@ My Analoby: Miss Silky built the verandah, then tried every door and window from
 didn't even open an eye.
 
 For my home network this is a security hardening of my own internet setup with evidence: guest and IoT-style devices segmented from the lab and personal network, with isolation tested rather than assumed.
+
+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 
 
 
